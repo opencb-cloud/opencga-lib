@@ -1,6 +1,10 @@
+package org.bioinfo.gcsa.lib.users.persistence;
+
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.users.beans.Project;
+
+
 
 public class UserFileManager implements UserManager {
 
@@ -33,21 +37,18 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
-	public void createProject(String accountId, String sessionId)
-			throws UserManagementException {
-		
-	}
-
 	public List<Project> jsonToProjectList(String json) {
 		return null;
 	}
 
-	public void createProject(Project project, String accountId,
-			String sessionId) throws UserManagementException {
-	}
-
 	public void createUser(String accountId, String password,
 			String accountName, String email) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void createProject(Project project, String accountId,
+			String sessionId) throws UserManagementException {
 		// TODO Auto-generated method stub
 		
 	}

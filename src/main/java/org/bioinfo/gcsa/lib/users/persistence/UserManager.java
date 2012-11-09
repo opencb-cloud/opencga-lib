@@ -4,13 +4,12 @@ import java.util.List;
 
 import org.bioinfo.gcsa.lib.users.beans.Project;
 
-
 public interface UserManager {
 
 	/*
 	 * User methods
 	 */
-	public void createUser(String accountId, String password,String accountName, String email);
+	public void createUser(String accountId, String password,String accountName, String email) throws UserManagementException;
 	
 	public void createAnonymousUser(String accountId, String password, String email);
 	

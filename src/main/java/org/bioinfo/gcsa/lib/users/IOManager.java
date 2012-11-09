@@ -10,9 +10,9 @@ import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 public class IOManager {
 	private Runtime execute = Runtime.getRuntime();
 	private Process process;
-	private String pathGCSA = "/home/echirivella/TESTGCSA"; //Esto fichero propiedades
+	private String pathGCSA = "/home/echirivella/TESTGCSA/";
 
-	public void createProject(String accountId) throws UserManagementException{
+	public void createAccountId(String accountId) throws UserManagementException{
 		try {
 			FileUtils.checkFile(new File(pathGCSA + accountId));
 		} catch (IOException e2) {
@@ -20,7 +20,10 @@ public class IOManager {
 		}
 
 		try {
-			createFolder(pathGCSA + accountId + "jobs");
+			System.out.println("Puedo escribir? " + new File(pathGCSA).canWrite());
+			System.out.println("Puedo ejecutar? " + new File(pathGCSA).canExecute());
+			System.out.println("Puedo leer? " + new File(pathGCSA).canRead());
+			createAccountFolder(pathGCSA + accountId + "/jobs");
 		} catch (InterruptedException e1) {
 			new UserManagementException("The thread is interrupted ");
 		} catch (IOException e1) {
@@ -28,7 +31,7 @@ public class IOManager {
 		}
 
 		try {
-			createFolder(pathGCSA + accountId + "plugins");
+			createAccountFolder(pathGCSA + accountId + "/plugins");
 		} catch (InterruptedException e1) {
 			new UserManagementException("The thread is interrupted ");
 		} catch (IOException e1) {
@@ -36,9 +39,10 @@ public class IOManager {
 		}
 	}
 
-	private void createFolder(String path) throws InterruptedException,
+	private void createAccountFolder(String path) throws InterruptedException,
 			IOException {
 		StringBuilder commandToExecute = new StringBuilder("mkdir -p " + path);
+		System.out.println(commandToExecute);
 		String[] command = { "/bin/bash", "-c", commandToExecute.toString() };
 
 		process = execute.exec(command);
@@ -46,7 +50,7 @@ public class IOManager {
 		process.waitFor();
 
 		if (process.exitValue() != 0) {
-
+			System.out.println("HEMOS SALIDO CON " + process.exitValue());
 		}
 	}
 }
