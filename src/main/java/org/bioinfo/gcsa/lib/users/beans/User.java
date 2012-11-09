@@ -1,13 +1,14 @@
 package org.bioinfo.gcsa.lib.users.beans;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 public class User {
-	private String id;
 	private String accountId;
 	private String accountName;
 	private String email;
-	private String pass;
+	private String password;
 	private String status;
 	private String mailingList;
 	private String diskQuota;
@@ -21,7 +22,7 @@ public class User {
 
 	public User() {
 		session = new Session();
-		oldSessions = new Vector<Session>();
+		oldSessions = new ArrayList<Session>();
 		oldSessions.add(new Session());
 		oldSessions.add(new Session());
 		projects = new Vector<Project>();
@@ -29,28 +30,41 @@ public class User {
 		accounts = new Vector<Account>();
 		accounts.add(new Account());
 		this.status = "";
-		this.id = "";
-		this.pass = "";
+		this.password = "";
 		this.email = "";
 		this.mailingList = "";
 		this.accountId = "";
-		
 		this.accountName = "";
-		this.diskQuota= ""; 
-		this.diskUsage= "";
+		this.diskQuota = "";
+		this.diskUsage = "";
 	}
 
-	public User(String id, String accountId, String accountName, String email,
-			String pass, String status, String mailingList, String diskQuota,
-			String diskUsage, Session session, List<Session> oldSessions,
-			List<Project> projects, List<Account> accounts,
-			List<Plugin> plugins, List<Config> configs) {
-		super();
-		this.id = id;
+	public User(String accountId, String accountName, String password, String email) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
-		this.pass = pass;
+		this.password = password;
+		this.status = "1";
+		this.mailingList = "";
+		this.diskQuota = "2000000";
+		this.diskUsage = "";
+		this.session = null;
+		this.oldSessions = null;
+		this.projects = projects;
+		this.accounts = null;
+		this.plugins = null;
+		this.configs = null;
+	}
+
+	public User(String accountId, String accountName, String email,
+			String password, String status, String mailingList,
+			String diskQuota, String diskUsage, Session session,
+			List<Session> oldSessions, List<Project> projects,
+			List<Account> accounts, List<Plugin> plugins, List<Config> configs) {
+		this.accountId = accountId;
+		this.accountName = accountName;
+		this.email = email;
+		this.password = password;
 		this.status = status;
 		this.mailingList = mailingList;
 		this.diskQuota = diskQuota;
@@ -61,14 +75,6 @@ public class User {
 		this.accounts = accounts;
 		this.plugins = plugins;
 		this.configs = configs;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
 	}
 
 	public String getAccountId() {
@@ -95,12 +101,12 @@ public class User {
 		this.email = email;
 	}
 
-	public String getPass() {
-		return pass;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setPass(String pass) {
-		this.pass = pass;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public String getStatus() {
@@ -182,7 +188,5 @@ public class User {
 	public void setConfigs(List<Config> configs) {
 		this.configs = configs;
 	}
-
-	
 
 }

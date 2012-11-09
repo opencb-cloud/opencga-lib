@@ -1,6 +1,6 @@
 package org.bioinfo.gcsa.lib.users.beans;
+import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Vector;
 
 
 public class Project {
@@ -12,35 +12,24 @@ public class Project {
 	private String ownerId;
 	private String type;
 	private String descripcion;
-	private List<Member> acl;
+	private List<Acl> acl;
 	private List<Job> jobs;
 	private List<Data> data;
 	
 	public Project(){
-		
-		jobs = new Vector<Job>();
-		jobs.add(new Job());
-		
-		acl = new Vector<Member>();
-		acl.add(new Member());
-		acl.add(new Member());
-		
-		data = new Vector<Data>();
-		data.add(new Data());
-		
-		this.status ="";
-		this.id = "";
-		this.ownerId = "";
-		this.name = "";
+		this.status ="1";
+		this.id = "";//Esto hay que ver como lo numeramos
+		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
+		this.name = "Default";
 		this.diskUsage = "";
-		this.creationDate = "";
+		this.creationDate = "20121006210000";
 		this.type = "";
-		this.descripcion = "";
+		this.descripcion = "Default Project";
 	}
 
 	public Project(String id, String name, String status, String diskUsage,
 			String creationDate, String ownerId, String type,
-			String descripcion, List<Member> acl, List<Job> jobs,
+			String descripcion, List<Acl> acl, List<Job> jobs,
 			List<Data> data) {
 		super();
 		this.id = id;
@@ -120,11 +109,11 @@ public class Project {
 		this.descripcion = descripcion;
 	}
 
-	public List<Member> getAcl() {
+	public List<Acl> getAcl() {
 		return acl;
 	}
 
-	public void setAcl(List<Member> acl) {
+	public void setAcl(List<Acl> acl) {
 		this.acl = acl;
 	}
 

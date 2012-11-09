@@ -15,11 +15,11 @@ public class Data {
 	private String description;
 	private String status;
 	private String statusMessage;
-	private List<Member> members;
+	private List<Acl> members;
 	
 	public Data(){
-		members = new Vector<Member>();
-		members.add(new Member());
+		members = new Vector<Acl>();
+		members.add(new Acl());
 		this.id = "";
 		this.fileName = "";
 		this.multiple = "";
@@ -36,7 +36,7 @@ public class Data {
 	public Data(String id, String fileName, String multiple, String diskUsage,
 			String creationTime, String responsible, String organization,
 			String date, String description, String status,
-			String statusMessage, List<Member> members) {
+			String statusMessage, List<Acl> members) {
 		super();
 		this.id = id;
 		this.fileName = fileName;
@@ -140,11 +140,11 @@ public class Data {
 		this.statusMessage = statusMessage;
 	}
 
-	public List<Member> getMembers() {
+	public List<Acl> getMembers() {
 		return members;
 	}
 
-	public void setMembers(List<Member> members) {
+	public void setMembers(List<Acl> members) {
 		this.members = members;
 	}
 
