@@ -1,8 +1,9 @@
 package org.bioinfo.gcsa.lib.users;
 
 
-import org.bioinfo.gcsa.lib.users.beans.Project;
+import org.bioinfo.gcsa.lib.users.persistence.UserFileManager;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
+import org.bioinfo.gcsa.lib.users.persistence.UserManager;
 
 public class CloudSessionManager {
 

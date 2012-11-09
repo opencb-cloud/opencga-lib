@@ -1,4 +1,4 @@
-package java.org.bioinfo.gcsa.lib.users.persistence;
+package org.bioinfo.gcsa.lib.users.persistence;
 
 
 public class UserManagementException extends Exception {

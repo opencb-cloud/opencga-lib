@@ -1,7 +1,8 @@
-package java.org.bioinfo.gcsa.lib.users.persistence;
+package org.bioinfo.gcsa.lib.users.persistence;
 
-import java.org.bioinfo.gcsa.lib.users.beans.Project;
 import java.util.List;
+
+import org.bioinfo.gcsa.lib.users.beans.Project;
 
 
 public interface UserManager {

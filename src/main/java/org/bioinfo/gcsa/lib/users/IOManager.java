@@ -2,9 +2,9 @@ package org.bioinfo.gcsa.lib.users;
 
 import java.io.File;
 import java.io.IOException;
-import java.org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
 import org.bioinfo.commons.io.utils.FileUtils;
+import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
 
 public class IOManager {

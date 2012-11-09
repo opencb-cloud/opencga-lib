@@ -1,10 +1,9 @@
-package java.org.bioinfo.gcsa.lib.users.persistence;
+package org.bioinfo.gcsa.lib.users.persistence;
 
-import java.org.bioinfo.gcsa.lib.users.beans.Project;
-import java.org.bioinfo.gcsa.lib.users.beans.User;
-import java.org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
-import java.org.bioinfo.gcsa.lib.users.persistence.UserManager;
 import java.util.List;
+
+import org.bioinfo.gcsa.lib.users.beans.Project;
+import org.bioinfo.gcsa.lib.users.beans.User;
 
 public class UserMongoDBManager implements UserManager {
 

@@ -1,5 +1,7 @@
 import java.util.List;
 
+import org.bioinfo.gcsa.lib.users.beans.Project;
+
 public class UserFileManager implements UserManager {
 
 	public void createUser(String accountId, String password, String email) {

@@ -1,10 +1,6 @@
 package org.bioinfo.gcsa.lib.data.source;
 
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -14,7 +10,6 @@ import com.amazonaws.services.s3.model.S3Object;
 
 public class S3Source implements Source{
  
-	@Override
 	public InputStream getInputStream(String path) {
 		String ak = "AKIAI3BZQ2VG6GPWQBVA";
 		String sk = "oDDIv+OAQeQVj9sy1CcWeeJsOMAhbh9KIpJ7hiDK";
