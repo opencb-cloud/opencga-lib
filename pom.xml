@@ -5,6 +5,11 @@
 	<artifactId>gcsa-lib</artifactId>
 	<version>0.1.0</version>
 
+	<properties>
+		<installation.dir>installation-dir</installation.dir>
+		<dest.installation.dir>/opt/gcsa</dest.installation.dir>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.bioinfo</groupId>
@@ -46,6 +51,87 @@
 			<version>4.8.2</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<sourceDirectory>src/main</sourceDirectory>
+		<testSourceDirectory>src/test</testSourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.4.3</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.bioinfo.gcsa.lib.cli.GcsaMain</mainClass>
+							<addClasspath>true</addClasspath>
+						</manifest>
+					</archive>
+					<outputDirectory>${installation.dir}/libs</outputDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.5.1</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${installation.dir}/libs</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<configuration>
+							<target>
+								<echo>Copying to ${dest.installation.dir}</echo><!-- <copy todir="${installation.dir}"> 
+									<fileset dir="installation" includes="**" /> </copy> -->
+								<exec executable="cp">
+									<arg value="-r" />
+									<arg value="${installation.dir}/analysis" />
+									<arg value="${installation.dir}/conf" />
+									<arg value="${installation.dir}/example" />
+									<arg value="${installation.dir}/libs" />
+									<arg value="${dest.installation.dir}" />
+								</exec>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 	<repositories>
 		<repository>
