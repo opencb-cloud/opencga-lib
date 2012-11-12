@@ -1,7 +1,6 @@
 package org.bioinfo.gcsa.lib.analysis;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -9,20 +8,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.bioinfo.commons.Config;
-import org.bioinfo.commons.exec.Command;
-import org.bioinfo.commons.exec.SingleProcess;
 import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
-import org.bioinfo.commons.utils.ListUtils;
-import org.bioinfo.commons.utils.MapUtils;
-import org.bioinfo.gcsa.lib.analysis.plugin.Execution;
-import org.bioinfo.gcsa.lib.analysis.plugin.Option;
-import org.bioinfo.gcsa.lib.analysis.plugin.Plugin;
+import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
+import org.bioinfo.gcsa.lib.analysis.beans.Execution;
+import org.bioinfo.gcsa.lib.analysis.beans.Option;
 
 import com.google.gson.Gson;
 
@@ -43,7 +36,7 @@ public class AnalysisJobExecuter {
 		System.out.println("params received in execute: "+params);
 		
 		String sessionId, pluginName, executionId;
-		Plugin plugin = null;
+		Analysis plugin = null;
 		
 		if(params.containsKey("sessionId")) {
 			sessionId = params.get("sessionId").get(0);
@@ -85,7 +78,7 @@ public class AnalysisJobExecuter {
 		// Parse JSON to Plugin object
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(manifestFile));
-			plugin = gson.fromJson(br, Plugin.class);
+			plugin = gson.fromJson(br, Analysis.class);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
