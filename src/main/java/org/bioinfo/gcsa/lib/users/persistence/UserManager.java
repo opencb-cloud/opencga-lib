@@ -3,6 +3,7 @@ package org.bioinfo.gcsa.lib.users.persistence;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.users.beans.Project;
+import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
 public interface UserManager {
 

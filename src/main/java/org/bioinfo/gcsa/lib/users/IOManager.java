@@ -16,7 +16,7 @@ public class IOManager {
 		try {
 			FileUtils.checkFile(new File(pathGCSA + accountId));
 		} catch (IOException e2) {
-			new UserManagementException("The Project exits");
+			throw new UserManagementException("ERROR: The project has not been created "  + e2.toString());
 		}
 
 		try {
@@ -25,17 +25,17 @@ public class IOManager {
 			System.out.println("Puedo leer? " + new File(pathGCSA).canRead());
 			createAccountFolder(pathGCSA + accountId + "/jobs");
 		} catch (InterruptedException e1) {
-			new UserManagementException("The thread is interrupted ");
+			throw new UserManagementException("The thread is interrupted " + e1.toString());
 		} catch (IOException e1) {
-			new UserManagementException("IOException");//TODO
+			throw new UserManagementException("IOException" + e1.toString());
 		}
 
 		try {
 			createAccountFolder(pathGCSA + accountId + "/plugins");
 		} catch (InterruptedException e1) {
-			new UserManagementException("The thread is interrupted ");
+			throw new UserManagementException("The thread is interrupted " + e1.toString());
 		} catch (IOException e1) {
-			new UserManagementException("IOException");//TODO
+			throw new UserManagementException("IOException"  + e1.toString());
 		}
 	}
 
