@@ -33,6 +33,10 @@ public class UserMongoDBManager implements UserManager {
 					"ERROR: Not connected to mongoDB " + e.toString());
 		}
 	}
+	
+	private void connectToMongo(){
+		
+	}
 
 	private DBCollection getCollection(String nameCollection) {
 		DBCollection userCollection = null;
@@ -56,10 +60,12 @@ public class UserMongoDBManager implements UserManager {
 	private void getDataBase(String nameDataBase){
 		
 	}
-	public void createAccountId(String accountId, String password,
+	public void createUser(String accountId, String password,
 			String accountName, String email) throws UserManagementException {
-
+		
+		//creacion de carpetas correspondientes a la creacion de un nuevo usuario
 		ioManager.createAccountId(accountId);
+		
 		User user = new User(accountId, accountName, password, email);
 
 		DB db = mongo.getDB("usertest");
@@ -119,10 +125,5 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 
-	public void createUser(String accountId, String password,
-			String accountName, String email) throws UserManagementException {
-		// TODO Auto-generated method stub
-
-	}
 
 }
