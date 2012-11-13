@@ -1,16 +1,19 @@
 package org.bioinfo.gcsa.lib.storage.alignment;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.util.ResourceBundle;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 
+import net.sf.samtools.CigarElement;
 import net.sf.samtools.CigarOperator;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecord.SAMTagAndValue;
 import net.sf.samtools.SAMRecordIterator;
 
-import org.bioinfo.commons.Config;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.log.Logger;
 
@@ -20,12 +23,10 @@ import com.google.gson.Gson;
 public class BamManager {
 	
 	protected Gson gson = new Gson();
-	protected Config config;
 	protected Logger logger;
 	
-	public BamManager(ResourceBundle properties) throws IOException{
+	public BamManager() throws IOException{
 //		ResourceBundle properties = ResourceBundle.getBundle("application");
-		config = new Config(properties);
 		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Logger.INFO_LEVEL);
@@ -38,16 +39,16 @@ public class BamManager {
 //		}
 //	}
 	
-	public String getByRegion(final String fileName, final String chr, final int start, final int end) throws IOException{
+	public String getByRegion(final String filePath, final String fileName, final String chr, final int start, final int end) throws IOException{
 		
 		System.out.println("chr: "+chr+" start: "+start+" end: "+end);
 
-		File inputSamFile = new File(config.getProperty("FILES.PATH")+"/bam/"+fileName+".bam");
+		File inputSamFile = new File(filePath+"/bam/"+fileName+".bam");
 		File indexFile = null;
-		if(!new File(config.getProperty("FILES.PATH")+"/bam/"+fileName+".bam.bai").exists()) {
+		if(!new File(filePath+"/bam/"+fileName+".bam.bai").exists()) {
 			// crearlo!
 		}
-		indexFile = new File(config.getProperty("FILES.PATH")+"/bam/"+fileName+".bam.bai");
+		indexFile = new File(filePath+"/bam/"+fileName+".bam.bai");
 		
 		
 		long t = System.currentTimeMillis();
@@ -62,6 +63,11 @@ public class BamManager {
 //		Coverage coverage = new HsMetricCollector.Coverage(new Interval(chr, start, end), 10);
 //		short[] coverages = coverage.getDepths();
 		System.out.println("query SamFileReader in "+(System.currentTimeMillis()-t)+"ms");
+		
+		/**
+		 * GET GENOME SEQUENCE
+		 */
+		String sequence = getSequence(chr, start, end);
 		
 		/**
 		 * COVERAGE
@@ -81,132 +87,215 @@ public class BamManager {
 		int readPos;
 		while(recordsFound.hasNext()){
 			SAMRecord record = recordsFound.next();
-		
-			attrString = new StringBuilder();
-			attrString.append("{");
-			for (SAMTagAndValue attr : record.getAttributes()) {
-				attrString.append("\""+attr.tag+"\":\""+    attr.value.toString().replace("\\", "\\\\").replace("\"", "\\\"")    +"\",");
-			}
-			//Remove last comma
-			if(attrString.length()>1){
-				attrString.replace(attrString.length()-1, attrString.length(), "");
-			}
-			attrString.append("}");
-			
-			readStr = record.getReadString();
-			
-			/*
-			 *Base quality ascii conversion
-			 * */
-//			String baseQualityString = record.getBaseQualityString();
-//			int baseLen = baseQualityString.length();
-//			short[] baseQualityArray = new short[baseLen];
-//			for (int i = 0; i < baseLen; i++) {
-//				baseQualityArray[i] = (short)baseQualityString.charAt(i);
-//			}
-			/**/
-			
-			
-			sb.append("{");
-			sb.append("\"start\":"+record.getAlignmentStart()+",");
-			sb.append("\"end\":"+record.getAlignmentEnd()+",");
-			sb.append("\"chromosome\":\""+chr+"\",");
-			sb.append("\"flags\":\""+record.getFlags()+"\",");//with flags the strand will be calculated
-			sb.append("\"cigar\":\""+record.getCigarString()+"\",");
-			sb.append("\"name\":\""+record.getReadName()+"\",");
-			sb.append("\"blocks\":\""+record.getAlignmentBlocks().get(0).getLength()+"\",");
-			
-			sb.append("\"attributes\":"+attrString.toString()+",");
-			
-			sb.append("\"readGroupId\":\""+record.getReadGroup().getId()+"\",");
-			sb.append("\"readGroupPlatform\":\""+record.getReadGroup().getPlatform()+"\",");
-			sb.append("\"readGroupLibrary\":\""+record.getReadGroup().getLibrary()+"\",");
-			sb.append("\"referenceName\":\""+record.getReferenceName()+"\",");
-			sb.append("\"baseQualityString\":\""+record.getBaseQualityString().replace("\\", "\\\\").replace("\"", "\\\"")+"\",");// the " char unables parse from javascript
-//			sb.append("\"baseQualityString\":\""+gson.toJson(baseQualityArray)+"\",");// the " char unables parse from javascript
-			sb.append("\"header\":\""+record.getHeader().toString()+"\",");
-			sb.append("\"readLength\":"+record.getReadLength()+",");
-			sb.append("\"mappingQuality\":"+record.getMappingQuality()+",");
-			
-			sb.append("\"mateReferenceName\":\""+record.getMateReferenceName()+"\",");
-			sb.append("\"mateAlignmentStart\":"+record.getMateAlignmentStart()+",");
-			sb.append("\"inferredInsertSize\":"+record.getInferredInsertSize()+",");
+			if(!record.getReadUnmappedFlag()){
 
-			sb.append("\"read\":\""+readStr+"\"");
-			sb.append("},");
+				attrString = new StringBuilder();
+				attrString.append("{");
+				for (SAMTagAndValue attr : record.getAttributes()) {
+					attrString.append("\""+attr.tag+"\":\""+    attr.value.toString().replace("\\", "\\\\").replace("\"", "\\\"")    +"\",");
+				}
+				//Remove last comma
+				if(attrString.length()>1){
+					attrString.replace(attrString.length()-1, attrString.length(), "");
+				}
+				attrString.append("}");
+				
+				readStr = record.getReadString();
+				
+				/*
+				 *Base quality ascii conversion
+				 * */
+	//			String baseQualityString = record.getBaseQualityString();
+	//			int baseLen = baseQualityString.length();
+	//			short[] baseQualityArray = new short[baseLen];
+	//			for (int i = 0; i < baseLen; i++) {
+	//				baseQualityArray[i] = (short)baseQualityString.charAt(i);
+	//			}
+				/**/
+				
+				
+				/***************************************************************************/
+				System.out.println("#############################################################################################################################################");
+				System.out.println("#############################################################################################################################################");
+				System.out.println("Unclipped Start:"+(record.getUnclippedStart()-start));
+				System.out.println("Unclipped End:"+(record.getUnclippedEnd()-start+1));
+				System.out.println(record.getCigarString()+"   Alig Length:"+(record.getAlignmentEnd()-record.getAlignmentStart()+1)+"   Unclipped length:"+(record.getUnclippedEnd()-record.getUnclippedStart()+1));
+				String refStr = sequence.substring((500+record.getUnclippedStart()-start), (500+record.getUnclippedEnd()-start+1));
+				System.out.println("refe:"+refStr+"  refe.length:"+refStr.length());
+				System.out.println("read:"+readStr+"  readStr.length:"+readStr.length()+"   getReadLength:"+record.getReadLength());
+				StringBuilder diffStr = new StringBuilder();
+//				StringBuilder ref2Str = new StringBuilder();
+				
+				int index = 0;
+				int indexRef = 0;
+//				System.out.println(gson.toJson(record.getCigar().getCigarElements()));
+				for(int i=0; i < record.getCigar().getCigarElements().size(); i++) {
+					CigarElement cigarEl = record.getCigar().getCigarElement(i);
+					CigarOperator cigarOp = cigarEl.getOperator();
+					int cigarLen = cigarEl.getLength();
+					System.out.println(cigarOp+" found"+" index:"+index+" indexRef:"+indexRef+" cigarLen:"+cigarLen);
+					
+					if(cigarOp == CigarOperator.M || cigarOp == CigarOperator.EQ || cigarOp == CigarOperator.X || cigarOp == CigarOperator.S) {
+						String subref = refStr.substring(indexRef, indexRef+cigarLen);
+						String subread = readStr.substring(index, index+cigarLen);
+						diffStr.append(getDiff(subref,subread));
+						index = index+cigarLen;
+						indexRef = indexRef+cigarLen;
+//						System.out.println("diff:"+diffStr);
+					}
+					if(cigarOp == CigarOperator.I) {
+						diffStr.append(readStr.substring(index, index+cigarLen).toLowerCase());
+						index = index+cigarLen;
+						//TODO save insertions
+					}
+					if(cigarOp == CigarOperator.D) {
+						for(int bi = 0; bi<cigarLen; bi++){
+							diffStr.append("d");
+						}
+						indexRef = indexRef+cigarLen;
+					}
+					if(cigarOp == CigarOperator.N) {
+						for(int bi = 0; bi<cigarLen; bi++){
+							diffStr.append("n");
+						}
+						indexRef = indexRef+cigarLen;
+					}
+//					if(cigarOp == CigarOperator.S) {
+//						
+//					}
+					if(cigarOp == CigarOperator.H) {
+						for(int bi = 0; bi<cigarLen; bi++){
+							diffStr.append("h");
+						}
+						indexRef = indexRef+cigarLen;
+					}
+					if(cigarOp == CigarOperator.P) {
+						for(int bi = 0; bi<cigarLen; bi++){
+							diffStr.append("p");
+						}
+						indexRef = indexRef+cigarLen;
+					}
+//					if(cigarOp == CigarOperator.EQ) {
+//						
+//					}
+//					if(cigarOp == CigarOperator.X) {
+//						
+//					}
+				}
+				System.out.println("diff:"+diffStr);
+				
+				String empty = diffStr.toString().replace(" ", "");
+				/*************************************************************************/
+				
+				
+				
+				sb.append("{");
+				sb.append("\"start\":"+record.getAlignmentStart()+",");
+				sb.append("\"end\":"+record.getAlignmentEnd()+",");
+				sb.append("\"unclippedStart\":"+record.getUnclippedStart()+",");
+				sb.append("\"unclippedEnd\":"+record.getUnclippedEnd()+",");
+				sb.append("\"chromosome\":\""+chr+"\",");
+				sb.append("\"flags\":\""+record.getFlags()+"\",");//with flags the strand will be calculated
+				sb.append("\"cigar\":\""+record.getCigarString()+"\",");
+				sb.append("\"name\":\""+record.getReadName()+"\",");
+				sb.append("\"blocks\":\""+record.getAlignmentBlocks().get(0).getLength()+"\",");
+				
+				sb.append("\"attributes\":"+attrString.toString()+",");
+				
+//				sb.append("\"readGroupId\":\""+record.getReadGroup().getId()+"\",");
+//				sb.append("\"readGroupPlatform\":\""+record.getReadGroup().getPlatform()+"\",");
+//				sb.append("\"readGroupLibrary\":\""+record.getReadGroup().getLibrary()+"\",");
+				sb.append("\"referenceName\":\""+record.getReferenceName()+"\",");
+				sb.append("\"baseQualityString\":\""+record.getBaseQualityString().replace("\\", "\\\\").replace("\"", "\\\"")+"\",");// the " char unables parse from javascript
+	//			sb.append("\"baseQualityString\":\""+gson.toJson(baseQualityArray)+"\",");// the " char unables parse from javascript
+				sb.append("\"header\":\""+record.getHeader().toString()+"\",");
+				sb.append("\"readLength\":"+record.getReadLength()+",");
+				sb.append("\"mappingQuality\":"+record.getMappingQuality()+",");
+				
+				sb.append("\"mateReferenceName\":\""+record.getMateReferenceName()+"\",");
+				sb.append("\"mateAlignmentStart\":"+record.getMateAlignmentStart()+",");
+				sb.append("\"inferredInsertSize\":"+record.getInferredInsertSize()+",");
+	
+				if(!empty.isEmpty()){
+					sb.append("\"diff\":\""+diffStr+"\",");
+				}
+				
+				sb.append("\"read\":\""+readStr+"\"");
+				sb.append("},");
+				
+				
 			
-			
-//			
-			
-			
-//			//TODO cigar check for correct coverage calculation
-			int refgenomeOffset = 0;
-			int readOffset = 0;
-			int offset = record.getAlignmentStart()-start;
-			for(int i=0; i < record.getCigar().getCigarElements().size(); i++) {
-//				System.out.println(record.getCigar().getCigarElement(i).getLength());
-				if(record.getCigar().getCigarElement(i).getOperator() == CigarOperator.M) {
-					for(int j=record.getAlignmentStart()-start+refgenomeOffset, cont=0; cont<record.getCigar().getCigarElement(i).getLength(); j++,cont++) {
-						if(j>=0 && j<coverageArray.length) {
-							coverageArray[j]++;
-							readPos = j-offset;
-//							if(record.getAlignmentStart() == 32877696){
-//								System.out.println(i-(record.getAlignmentStart()-start));
-//								System.out.println(record.getAlignmentStart()-start);
-//							}
-//							System.out.print(" - "+(cont+readOffset));
-//							System.out.print("|"+readStr.length());
-							int total = cont+readOffset;
-//							if(total < readStr.length()){
-								switch(readStr.charAt(total)){
-								case  'A': aBaseArray[j]++; break;
-								case  'C': cBaseArray[j]++; break;
-								case  'G': gBaseArray[j]++; break;
-								case  'T': tBaseArray[j]++; break;
-								}
-//							}
+				
+				
+	//			//TODO cigar check for correct coverage calculation
+				int refgenomeOffset = 0;
+				int readOffset = 0;
+				int offset = record.getAlignmentStart()-start;
+				for(int i=0; i < record.getCigar().getCigarElements().size(); i++) {
+	//				System.out.println(record.getCigar().getCigarElement(i).getLength());
+					if(record.getCigar().getCigarElement(i).getOperator() == CigarOperator.M) {
+						for(int j=record.getAlignmentStart()-start+refgenomeOffset, cont=0; cont<record.getCigar().getCigarElement(i).getLength(); j++,cont++) {
+							if(j>=0 && j<coverageArray.length) {
+								coverageArray[j]++;
+								readPos = j-offset;
+	//							if(record.getAlignmentStart() == 32877696){
+	//								System.out.println(i-(record.getAlignmentStart()-start));
+	//								System.out.println(record.getAlignmentStart()-start);
+	//							}
+	//							System.out.print(" - "+(cont+readOffset));
+	//							System.out.print("|"+readStr.length());
+								int total = cont+readOffset;
+	//							if(total < readStr.length()){
+									switch(readStr.charAt(total)){
+									case  'A': aBaseArray[j]++; break;
+									case  'C': cBaseArray[j]++; break;
+									case  'G': gBaseArray[j]++; break;
+									case  'T': tBaseArray[j]++; break;
+									}
+	//							}
+							}
 						}
 					}
+					if(record.getCigar().getCigarElement(i).getOperator() != CigarOperator.I) {
+						refgenomeOffset += record.getCigar().getCigarElement(i).getLength()-1;
+						readOffset += record.getCigar().getCigarElement(i).getLength()-1;
+					}else { 
+						refgenomeOffset++;
+						readOffset += record.getCigar().getCigarElement(i).getLength()-1;
+					}
 				}
-				if(record.getCigar().getCigarElement(i).getOperator() != CigarOperator.I) {
-					refgenomeOffset += record.getCigar().getCigarElement(i).getLength()-1;
-					readOffset += record.getCigar().getCigarElement(i).getLength()-1;
-				}else { 
-					refgenomeOffset++;
-					readOffset += record.getCigar().getCigarElement(i).getLength()-1;
-				}
+	//			System.out.println("-------------");
+				
+				
+	//			System.out.println("***\n"+(record.getAlignmentStart()-start));
+	//			System.out.println(record.getAlignmentEnd()-start);
+	//			System.out.println(record.getCigarString());
+	//			System.out.println(record.getReadLength());
+	//			System.out.println(record.getAlignmentEnd()-record.getAlignmentStart()+1);
+	//			System.out.println(readStr.length()+"\n*****");
+				
+	//			int offset = record.getAlignmentStart()-start;
+	//			for(int i=offset; i<=record.getAlignmentEnd()-start ;i++) {
+	//				if(i>=0 && i<coverageArray.length) {
+	//					coverageArray[i]++;
+	////						if(record.getAlignmentStart() == 32877696){
+	////							System.out.println(i-(record.getAlignmentStart()-start));
+	////////							System.out.println(record.getAlignmentStart()-start);
+	////////							System.out.println(record.getAlignmentStart());
+	//////							System.out.println(readStr.length());
+	////						}
+	//					readPos = i-offset;
+	//					if(readPos < readStr.length()){
+	//						switch(readStr.charAt(readPos)){
+	//						case  'A': aBaseArray[i]++; break;
+	//						case  'C': cBaseArray[i]++; break;
+	//						case  'G': gBaseArray[i]++; break;
+	//						case  'T': tBaseArray[i]++; break;
+	//						}
+	//					}
+	//				}
+	//			}
 			}
-//			System.out.println("-------------");
-			
-			
-//			System.out.println("***\n"+(record.getAlignmentStart()-start));
-//			System.out.println(record.getAlignmentEnd()-start);
-//			System.out.println(record.getCigarString());
-//			System.out.println(record.getReadLength());
-//			System.out.println(record.getAlignmentEnd()-record.getAlignmentStart()+1);
-//			System.out.println(readStr.length()+"\n*****");
-			
-//			int offset = record.getAlignmentStart()-start;
-//			for(int i=offset; i<=record.getAlignmentEnd()-start ;i++) {
-//				if(i>=0 && i<coverageArray.length) {
-//					coverageArray[i]++;
-////						if(record.getAlignmentStart() == 32877696){
-////							System.out.println(i-(record.getAlignmentStart()-start));
-////////							System.out.println(record.getAlignmentStart()-start);
-////////							System.out.println(record.getAlignmentStart());
-//////							System.out.println(readStr.length());
-////						}
-//					readPos = i-offset;
-//					if(readPos < readStr.length()){
-//						switch(readStr.charAt(readPos)){
-//						case  'A': aBaseArray[i]++; break;
-//						case  'C': cBaseArray[i]++; break;
-//						case  'G': gBaseArray[i]++; break;
-//						case  'T': tBaseArray[i]++; break;
-//						}
-//					}
-//				}
-//			}
 		}
 		//Remove last comma
 		if(sb.length()>1 && sb.charAt(sb.length()-1) == ','){
@@ -237,12 +326,45 @@ public class BamManager {
 //		IOUtils.write("/tmp/dqslastgetByRegionCall", json);
 		
 		inputSam.close();
+			
 		return json;
 	}
 	
+	private String getDiff(String refStr, String readStr) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i<refStr.length();i++){
+			if(refStr.charAt(i)!=readStr.charAt(i)){
+				sb.append(readStr.charAt(i));
+			}else{
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
+	}
 	
-	public String getFileList(){
-		File bamDir = new File(config.getProperty("FILES.PATH")+"/bam");
+	private String getSequence(final String chr, final int start, final int end) {
+		String urlString = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/region/"+chr+":"+(start-500)+"-"+(end+500)+"/sequence";
+		System.out.println(urlString);
+		StringBuilder sb = new StringBuilder();
+		try {
+			URL url = new URL(urlString);
+			InputStream is = url.openConnection().getInputStream();
+			BufferedReader reader = new BufferedReader( new InputStreamReader( is )  );
+			String line = reader.readLine(); //remove first line
+			while( ( line = reader.readLine() ) != null )  {
+				sb.append(line.trim());
+			}
+			reader.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		return sb.toString();
+	}
+
+	public String getFileList(final String filePath){
+		File bamDir = new File(filePath+"/bam");
 		try {
 			FileUtils.checkDirectory(bamDir);
 			
