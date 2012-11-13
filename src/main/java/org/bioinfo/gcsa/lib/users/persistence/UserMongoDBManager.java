@@ -20,65 +20,31 @@ public class UserMongoDBManager implements UserManager {
 	private IOManager ioManager = new IOManager();
 	private Mongo mongo;
 	private DB mongoDB;
+	private DBCollection userCollection;
 
 	public UserMongoDBManager() throws UserManagementException {
 		// TODO Hacer el pool de 10 conexiones a mongo
-		try {
-			mongo = new Mongo("127.0.0.1", 27017);
-		} catch (UnknownHostException e) {
-			throw new UserManagementException(
-					"ERROR: Not connected to mongoDB " + e.toString());
-		} catch (MongoException e) {
-			throw new UserManagementException(
-					"ERROR: Not connected to mongoDB " + e.toString());
-		}
+		connectToMongo();
 	}
 	
-	private void connectToMongo(){
-		
-	}
-
-	private DBCollection getCollection(String nameCollection) {
-		DBCollection userCollection = null;
-		
-		if (!mongoDB.collectionExists("users")) {
-			userCollection = mongoDB.createCollection("users", new BasicDBObject());
-		} else {
-			userCollection = mongoDB.getCollection("users");
-		}
-		
-		return userCollection;
-	}
-	
-	private boolean accountIdExist(String accountID)
-			throws UserManagementException {
-
-		return false;
-	}
-
-	
-	private void getDataBase(String nameDataBase){
-		
-	}
 	public void createUser(String accountId, String password,
 			String accountName, String email) throws UserManagementException {
 		
-		//creacion de carpetas correspondientes a la creacion de un nuevo usuario
-		ioManager.createAccountId(accountId);
-		
-		User user = new User(accountId, accountName, password, email);
-
-		DB db = mongo.getDB("usertest");
-		this.getDataBase("usertest");
-		this.getCollection("user");
-		
-		// userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)
-		// .toString()));
-		System.out.println(new Gson().toJson(user).toString());
-		System.out.println(">>>>>" + JSON.parse(new Gson().toJson(user)));
-		//userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)));
-		// //////////////////////////
-
+		if (!userExist(accountId)){
+			
+			//creacion de carpetas correspondientes a la creacion de un nuevo usuario
+			ioManager.createAccountId(accountId);
+			
+			User user = new User(accountId, accountName, password, email);
+	
+			getDataBase("usertest");
+			getCollection("user");
+			
+			//System.out.println(new Gson().toJson(user).toString());
+			//System.out.println(">>>>>" + JSON.parse(new Gson().toJson(user)));
+			userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)));
+			
+		}
 	}
 
 	public void createAnonymousUser(String accountId, String password,
@@ -121,9 +87,39 @@ public class UserMongoDBManager implements UserManager {
 
 	public void createProject(Project project, String accountId,
 			String sessionId) throws UserManagementException {
-		// TODO Auto-generated method stub
 
 	}
+	
+private void getCollection(String nameCollection) {
+		
+		if (!mongoDB.collectionExists("users")) {
+			userCollection = mongoDB.createCollection("users", new BasicDBObject());
+		} else {
+			userCollection = mongoDB.getCollection("users");
+		}
+	}
+	
+	private boolean userExist(String accountID)
+			throws UserManagementException {
 
+		return false;
+	}
+
+	
+	private void getDataBase(String nameDataBase){
+		mongoDB = mongo.getDB("usertest");
+	}
+	
+	private void connectToMongo() throws UserManagementException{
+		try {
+			mongo = new Mongo("127.0.0.1", 27017);
+		} catch (UnknownHostException e) {
+			throw new UserManagementException(
+					"ERROR: Not connected to mongoDB " + e.toString());
+		} catch (MongoException e) {
+			throw new UserManagementException(
+					"ERROR: Not connected to mongoDB " + e.toString());
+		}
+	}
 
 }

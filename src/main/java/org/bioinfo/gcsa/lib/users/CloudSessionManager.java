@@ -47,8 +47,4 @@ public class CloudSessionManager {
 		return null;
 	}
 
-//	public UserManager getUserManager() {
-//		return userManager;
-//	}
-
 }
