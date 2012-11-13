@@ -1,8 +1,6 @@
-
 *~
 target*
 .settings*
 .classpath
 *.class
 installation-dir/libs/*
-
