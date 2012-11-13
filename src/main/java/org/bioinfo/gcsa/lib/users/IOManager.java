@@ -6,37 +6,39 @@ import java.io.IOException;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
-
 public class IOManager {
 	private Runtime execute = Runtime.getRuntime();
 	private Process process;
 	private String pathGCSA = "/home/echirivella/TESTGCSA/";
 
-	public void createAccountId(String accountId) throws UserManagementException{
-		try {
-			FileUtils.checkFile(new File(pathGCSA + accountId));
-		} catch (IOException e2) {
-			throw new UserManagementException("ERROR: The project has not been created "  + e2.toString());
+	public void createAccountId(String accountId)
+			throws UserManagementException {
+		if (new File(pathGCSA).exists() && new File(pathGCSA).canWrite()
+				&& new File(pathGCSA).canRead()
+				&& new File(pathGCSA).canExecute()) {
+			try {
+				createAccountFolder(pathGCSA + accountId + "/jobs");
+			} catch (InterruptedException e1) {
+				throw new UserManagementException("The thread is interrupted "
+						+ e1.toString());
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+
+			try {
+				createAccountFolder(pathGCSA + accountId + "/plugins");
+			} catch (InterruptedException e1) {
+				throw new UserManagementException("The thread is interrupted "
+						+ e1.toString());
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+
+		} else {
+			throw new UserManagementException(
+					"ERROR: The project has not been created ");
 		}
 
-		try {
-			System.out.println("Puedo escribir? " + new File(pathGCSA).canWrite());
-			System.out.println("Puedo ejecutar? " + new File(pathGCSA).canExecute());
-			System.out.println("Puedo leer? " + new File(pathGCSA).canRead());
-			createAccountFolder(pathGCSA + accountId + "/jobs");
-		} catch (InterruptedException e1) {
-			throw new UserManagementException("The thread is interrupted " + e1.toString());
-		} catch (IOException e1) {
-			throw new UserManagementException("IOException" + e1.toString());
-		}
-
-		try {
-			createAccountFolder(pathGCSA + accountId + "/plugins");
-		} catch (InterruptedException e1) {
-			throw new UserManagementException("The thread is interrupted " + e1.toString());
-		} catch (IOException e1) {
-			throw new UserManagementException("IOException"  + e1.toString());
-		}
 	}
 
 	private void createAccountFolder(String path) throws InterruptedException,

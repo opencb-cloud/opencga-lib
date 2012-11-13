@@ -14,20 +14,19 @@ public class User {
 	private String diskQuota;
 	private String diskUsage;
 	private Session session;
-	private List<Session> oldSessions;
-	private List<Project> projects;
-	private List<Account> accounts;
-	private List<Plugin> plugins;
-	private List<Config> configs;
+	private List<Session> oldSessions = new ArrayList<Session>();
+	private List<Project> projects = new ArrayList<Project>();
+	private List<Account> accounts = new ArrayList<Account>();
+	private List<Plugin> plugins = new ArrayList<Plugin>();
+	private List<Config> configs = new ArrayList<Config>();
 
 	public User() {
 		session = new Session();
 		oldSessions = new ArrayList<Session>();
 		oldSessions.add(new Session());
 		oldSessions.add(new Session());
-		projects = new Vector<Project>();
 		projects.add(new Project());
-		accounts = new Vector<Account>();
+		accounts = new ArrayList<Account>();
 		accounts.add(new Account());
 		this.status = "";
 		this.password = "";
@@ -48,12 +47,8 @@ public class User {
 		this.mailingList = "";
 		this.diskQuota = "2000000";
 		this.diskUsage = "";
-		this.session = null;
-		this.oldSessions = null;
-		this.projects = projects;
-		this.accounts = null;
-		this.plugins = null;
-		this.configs = null;
+		this.session = new Session();
+		this.projects.add(new Project());
 	}
 
 	public User(String accountId, String accountName, String email,

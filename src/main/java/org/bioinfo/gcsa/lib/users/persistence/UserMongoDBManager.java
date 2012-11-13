@@ -7,72 +7,72 @@ import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.User;
 
+import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
 
 public class UserMongoDBManager implements UserManager {
 	private IOManager ioManager = new IOManager();
-	public UserMongoDBManager() {
+	private Mongo mongo;
+	private DB mongoDB;
 
+	public UserMongoDBManager() throws UserManagementException {
+		// TODO Hacer el pool de 10 conexiones a mongo
+		try {
+			mongo = new Mongo("127.0.0.1", 27017);
+		} catch (UnknownHostException e) {
+			throw new UserManagementException(
+					"ERROR: Not connected to mongoDB " + e.toString());
+		} catch (MongoException e) {
+			throw new UserManagementException(
+					"ERROR: Not connected to mongoDB " + e.toString());
+		}
 	}
 
-	public void createAccountId(String accountId, String password,
-			String accountName, String email) throws UserManagementException {
-		ioManager.createAccountId(accountId);
-		User user = new User(accountId, accountName, password, email);
+	private DBCollection getCollection(String nameCollection) {
+		DBCollection userCollection = null;
 		
-		
-		////////////////////////////
-		
-		
-		Mongo m;
-		StringBuilder strbuild = new StringBuilder();
-		String[] info = infoChrom.split("[:-]");
-		try {
-
-			m = new Mongo("127.0.0.1", 27017);
-			
-			DB db = m.getDB("cellbase");
-			DBCollection docs = db.getCollection("features");
-			// La consulta a crear es
-			// db.features.find({seqname:"chr1",start:{$lt:9999},end:{$gt:0}})
-			
-			
-			BasicDBObject query = new BasicDBObject();
-			query.put("seqname", info[0]);
-			query.put("start", new BasicDBObject("$lt", Integer.parseInt(info[2])));
-			query.put("end", new BasicDBObject("$gt", Integer.parseInt(info[1])));
-			
-			
-			System.out.println(query.toString());
-			
-			DBCursor iterador = docs.find(query);
-			System.out.println(iterador.count());
-			
-			 while (iterador.hasNext()) {
-				 strbuild.append(iterador.next().toString()).append("\n");
-			 }
-
-			 System.out.println(iterador.count());
-			 
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (MongoException e) {
-			e.printStackTrace();
+		if (!mongoDB.collectionExists("users")) {
+			userCollection = mongoDB.createCollection("users", new BasicDBObject());
+		} else {
+			userCollection = mongoDB.getCollection("users");
 		}
-		return strbuild.toString();
+		
+		return userCollection;
+	}
+	
+	private boolean accountIdExist(String accountID)
+			throws UserManagementException {
+
+		return false;
+	}
 
 	
+	private void getDataBase(String nameDataBase){
 		
+	}
+	public void createAccountId(String accountId, String password,
+			String accountName, String email) throws UserManagementException {
+
+		ioManager.createAccountId(accountId);
+		User user = new User(accountId, accountName, password, email);
+
+		DB db = mongo.getDB("usertest");
+		this.getDataBase("usertest");
+		this.getCollection("user");
 		
-		////////////////////////////
-		
-		
-		
+		// userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)
+		// .toString()));
+		System.out.println(new Gson().toJson(user).toString());
+		System.out.println(">>>>>" + JSON.parse(new Gson().toJson(user)));
+		//userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)));
+		// //////////////////////////
+
 	}
 
 	public void createAnonymousUser(String accountId, String password,
@@ -113,16 +113,16 @@ public class UserMongoDBManager implements UserManager {
 		return null;
 	}
 
-	public void createProject(Project project,
-			String accountId, String sessionId) throws UserManagementException {
+	public void createProject(Project project, String accountId,
+			String sessionId) throws UserManagementException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void createUser(String accountId, String password,
 			String accountName, String email) throws UserManagementException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
