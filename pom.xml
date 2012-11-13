@@ -126,6 +126,7 @@
 									<arg value="${installation.dir}/conf" />
 									<arg value="${installation.dir}/example" />
 									<arg value="${installation.dir}/libs" />
+									<arg value="${installation.dir}/gcsa.sh" />
 									<arg value="${dest.installation.dir}" />
 								</exec>
 							</target>
