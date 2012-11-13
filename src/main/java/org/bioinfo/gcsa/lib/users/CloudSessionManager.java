@@ -12,7 +12,7 @@ import org.bioinfo.gcsa.lib.users.persistence.UserMongoDBManager;
 
 public class CloudSessionManager {
 
-	static UserManager userManager;
+	public static UserManager userManager;
 
 	private Properties properties;
 
