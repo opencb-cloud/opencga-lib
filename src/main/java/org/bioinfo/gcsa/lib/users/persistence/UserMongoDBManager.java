@@ -60,7 +60,7 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	public String login(String accountId, String password) {
-		return this.loginOk(accountId, password) ? StringUtils.randomString(64): "ERROR: User or pass incorrect";
+		return (this.loginOk(accountId, password)) ? StringUtils.randomString(64): "ERROR: User or pass incorrect";
 	}
 	
 	private boolean loginOk(String accountId, String password){
@@ -68,11 +68,16 @@ public class UserMongoDBManager implements UserManager {
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
 		query.put("password", password);
-		
+
+		System.out.println(query.toString());
+
 		DBCursor iterator = userCollection.find(query);
+		
+		while(iterator.hasNext())
+			System.out.println(iterator.next().toString());
 		System.out.println(iterator.count());
 		
-		if (iterator.count() < 1)
+		if (iterator.count() == 1)
 			correctLogin = true;
 		
 		return correctLogin;
