@@ -3,6 +3,7 @@ package org.bioinfo.gcsa.lib.users.persistence;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.User;
@@ -11,6 +12,7 @@ import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
@@ -26,24 +28,28 @@ public class UserMongoDBManager implements UserManager {
 		// TODO Hacer el pool de 10 conexiones a mongo
 		connectToMongo();
 	}
-	
+
 	public void createUser(String accountId, String password,
 			String accountName, String email) throws UserManagementException {
-		
-		if (!userExist(accountId)){
-			
-			//creacion de carpetas correspondientes a la creacion de un nuevo usuario
+
+		if (!userExist(accountId)) {
+
+			// creacion de carpetas correspondientes a la creacion de un nuevo
+			// usuario
 			ioManager.createAccountId(accountId);
-			
+
 			User user = new User(accountId, accountName, password, email);
-	
-			getDataBase("usertest");
-			getCollection("user");
-			
-			//System.out.println(new Gson().toJson(user).toString());
-			//System.out.println(">>>>>" + JSON.parse(new Gson().toJson(user)));
-			userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)));
-			
+
+			getDataBase(CloudSessionManager.properties
+					.getProperty("GCSA.MONGO.DB"));
+			getCollection(CloudSessionManager.properties
+					.getProperty("GCSA.MONGO.COLLECTION"));
+
+			userCollection
+					.insert((DBObject) JSON.parse(new Gson().toJson(user)));
+		}
+		else{
+			throw new UserManagementException("ERROR: User has been created");
 		}
 	}
 
@@ -89,30 +95,40 @@ public class UserMongoDBManager implements UserManager {
 			String sessionId) throws UserManagementException {
 
 	}
-	
-private void getCollection(String nameCollection) {
-		
-		if (!mongoDB.collectionExists("users")) {
-			userCollection = mongoDB.createCollection("users", new BasicDBObject());
+
+	private void getCollection(String nameCollection) {
+
+		if (!mongoDB.collectionExists(nameCollection)) {
+			userCollection = mongoDB.createCollection(nameCollection,
+					new BasicDBObject());
 		} else {
-			userCollection = mongoDB.getCollection("users");
+			userCollection = mongoDB.getCollection(nameCollection);
 		}
 	}
-	
-	private boolean userExist(String accountID)
-			throws UserManagementException {
 
-		return false;
+	private boolean userExist(String accountID) throws UserManagementException {
+		boolean userExist = true;
+
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountID);
+		DBCursor iterator = userCollection.find(query);
+
+		if (iterator.count() > 0)
+			userExist = false;
+
+		return userExist;
 	}
 
-	
-	private void getDataBase(String nameDataBase){
-		mongoDB = mongo.getDB("usertest");
+	private void getDataBase(String nameDataBase) {
+		mongoDB = mongo.getDB(nameDataBase);
 	}
-	
-	private void connectToMongo() throws UserManagementException{
+
+	private void connectToMongo() throws UserManagementException {
 		try {
-			mongo = new Mongo("127.0.0.1", 27017);
+			mongo = new Mongo(
+					CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
+					Integer.parseInt(CloudSessionManager.properties
+							.getProperty("GCSA.MONGO.PORT")));
 		} catch (UnknownHostException e) {
 			throw new UserManagementException(
 					"ERROR: Not connected to mongoDB " + e.toString());
