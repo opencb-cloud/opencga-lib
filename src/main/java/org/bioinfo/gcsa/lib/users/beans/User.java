@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+
 public class User {
 	private String accountId;
 	private String accountName;
@@ -38,7 +39,7 @@ public class User {
 		this.diskUsage = "";
 	}
 
-	public User(String accountId, String accountName, String password, String email) {
+	public User(String accountId, String accountName, String password, String email,Session session) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
@@ -47,7 +48,7 @@ public class User {
 		this.mailingList = "";
 		this.diskQuota = "2000000";
 		this.diskUsage = "";
-		this.session = new Session();
+		this.session = session;
 		this.projects.add(new Project());
 	}
 

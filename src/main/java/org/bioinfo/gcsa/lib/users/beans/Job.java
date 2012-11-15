@@ -1,5 +1,7 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
+import org.bioinfo.gcsa.lib.GcsaUtils;
+
 public class Job {
 	private String proyectId;
 	private String status;
@@ -28,15 +30,14 @@ public class Job {
 		this.commandLine = "";
 		this.visites = "";
 		this.diskUsage = "";
-		this.creationTime = "";
+		this.creationTime = GcsaUtils.getTime();
 	}
 
 
 
 	public Job(String id, String percetage, String message, String dateTime,
 			String finishTime, String toolName, String name,
-			String commandLine, String visites, String diskUsage,
-			String creationTime, String description) {
+			String commandLine, String visites, String diskUsage, String description) {
 		this.proyectId = id;
 		this.percetage = percetage;
 		this.message = message;
@@ -47,7 +48,7 @@ public class Job {
 		this.commandLine = commandLine;
 		this.visites = visites;
 		this.diskUsage = diskUsage;
-		this.creationTime = creationTime;
+		this.creationTime = GcsaUtils.getTime();
 		this.description = description;
 	}
 
