@@ -1,12 +1,13 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
+
 public class Session {
 	private String id;
 	private String ip;
 	private String login;
 	private String logout;
-	
-	public Session(){
+
+	public Session() {
 		this.id = "";
 		this.ip = "";
 		this.login = "";
@@ -14,7 +15,6 @@ public class Session {
 	}
 
 	public Session(String id, String ip, String login, String logout) {
-		super();
 		this.id = id;
 		this.ip = ip;
 		this.login = login;
@@ -52,6 +52,5 @@ public class Session {
 	public void setLogout(String logout) {
 		this.logout = logout;
 	}
-	
-	
+
 }
