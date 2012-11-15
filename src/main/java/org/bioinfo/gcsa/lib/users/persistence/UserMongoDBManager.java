@@ -27,6 +27,10 @@ public class UserMongoDBManager implements UserManager {
 	public UserMongoDBManager() throws UserManagementException {
 		// TODO Hacer el pool de 10 conexiones a mongo
 		connectToMongo();
+		getDataBase(CloudSessionManager.properties
+				.getProperty("GCSA.MONGO.DB"));
+		getCollection(CloudSessionManager.properties
+				.getProperty("GCSA.MONGO.COLLECTION"));
 	}
 
 	public void createUser(String accountId, String password,
@@ -40,16 +44,10 @@ public class UserMongoDBManager implements UserManager {
 
 			User user = new User(accountId, accountName, password, email);
 
-			getDataBase(CloudSessionManager.properties
-					.getProperty("GCSA.MONGO.DB"));
-			getCollection(CloudSessionManager.properties
-					.getProperty("GCSA.MONGO.COLLECTION"));
-
-			userCollection
-					.insert((DBObject) JSON.parse(new Gson().toJson(user)));
+			userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)));
 		}
 		else{
-			throw new UserManagementException("ERROR: User has been created");
+			throw new UserManagementException("ERROR: User had already been created");
 		}
 	}
 
@@ -113,7 +111,7 @@ public class UserMongoDBManager implements UserManager {
 		query.put("accountId", accountID);
 		DBCursor iterator = userCollection.find(query);
 
-		if (iterator.count() > 0)
+		if (iterator.count() < 1)
 			userExist = false;
 
 		return userExist;
@@ -125,10 +123,11 @@ public class UserMongoDBManager implements UserManager {
 
 	private void connectToMongo() throws UserManagementException {
 		try {
-			mongo = new Mongo(
-					CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
-					Integer.parseInt(CloudSessionManager.properties
-							.getProperty("GCSA.MONGO.PORT")));
+//			mongo = new Mongo(
+//					CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
+//					Integer.parseInt(CloudSessionManager.properties
+//							.getProperty("GCSA.MONGO.PORT")));
+			mongo = new Mongo("127.0.0.1",27017);
 		} catch (UnknownHostException e) {
 			throw new UserManagementException(
 					"ERROR: Not connected to mongoDB " + e.toString());
