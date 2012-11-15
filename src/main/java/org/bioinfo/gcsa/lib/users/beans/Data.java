@@ -2,6 +2,8 @@ package org.bioinfo.gcsa.lib.users.beans;
 import java.util.List;
 import java.util.Vector;
 
+import org.bioinfo.gcsa.lib.GcsaUtils;
+
 
 public class Data {
 	private String id;
@@ -24,7 +26,7 @@ public class Data {
 		this.fileName = "";
 		this.multiple = "";
 		this.diskUsage = "";
-		this.creationTime = "";
+		this.creationTime = GcsaUtils.getTime();
 		this.responsible = "";
 		this.organization = "";
 		this.date = "";
@@ -33,8 +35,7 @@ public class Data {
 		this.statusMessage = "";
 	}
 
-	public Data(String id, String fileName, String multiple, String diskUsage,
-			String creationTime, String responsible, String organization,
+	public Data(String id, String fileName, String multiple, String diskUsage, String responsible, String organization,
 			String date, String description, String status,
 			String statusMessage, List<Acl> members) {
 		super();
@@ -42,7 +43,7 @@ public class Data {
 		this.fileName = fileName;
 		this.multiple = multiple;
 		this.diskUsage = diskUsage;
-		this.creationTime = creationTime;
+		this.creationTime = GcsaUtils.getTime();
 		this.responsible = responsible;
 		this.organization = organization;
 		this.date = date;

@@ -1,5 +1,11 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import org.bioinfo.gcsa.lib.GcsaUtils;
+
 
 public class Session {
 	private String id;
@@ -10,14 +16,22 @@ public class Session {
 	public Session() {
 		this.id = "";
 		this.ip = "";
-		this.login = "";
+		this.login = GcsaUtils.getTime();
 		this.logout = "";
 	}
+	
+	public Session(String ip){
 
-	public Session(String id, String ip, String login, String logout) {
+		this.id = "";
+		this.ip = ip;
+		this.login = GcsaUtils.getTime();
+		this.logout = "";
+	}
+	
+	public Session(String id, String ip, String logout) {
 		this.id = id;
 		this.ip = ip;
-		this.login = login;
+		this.login = GcsaUtils.getTime();
 		this.logout = logout;
 	}
 
@@ -52,5 +66,5 @@ public class Session {
 	public void setLogout(String logout) {
 		this.logout = logout;
 	}
-
+	
 }

@@ -1,6 +1,11 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+
+import org.bioinfo.gcsa.lib.GcsaUtils;
 
 
 public class Project {
@@ -17,26 +22,25 @@ public class Project {
 	private List<Data> data;
 	
 	public Project(){
+
 		this.status ="1";
 		this.id = "";//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
 		this.name = "Default";
 		this.diskUsage = "";
-		this.creationDate = "20121006210000";
+		this.creationDate = GcsaUtils.getTime();
 		this.type = "";
 		this.descripcion = "Default Project";
 	}
 
-	public Project(String id, String name, String status, String diskUsage,
-			String creationDate, String ownerId, String type,
-			String descripcion, List<Acl> acl, List<Job> jobs,
+	public Project(String id, String name, String status, String diskUsage
+			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs,
 			List<Data> data) {
-		super();
 		this.id = id;
 		this.name = name;
 		this.status = status;
 		this.diskUsage = diskUsage;
-		this.creationDate = creationDate;
+		this.creationDate = GcsaUtils.getTime();
 		this.ownerId = ownerId;
 		this.type = type;
 		this.descripcion = descripcion;

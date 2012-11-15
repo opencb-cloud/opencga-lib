@@ -3,9 +3,12 @@ package org.bioinfo.gcsa.lib.users.persistence;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import org.bioinfo.commons.utils.StringUtils;
+import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Project;
+import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.beans.User;
 
 import com.google.gson.Gson;
@@ -34,7 +37,7 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	public void createUser(String accountId, String password,
-			String accountName, String email) throws UserManagementException {
+			String accountName, String email,Session session) throws UserManagementException {
 
 		if (!userExist(accountId)) {
 
@@ -42,7 +45,7 @@ public class UserMongoDBManager implements UserManager {
 			// usuario
 			ioManager.createAccountId(accountId);
 
-			User user = new User(accountId, accountName, password, email);
+			User user = new User(accountId, accountName, password, email,session);
 
 			userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)));
 		}
@@ -57,7 +60,22 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	public String login(String accountId, String password) {
-		return null;
+		return this.loginOk(accountId, password) ? StringUtils.randomString(64): "ERROR: User or pass incorrect";
+	}
+	
+	private boolean loginOk(String accountId, String password){
+		boolean correctLogin = false;
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("password", password);
+		
+		DBCursor iterator = userCollection.find(query);
+		System.out.println(iterator.count());
+		
+		if (iterator.count() < 1)
+			correctLogin = true;
+		
+		return correctLogin;
 	}
 
 	public String getUserByAccountId(String accountId, String sessionId) {
@@ -127,6 +145,7 @@ public class UserMongoDBManager implements UserManager {
 //					CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
 //					Integer.parseInt(CloudSessionManager.properties
 //							.getProperty("GCSA.MONGO.PORT")));
+			//TODO ESTO HAY QUE ARREGLARLO
 			mongo = new Mongo("127.0.0.1",27017);
 		} catch (UnknownHostException e) {
 			throw new UserManagementException(
