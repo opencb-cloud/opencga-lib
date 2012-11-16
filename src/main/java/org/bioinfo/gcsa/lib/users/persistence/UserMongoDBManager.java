@@ -1,10 +1,14 @@
 package org.bioinfo.gcsa.lib.users.persistence;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import org.bioinfo.commons.utils.StringUtils;
-import org.bioinfo.gcsa.lib.GcsaUtils;
+import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Project;
@@ -26,32 +30,54 @@ public class UserMongoDBManager implements UserManager {
 	private Mongo mongo;
 	private DB mongoDB;
 	private DBCollection userCollection;
+	private String GCSA_MONGO_DB = CloudSessionManager.properties
+			.getProperty("GCSA.MONGO.DB");
+	private String GCSA_MONGO_COLLECTION = CloudSessionManager.properties
+			.getProperty("GCSA.MONGO.COLLECTION");
+	private String GCSA_ENV = System.getenv(CloudSessionManager.properties
+			.getProperty("GCSA.ENV.PATH"));
 
 	public UserMongoDBManager() throws UserManagementException {
-		// TODO Hacer el pool de 10 conexiones a mongo
 		connectToMongo();
-		getDataBase(CloudSessionManager.properties
-				.getProperty("GCSA.MONGO.DB"));
-		getCollection(CloudSessionManager.properties
-				.getProperty("GCSA.MONGO.COLLECTION"));
+		getDataBase(GCSA_MONGO_DB);
+		getCollection(GCSA_MONGO_COLLECTION);
 	}
 
 	public void createUser(String accountId, String password,
-			String accountName, String email,Session session) throws UserManagementException {
+			String accountName, String email, Session session)
+			throws UserManagementException {
+		User userLoad = null;
 
-		if (!userExist(accountId)) {
+		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
+			System.out.println("NO EXISTE USUARIO");
+			
+			if (new File(GCSA_ENV + "/"+accountId).exists()
+					&& new File(GCSA_ENV +"/"+ accountId +"/"+ "user.conf").exists()) {
+				// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
+				// CONFIGURACION
+				System.out.println("EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE CONFIGURACION");
+				try {
+					BufferedReader br = new BufferedReader(new FileReader(
+							GCSA_ENV +"/"+ accountId +"/"+ "user.conf"));
+					System.out.println("Estamos cargando el fichero");
+					userLoad = new Gson().fromJson(br, User.class);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
 
-			// creacion de carpetas correspondientes a la creacion de un nuevo
-			// usuario
-			ioManager.createAccountId(accountId);
+			}
 
-			User user = new User(accountId, accountName, password, email,session);
+			ioManager.createScaffoldAccountId(accountId);
+			if (userLoad == null) {
+				userLoad = new User(accountId, accountName, password, email,session);
+			}
 
-			userCollection.insert((DBObject) JSON.parse(new Gson().toJson(user)));
+			userCollection.insert((DBObject) JSON.parse(new Gson().toJson(userLoad)));
+
+		} else {// SI EXISTE USUARIO
+
 		}
-		else{
-			throw new UserManagementException("ERROR: User had already been created");
-		}
+
 	}
 
 	public void createAnonymousUser(String accountId, String password,
@@ -60,11 +86,8 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	public String login(String accountId, String password) {
-		return (this.loginOk(accountId, password)) ? StringUtils.randomString(64): "ERROR: User or pass incorrect";
-	}
-	
-	private boolean loginOk(String accountId, String password){
 		boolean correctLogin = false;
+		String randomString = "";
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
 		query.put("password", password);
@@ -72,15 +95,41 @@ public class UserMongoDBManager implements UserManager {
 		System.out.println(query.toString());
 
 		DBCursor iterator = userCollection.find(query);
-		
-		while(iterator.hasNext())
+
+		// Comentar
+		while (iterator.hasNext()) {
 			System.out.println(iterator.next().toString());
+		}
 		System.out.println(iterator.count());
-		
-		if (iterator.count() == 1)
+		// FinComentar
+
+		if (iterator.count() == 1) {
 			correctLogin = true;
-		
-		return correctLogin;
+			// Tienes que añadir para que modifique el valor sobre el ID del
+			// usuario.
+		}
+
+		return randomString;
+	}
+
+	public String testPipe(String accountId, String password) {
+		StringBuilder strB = new StringBuilder();
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("password", password);
+
+		DBCursor iterator = userCollection.find(query);
+
+		User user;
+		DBObject dbo;
+		while (iterator.hasNext()) {
+			dbo = iterator.next();
+			strB = strB.append(dbo.toString());
+			System.out.println("dbo.toString(): " + dbo.toString());
+			// new Gson().fromJson(dbo.toString(), User.class);
+		}
+
+		return "";
 	}
 
 	public String getUserByAccountId(String accountId, String sessionId) {
@@ -124,6 +173,7 @@ public class UserMongoDBManager implements UserManager {
 					new BasicDBObject());
 		} else {
 			userCollection = mongoDB.getCollection(nameCollection);
+			System.out.println(userCollection.toString());
 		}
 	}
 
@@ -146,12 +196,12 @@ public class UserMongoDBManager implements UserManager {
 
 	private void connectToMongo() throws UserManagementException {
 		try {
-//			mongo = new Mongo(
-//					CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
-//					Integer.parseInt(CloudSessionManager.properties
-//							.getProperty("GCSA.MONGO.PORT")));
-			//TODO ESTO HAY QUE ARREGLARLO
-			mongo = new Mongo("127.0.0.1",27017);
+			// mongo = new Mongo(
+			// CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
+			// Integer.parseInt(CloudSessionManager.properties
+			// .getProperty("GCSA.MONGO.PORT")));
+			// TODO ESTO HAY QUE ARREGLARLO
+			mongo = new Mongo("127.0.0.1", 27017);
 		} catch (UnknownHostException e) {
 			throw new UserManagementException(
 					"ERROR: Not connected to mongoDB " + e.toString());

@@ -57,4 +57,10 @@ public class UserFileManager implements UserManager {
 		
 	}
 
+	@Override
+	public String testPipe(String accountId, String password) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

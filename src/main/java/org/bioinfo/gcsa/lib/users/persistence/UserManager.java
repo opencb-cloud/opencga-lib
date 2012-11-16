@@ -16,6 +16,8 @@ public interface UserManager {
 	
 	public String login(String accountId, String password);
 	
+	public String testPipe(String accountId, String password); //Pruebas, hay que borrarlo
+	
 	public String getUserByAccountId(String accountId, String sessionId);
 	
 	public String getUserByEmail(String email, String sessionId);

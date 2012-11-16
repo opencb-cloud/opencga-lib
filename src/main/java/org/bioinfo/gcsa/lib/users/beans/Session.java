@@ -1,8 +1,6 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Map;
 
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
@@ -12,6 +10,7 @@ public class Session {
 	private String ip;
 	private String login;
 	private String logout;
+	private Map<String, String> attributes;
 
 	public Session() {
 		this.id = "";

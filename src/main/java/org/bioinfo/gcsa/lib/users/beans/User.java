@@ -2,8 +2,6 @@ package org.bioinfo.gcsa.lib.users.beans;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-
 
 public class User {
 	private String accountId;
@@ -14,7 +12,7 @@ public class User {
 	private String mailingList;
 	private String diskQuota;
 	private String diskUsage;
-	private Session session;
+	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
 	private List<Project> projects = new ArrayList<Project>();
 	private List<Account> accounts = new ArrayList<Account>();
@@ -22,7 +20,6 @@ public class User {
 	private List<Config> configs = new ArrayList<Config>();
 
 	public User() {
-		session = new Session();
 		oldSessions = new ArrayList<Session>();
 		oldSessions.add(new Session());
 		oldSessions.add(new Session());
@@ -48,7 +45,7 @@ public class User {
 		this.mailingList = "";
 		this.diskQuota = "2000000";
 		this.diskUsage = "";
-		this.session = session;
+		this.sessions = sessions;
 		this.projects.add(new Project());
 	}
 
@@ -65,7 +62,7 @@ public class User {
 		this.mailingList = mailingList;
 		this.diskQuota = diskQuota;
 		this.diskUsage = diskUsage;
-		this.session = session;
+		this.sessions = sessions;
 		this.oldSessions = oldSessions;
 		this.projects = projects;
 		this.accounts = accounts;
@@ -137,12 +134,12 @@ public class User {
 		this.diskUsage = diskUsage;
 	}
 
-	public Session getSession() {
-		return session;
+	public List<Session> getSessions() {
+		return sessions;
 	}
 
-	public void setSession(Session session) {
-		this.session = session;
+	public void setSessions(List<Session> sessions) {
+		this.sessions = sessions;
 	}
 
 	public List<Session> getOldSessions() {
