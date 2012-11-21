@@ -1,11 +1,23 @@
 package org.bioinfo.gcsa.lib.analysis.beans;
 
+import java.util.List;
+
 public class Example {
-	private String executionId, file;
+	private String name, executionId;
+	private List<ExampleOption> options;
 	
-	public Example(String executionId, String file) {
+	public Example(String name, String executionId, List<ExampleOption> options) {
+		this.name = name;
 		this.executionId = executionId;
-		this.file = file;
+		this.options = options;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getExecutionId() {
@@ -16,11 +28,11 @@ public class Example {
 		this.executionId = executionId;
 	}
 
-	public String getFile() {
-		return file;
+	public List<ExampleOption> geOptions() {
+		return options;
 	}
 
-	public void setFile(String file) {
-		this.file = file;
+	public void setOptions(List<ExampleOption> options) {
+		this.options = options;
 	}
 }

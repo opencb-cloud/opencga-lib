@@ -3,16 +3,16 @@ package org.bioinfo.gcsa.lib.analysis.beans;
 import java.util.List;
 
 public class Analysis {
-	
 	private Author author;
-	private String version, name, description, icon;
+	private String version, id, name, description, icon;
 	private List<Execution> executions;
 	private List<Example> examples;
 	private List<Acl> acl;
 	
-	public Analysis(Author author, String version, String name, String description, String icon, List<Execution> executions, List<Example> examples, List<Acl> acl) {
+	public Analysis(Author author, String version, String id, String name, String description, String icon, List<Execution> executions, List<Example> examples, List<Acl> acl) {
 		this.author = author;
 		this.version = version;
+		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.icon = icon;
@@ -35,6 +35,14 @@ public class Analysis {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+	
+	public String getId() {
+		return id;
+	}
+	
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getName() {
