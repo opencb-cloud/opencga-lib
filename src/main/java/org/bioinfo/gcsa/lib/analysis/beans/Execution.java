@@ -3,21 +3,25 @@ package org.bioinfo.gcsa.lib.analysis.beans;
 import java.util.List;
 
 public class Execution {
-	private String id, name, executable, outParam;
+	private String id, name, executable, outParam, testCmd;
 	private List<String> inputParam;
-	private List<Option> options;
+	private List<Option> validParams;
 	private List<String> dataType;
 	private List<ConfigAttr> configAttr;
 	
 	public Execution(String id, String name, String executable,
-			List<Option> options, List<String> dataType,
-			List<ConfigAttr> configAttr) {
+			List<String> inputParam, String outParam,
+			List<Option> validParams, List<String> dataType,
+			List<ConfigAttr> configAttr, String testCmd) {
 		this.id = id;
 		this.name = name;
 		this.executable = executable;
-		this.options = options;
+		this.inputParam = inputParam;
+		this.outParam = outParam;
+		this.validParams = validParams;
 		this.dataType = dataType;
 		this.configAttr = configAttr;
+		this.testCmd = testCmd;
 	}
 
 	public String getId() {
@@ -60,12 +64,12 @@ public class Execution {
 		this.inputParam = inputParam;
 	}
 
-	public List<Option> getOptions() {
-		return options;
+	public List<Option> getValidParams() {
+		return validParams;
 	}
 
-	public void setOptions(List<Option> options) {
-		this.options = options;
+	public void setValidParams(List<Option> validParams) {
+		this.validParams = validParams;
 	}
 
 	public List<String> getDataType() {
@@ -82,5 +86,13 @@ public class Execution {
 
 	public void setConfigAttr(List<ConfigAttr> configAttr) {
 		this.configAttr = configAttr;
+	}
+	
+	public String getTestCmd() {
+		return testCmd;
+	}
+	
+	public void setTestCmd(String testCmd) {
+		this.testCmd = testCmd;
 	}
 }

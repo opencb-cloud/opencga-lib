@@ -1,11 +1,12 @@
 package org.bioinfo.gcsa.lib.analysis.beans;
 
 public class Option {
-	private String name;
+	private String name, description;
 	private boolean required;
 	
-	public Option(String name, boolean required) {
+	public Option(String name, String description, boolean required) {
 		this.name = name;
+		this.description = description;
 		this.required = required;
 	}
 
@@ -23,5 +24,13 @@ public class Option {
 
 	public void setRequired(boolean required) {
 		this.required = required;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }
