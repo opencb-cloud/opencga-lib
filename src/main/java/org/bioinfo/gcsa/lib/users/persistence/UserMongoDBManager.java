@@ -117,7 +117,7 @@ public class UserMongoDBManager implements UserManager {
 			id = session.getId();
 			List<Session> sess = user.getSessions();
 
-			BasicDBObject filter = new BasicDBObject("accountId", "imedina");
+			BasicDBObject filter = new BasicDBObject("accountId", accountId);
 			updateMongo(filter, "sessions", sess);
 
 			// mover a oldSessions todas las sesiones con mas de 24 horas.
