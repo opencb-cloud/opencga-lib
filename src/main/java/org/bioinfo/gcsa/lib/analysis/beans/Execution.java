@@ -3,23 +3,20 @@ package org.bioinfo.gcsa.lib.analysis.beans;
 import java.util.List;
 
 public class Execution {
-	private String id, name, executable, outParam, testCmd;
-	private List<String> inputParam;
+	private String id, name, executable, outputParam, testCmd;
+	private List<InputParam> inputParams;
 	private List<Option> validParams;
-	private List<String> dataType;
 	private List<ConfigAttr> configAttr;
 	
 	public Execution(String id, String name, String executable,
-			List<String> inputParam, String outParam,
-			List<Option> validParams, List<String> dataType,
-			List<ConfigAttr> configAttr, String testCmd) {
+			List<InputParam> inputParams, String outputParam,
+			List<Option> validParams, List<ConfigAttr> configAttr, String testCmd) {
 		this.id = id;
 		this.name = name;
 		this.executable = executable;
-		this.inputParam = inputParam;
-		this.outParam = outParam;
+		this.inputParams = inputParams;
+		this.outputParam = outputParam;
 		this.validParams = validParams;
-		this.dataType = dataType;
 		this.configAttr = configAttr;
 		this.testCmd = testCmd;
 	}
@@ -48,20 +45,20 @@ public class Execution {
 		this.executable = executable;
 	}
 
-	public String getOutParam() {
-		return outParam;
+	public String getOutputParam() {
+		return outputParam;
 	}
 
-	public void setOutParam(String outParam) {
-		this.outParam = outParam;
+	public void setOutputParam(String outputParam) {
+		this.outputParam = outputParam;
 	}
 
-	public List<String> getInputParam() {
-		return inputParam;
+	public List<InputParam> getInputParams() {
+		return inputParams;
 	}
 
-	public void setInputParam(List<String> inputParam) {
-		this.inputParam = inputParam;
+	public void setInputParams(List<InputParam> inputParams) {
+		this.inputParams = inputParams;
 	}
 
 	public List<Option> getValidParams() {
@@ -70,14 +67,6 @@ public class Execution {
 
 	public void setValidParams(List<Option> validParams) {
 		this.validParams = validParams;
-	}
-
-	public List<String> getDataType() {
-		return dataType;
-	}
-
-	public void setDataType(List<String> dataType) {
-		this.dataType = dataType;
 	}
 
 	public List<ConfigAttr> getConfigAttr() {

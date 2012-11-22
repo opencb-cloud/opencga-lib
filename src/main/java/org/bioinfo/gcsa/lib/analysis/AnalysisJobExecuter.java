@@ -17,8 +17,10 @@ import org.bioinfo.commons.exec.Command;
 import org.bioinfo.commons.exec.SingleProcess;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.log.Logger;
+import org.bioinfo.gcsa.lib.analysis.SgeManager;
 import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
+import org.bioinfo.gcsa.lib.analysis.beans.InputParam;
 import org.bioinfo.gcsa.lib.analysis.beans.Option;
 
 import com.google.gson.Gson;
@@ -126,10 +128,11 @@ public class AnalysisJobExecuter {
 		String binaryPath = null;
 		binaryPath = analysisPath + execution.getExecutable();
 		
-		params.put(execution.getOutParam(), Arrays.asList(jobFolder));
+		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 		
 		// Check required params
 		List<Option> validParams = execution.getValidParams();
+		validParams.addAll(analysis.getGlobalParams());
 		if(checkRequiredParams(params, validParams)) {
 			params = new HashMap<String, List<String>>(removeUnknownParams(params, validParams));
 		}
@@ -137,12 +140,12 @@ public class AnalysisJobExecuter {
 			return "ERROR: missing some required params.";
 		}
 		
-		for(String inputParam: execution.getInputParam()) {
+		for(InputParam inputParam: execution.getInputParams()) {
 			if(params.containsKey(inputParam)) {
 				//TODO obtener el path del input param a partir del dataId recibido
 				String dataPath = "/fake/data/path";
 				
-				params.put(inputParam, Arrays.asList(dataPath));
+				params.put(inputParam.getName(), Arrays.asList(dataPath));
 			}
 		}
 		
@@ -301,8 +304,10 @@ public class AnalysisJobExecuter {
 			sb.append("Description: "+analysis.getDescription()+"\n");
 			sb.append("Version: "+analysis.getVersion()+"\n\n");
 			sb.append("Author: "+analysis.getAuthor().getName()+"\n");
-			sb.append("Email: "+analysis.getAuthor().getEmail()+"\n\n");
-			sb.append("Usage: \n");
+			sb.append("Email: "+analysis.getAuthor().getEmail()+"\n");
+			if(!analysis.getWebsite().equals("")) sb.append("Website: "+analysis.getWebsite()+"\n");  
+			if(!analysis.getPublication().equals("")) sb.append("Publication: "+analysis.getPublication()+"\n");  
+			sb.append("\nUsage: \n");
 			sb.append(baseUrl+"analysis/"+analysisName+execName+"/{action}?{params}\n\n");
 			sb.append("\twhere: \n");
 			sb.append("\t\t{action} = [run, help, params, test, status]\n");
@@ -335,8 +340,11 @@ public class AnalysisJobExecuter {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Valid params for "+analysis.getName()+":\n\n");
 		for(Option param : execution.getValidParams()) {
-			sb.append("\t"+param.getName()+": "+param.getDescription()+" Required: "+param.isRequired()+"\n");
+			String required = "";
+			if(param.isRequired()) required = "*"; 
+			sb.append("\t"+param.getName()+": "+param.getDescription()+" "+required+"\n");
 		}
+		sb.append("\n\t*: required parameters.\n");
 		return sb.toString();
 	}
 	
