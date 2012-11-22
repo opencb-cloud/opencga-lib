@@ -32,6 +32,9 @@ public interface UserManager {
 	
 	public void createProject(Project project, String accountId, String sessionId) throws UserManagementException;
 
+	//add file to project
+	public String createFileToProject(Project project, String accountId, String sessionId);
+	
 	
 	/*
 	 * Utils

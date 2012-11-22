@@ -63,4 +63,10 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
+	@Override
+	public String createFileToProject(Project project, String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

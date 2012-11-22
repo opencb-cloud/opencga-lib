@@ -281,4 +281,11 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 
+	@Override
+	public String createFileToProject(Project project, String accountId, String sessionId) {
+		
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
