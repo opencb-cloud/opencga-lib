@@ -23,7 +23,7 @@ public class IOManager {
 			}
 
 			try {
-				FileUtils.createDirectory(pathGCSA + accountId + "/plugins");
+				FileUtils.createDirectory(pathGCSA + accountId + "/analisys");
 			} catch (IOException e1) {
 				throw new UserManagementException("IOException" + e1.toString());
 			}
