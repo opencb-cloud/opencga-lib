@@ -38,7 +38,10 @@ public class UserMongoDBManager implements UserManager {
 			.getProperty("GCSA.MONGO.COLLECTION");
 	private String GCSA_ENV = System.getenv(CloudSessionManager.properties
 			.getProperty("GCSA.ENV.PATH"));
+	private String GCSA_ACCOUNT = GCSA_ENV+CloudSessionManager.properties
+			.getProperty("GCSA.ACCOUNT.PATH");
 
+	
 	public UserMongoDBManager() throws UserManagementException {
 		connectToMongo();
 		getDataBase(GCSA_MONGO_DB);
@@ -50,11 +53,13 @@ public class UserMongoDBManager implements UserManager {
 			throws UserManagementException {
 		User userLoad = null;
 
+		System.out.println( CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH"));
+		
 		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
 			System.out.println("NO EXISTE USUARIO");
 
-			if (new File(GCSA_ENV + "/" + accountId).exists()
-					&& new File(GCSA_ENV + "/" + accountId + "/" + "user.conf")
+			if (new File(GCSA_ACCOUNT + "/" + accountId).exists()
+					&& new File(GCSA_ACCOUNT + "/" + accountId + "/" + "account.conf")
 							.exists()) {
 				// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
 				// CONFIGURACION
@@ -62,7 +67,7 @@ public class UserMongoDBManager implements UserManager {
 						.println("EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE CONFIGURACION");
 				try {
 					BufferedReader br = new BufferedReader(new FileReader(
-							GCSA_ENV + "/" + accountId + "/" + "user.conf"));
+							GCSA_ACCOUNT + "/" + accountId + "/" + "user.conf"));
 					System.out.println("Estamos cargando el fichero");
 					userLoad = new Gson().fromJson(br, User.class);
 					userLoad.addSession(session);
@@ -73,6 +78,8 @@ public class UserMongoDBManager implements UserManager {
 			}
 
 			ioManager.createScaffoldAccountId(accountId);
+			System.out.println("ha creado las carpetas: " + accountId);
+			
 			if (userLoad == null) {
 				userLoad = new User(accountId, accountName, password, email,
 						session);
@@ -110,7 +117,7 @@ public class UserMongoDBManager implements UserManager {
 			id = session.getId();
 			List<Session> sess = user.getSessions();
 
-			BasicDBObject filter = new BasicDBObject("accountId", "imedina");
+			BasicDBObject filter = new BasicDBObject("accountId", accountId);
 			updateMongo(filter, "sessions", sess);
 
 			// mover a oldSessions todas las sesiones con mas de 24 horas.
@@ -137,6 +144,7 @@ public class UserMongoDBManager implements UserManager {
 				if (fechaCaducidad.compareTo(fechaActual) < 0) {
 					// caducada -> movemos a oldSessions
 					System.out.println("FECHA CADUCADA : " + loginDate.toString());
+					s.get(i).setLogout(GcsaUtils.getTime());
 					oldSes.add(s.get(i));
 					s.remove(i);
 					changed = true;
@@ -151,6 +159,16 @@ public class UserMongoDBManager implements UserManager {
 		}
 
 		return id;
+	}
+	
+	@Override
+	public String logout(String accountId, String sessionId) {
+		
+		
+		
+		
+		
+		return null;
 	}
 
 	public String testPipe(String accountId, String password) {
@@ -236,13 +254,13 @@ public class UserMongoDBManager implements UserManager {
 
 	private void connectToMongo() throws UserManagementException {
 		try {
-			// mongo = new Mongo(
-			// CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
-			// Integer.parseInt(CloudSessionManager.properties
-			// .getProperty("GCSA.MONGO.PORT")));
+			 mongo = new Mongo(
+			 CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
+			 Integer.parseInt(CloudSessionManager.properties
+			 .getProperty("GCSA.MONGO.PORT")));
 
-			// TODO ESTO HAY QUE ARREGLARLO
-			mongo = new Mongo("127.0.0.1", 27017);
+//			// TODO ESTO HAY QUE ARREGLARLO
+//			mongo = new Mongo("127.0.0.1", 27017);
 		} catch (UnknownHostException e) {
 			throw new UserManagementException(
 					"ERROR: Not connected to mongoDB " + e.toString());
@@ -279,6 +297,13 @@ public class UserMongoDBManager implements UserManager {
 
 		userCollection.update(container, set);
 
+	}
+
+	@Override
+	public String createFileToProject(Project project, String accountId, String sessionId) {
+		
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

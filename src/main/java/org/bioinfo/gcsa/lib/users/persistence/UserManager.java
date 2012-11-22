@@ -16,6 +16,8 @@ public interface UserManager {
 	
 	public String login(String accountId, String password, Session session);
 	
+	public String logout(String accountId, String sessionId);
+	
 	public String testPipe(String accountId, String password); //Pruebas, hay que borrarlo
 	
 	public String getUserByAccountId(String accountId, String sessionId);
@@ -32,6 +34,9 @@ public interface UserManager {
 	
 	public void createProject(Project project, String accountId, String sessionId) throws UserManagementException;
 
+	//add file to project
+	public String createFileToProject(Project project, String accountId, String sessionId);
+	
 	
 	/*
 	 * Utils
