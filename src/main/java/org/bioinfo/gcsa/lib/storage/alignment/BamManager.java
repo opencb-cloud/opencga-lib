@@ -262,12 +262,11 @@ public class BamManager {
 
 
 
-				//			//TODO cigar check for correct coverage calculation
+				//TODO cigar check for correct coverage calculation and 
 				int refgenomeOffset = 0;
 				int readOffset = 0;
 				int offset = record.getAlignmentStart()-start;
 				for(int i=0; i < record.getCigar().getCigarElements().size(); i++) {
-					//				System.out.println(record.getCigar().getCigarElement(i).getLength());
 					if(record.getCigar().getCigarElement(i).getOperator() == CigarOperator.M) {
 						for(int j=record.getAlignmentStart()-start+refgenomeOffset, cont=0; cont<record.getCigar().getCigarElement(i).getLength(); j++,cont++) {
 							if(j>=0 && j<coverageArray.length) {
@@ -422,13 +421,6 @@ public class BamManager {
 		}
 
 
-	}
-
-
-	public static class BamMiniRecord {
-		// public fields are serialized.
-		public String cigarString;
-		public int alignmentStart;
 	}
 
 }
