@@ -1,5 +1,6 @@
 package org.bioinfo.gcsa.lib;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -15,15 +16,27 @@ public class GcsaUtils {
 		return timeStamp;
 	}
 
+	public static Date toDate(String dateStr) {
+		Date now = null;
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+			now = sdf.parse(dateStr);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return now;
+	}
+
 	public static String getSessionId() {
-		int longitud = 64;
+		int longitud = 20;
 		String cadenaAleatoria = "";
 		long milis = new java.util.GregorianCalendar().getTimeInMillis();
 		Random r = new Random(milis);
 		int i = 0;
 		while (i < longitud) {
 			char c = (char) r.nextInt(255);
-			if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+			if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
+					|| (c >= 'a' && c <= 'z')) {
 				cadenaAleatoria += c;
 				i++;
 			}

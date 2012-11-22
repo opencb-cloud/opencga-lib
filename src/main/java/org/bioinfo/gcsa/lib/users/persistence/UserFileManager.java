@@ -13,7 +13,7 @@ public class UserFileManager implements UserManager {
 			String email) {
 	}
 
-	public String login(String accountId, String password) {
+	public String login(String accountId, String password, Session session) {
 		return null;
 	}
 

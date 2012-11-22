@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.bioinfo.commons.io.utils.FileUtils;
+import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Project;
@@ -50,17 +53,20 @@ public class UserMongoDBManager implements UserManager {
 
 		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
 			System.out.println("NO EXISTE USUARIO");
-			
-			if (new File(GCSA_ENV + "/"+accountId).exists()
-					&& new File(GCSA_ENV +"/"+ accountId +"/"+ "user.conf").exists()) {
+
+			if (new File(GCSA_ENV + "/" + accountId).exists()
+					&& new File(GCSA_ENV + "/" + accountId + "/" + "user.conf")
+							.exists()) {
 				// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
 				// CONFIGURACION
-				System.out.println("EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE CONFIGURACION");
+				System.out
+						.println("EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE CONFIGURACION");
 				try {
 					BufferedReader br = new BufferedReader(new FileReader(
-							GCSA_ENV +"/"+ accountId +"/"+ "user.conf"));
+							GCSA_ENV + "/" + accountId + "/" + "user.conf"));
 					System.out.println("Estamos cargando el fichero");
 					userLoad = new Gson().fromJson(br, User.class);
+					userLoad.addSession(session);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -69,13 +75,16 @@ public class UserMongoDBManager implements UserManager {
 
 			ioManager.createScaffoldAccountId(accountId);
 			if (userLoad == null) {
-				userLoad = new User(accountId, accountName, password, email,session);
+				userLoad = new User(accountId, accountName, password, email,
+						session);
 			}
 
-			userCollection.insert((DBObject) JSON.parse(new Gson().toJson(userLoad)));
+			userCollection.insert((DBObject) JSON.parse(new Gson()
+					.toJson(userLoad)));
 
 		} else {// SI EXISTE USUARIO
-
+			throw new UserManagementException(
+					"ERROR: The account already exists");
 		}
 
 	}
@@ -85,10 +94,9 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 
-	public String login(String accountId, String password) {
-		boolean correctLogin = false;
-		String randomString = "";
+	public String login(String accountId, String password, Session session) {
 		BasicDBObject query = new BasicDBObject();
+		String id = "";
 		query.put("accountId", accountId);
 		query.put("password", password);
 
@@ -96,37 +104,70 @@ public class UserMongoDBManager implements UserManager {
 
 		DBCursor iterator = userCollection.find(query);
 
-		// Comentar
-		while (iterator.hasNext()) {
-			System.out.println(iterator.next().toString());
-		}
-		System.out.println(iterator.count());
-		// FinComentar
-
 		if (iterator.count() == 1) {
-			correctLogin = true;
-			// Tienes que añadir para que modifique el valor sobre el ID del
-			// usuario.
+			User user = new Gson().fromJson(iterator.next().toString(),
+					User.class);
+			user.addSession(session);
+			id = session.getId();
+			List<Session> sess = user.getSessions();
+
+			BasicDBObject filter = new BasicDBObject("accountId", "imedina");
+			updateMongo(filter, "sessions", sess);
+
+			// mover a oldSessions todas las sesiones con mas de 24 horas.
+			Calendar cal;
+			List<Session> s = user.getSessions();
+			Date fechaActual = GcsaUtils.toDate(GcsaUtils.getTime());
+			List<Session> oldSes = user.getOldSessions();
+			boolean changed = false;
+			
+			for (int i = 0; i < s.size(); i++) {
+
+				Date loginDate = GcsaUtils.toDate(s.get(i).getLogin());
+				// String month = s.get(i).getLogin().substring(, endIndex);
+
+				cal = new GregorianCalendar();
+				cal.setTime(loginDate);
+
+				cal.setTimeInMillis(loginDate.getTime());
+				// sumamos 24h a la fecha del login
+				cal.add(Calendar.DATE, 1);
+
+				Date fechaCaducidad = new Date(cal.getTimeInMillis());
+
+				if (fechaCaducidad.compareTo(fechaActual) < 0) {
+					// caducada -> movemos a oldSessions
+					System.out.println("FECHA CADUCADA : " + loginDate.toString());
+					oldSes.add(s.get(i));
+					s.remove(i);
+					changed = true;
+				}
+			}
+			
+			if (changed){
+				updateMongo(new BasicDBObject("accountId",user.getAccountId()), "sessions", s);
+				updateMongo(new BasicDBObject("accountId",user.getAccountId()), "oldSessions", oldSes);
+			}
+			
 		}
 
-		return randomString;
+		return id;
 	}
 
 	public String testPipe(String accountId, String password) {
 		StringBuilder strB = new StringBuilder();
+
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
 		query.put("password", password);
 
 		DBCursor iterator = userCollection.find(query);
 
-		User user;
 		DBObject dbo;
 		while (iterator.hasNext()) {
 			dbo = iterator.next();
 			strB = strB.append(dbo.toString());
 			System.out.println("dbo.toString(): " + dbo.toString());
-			// new Gson().fromJson(dbo.toString(), User.class);
 		}
 
 		return "";
@@ -200,6 +241,7 @@ public class UserMongoDBManager implements UserManager {
 			// CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
 			// Integer.parseInt(CloudSessionManager.properties
 			// .getProperty("GCSA.MONGO.PORT")));
+
 			// TODO ESTO HAY QUE ARREGLARLO
 			mongo = new Mongo("127.0.0.1", 27017);
 		} catch (UnknownHostException e) {
@@ -209,6 +251,35 @@ public class UserMongoDBManager implements UserManager {
 			throw new UserManagementException(
 					"ERROR: Not connected to mongoDB " + e.toString());
 		}
+	}
+
+	private void updateMongo(DBObject filter, String field, Object value) {
+		BasicDBObject set = new BasicDBObject("$set",
+				new BasicDBObject().append(field,
+						(DBObject) JSON.parse(new Gson().toJson(value))));
+		userCollection.update(filter, set);
+	}
+
+	private void updateMongo(BasicDBObject[] filter, String field, Object value) {
+
+		BasicDBObject container = filter[0];
+		for (int i = 1; i < filter.length; i++) {
+			container.putAll(filter[i].toMap());
+		}
+
+		System.out.println("container ---> " + container.toString());
+
+		System.out.println("value -----> "
+				+ JSON.parse(new Gson().toJson(value)));
+
+		BasicDBObject set = new BasicDBObject("$set",
+				new BasicDBObject().append(field,
+						JSON.parse(new Gson().toJson(value))));
+
+		System.out.println("set -----> " + set.toString());
+
+		userCollection.update(container, set);
+
 	}
 
 }

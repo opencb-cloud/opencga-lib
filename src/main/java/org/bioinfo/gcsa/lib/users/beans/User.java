@@ -45,7 +45,7 @@ public class User {
 		this.mailingList = "";
 		this.diskQuota = "2000000";
 		this.diskUsage = "";
-		this.sessions = sessions;
+		this.sessions.add(session);
 		this.projects.add(new Project());
 	}
 
@@ -62,7 +62,7 @@ public class User {
 		this.mailingList = mailingList;
 		this.diskQuota = diskQuota;
 		this.diskUsage = diskUsage;
-		this.sessions = sessions;
+		this.sessions.add(session);
 		this.oldSessions = oldSessions;
 		this.projects = projects;
 		this.accounts = accounts;
@@ -140,6 +140,10 @@ public class User {
 
 	public void setSessions(List<Session> sessions) {
 		this.sessions = sessions;
+	}
+	
+	public void addSession(Session session){
+		this.sessions.add(session);
 	}
 
 	public List<Session> getOldSessions() {

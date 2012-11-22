@@ -13,7 +13,7 @@ public class Session {
 	private Map<String, String> attributes;
 
 	public Session() {
-		this.id = "";
+		this.id = GcsaUtils.getSessionId();
 		this.ip = "";
 		this.login = GcsaUtils.getTime();
 		this.logout = "";
@@ -21,7 +21,7 @@ public class Session {
 	
 	public Session(String ip){
 
-		this.id = "";
+		this.id = GcsaUtils.getSessionId();
 		this.ip = ip;
 		this.login = GcsaUtils.getTime();
 		this.logout = "";

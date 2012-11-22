@@ -7,14 +7,12 @@ import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
 public class IOManager {
-	private Runtime execute = Runtime.getRuntime();
-	private Process process;
-	private String pathGCSA = "/home/echirivella/TESTGCSA/";
+	private String pathGCSA = CloudSessionManager.properties.getProperty("GCSA.USERS.PATH");
 
 	public void createScaffoldAccountId(String accountId)
 			throws UserManagementException {
 		
-		
+		System.out.println("---------------->>>>> PATHGCSA: " + pathGCSA);
 		if (new File(pathGCSA).exists() && new File(pathGCSA).canWrite()
 				&& new File(pathGCSA).canRead()
 				&& new File(pathGCSA).canExecute()) {

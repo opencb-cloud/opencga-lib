@@ -24,10 +24,8 @@ public class CloudSessionManager {
 			IOException, UserManagementException {
 		// read config file
 		System.err.println ("-----------------> creado CloudSessionManager");
-		System.err.println("LA VARIABLE DE ENTORNO ES: " + gcsaHome + " con un valor " + System.getenv(gcsaHome));
 		properties = new Properties();
-		properties.load(new FileInputStream(System.getenv(gcsaHome)
-				+ "/conf/users.properties"));
+		properties.load(new FileInputStream(gcsaHome + "/conf/users.properties"));
 		if (properties.getProperty("GCSA.USERS.MODE").equals("file")) {
 			userManager = new UserFileManager();
 		} else {

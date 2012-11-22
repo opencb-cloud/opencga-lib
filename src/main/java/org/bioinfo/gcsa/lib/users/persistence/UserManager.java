@@ -14,7 +14,7 @@ public interface UserManager {
 	
 	public void createAnonymousUser(String accountId, String password, String email);
 	
-	public String login(String accountId, String password);
+	public String login(String accountId, String password, Session session);
 	
 	public String testPipe(String accountId, String password); //Pruebas, hay que borrarlo
 	
