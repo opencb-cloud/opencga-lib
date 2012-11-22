@@ -73,6 +73,8 @@ public class UserMongoDBManager implements UserManager {
 			}
 
 			ioManager.createScaffoldAccountId(accountId);
+			System.out.println("ha creado las carpetas: " + accountId);
+			
 			if (userLoad == null) {
 				userLoad = new User(accountId, accountName, password, email,
 						session);
@@ -137,6 +139,7 @@ public class UserMongoDBManager implements UserManager {
 				if (fechaCaducidad.compareTo(fechaActual) < 0) {
 					// caducada -> movemos a oldSessions
 					System.out.println("FECHA CADUCADA : " + loginDate.toString());
+					s.get(i).setLogout(GcsaUtils.getTime());
 					oldSes.add(s.get(i));
 					s.remove(i);
 					changed = true;
@@ -151,6 +154,16 @@ public class UserMongoDBManager implements UserManager {
 		}
 
 		return id;
+	}
+	
+	@Override
+	public String logout(String accountId, String sessionId) {
+		
+		
+		
+		
+		
+		return null;
 	}
 
 	public String testPipe(String accountId, String password) {

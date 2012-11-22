@@ -16,6 +16,8 @@ public interface UserManager {
 	
 	public String login(String accountId, String password, Session session);
 	
+	public String logout(String accountId, String sessionId);
+	
 	public String testPipe(String accountId, String password); //Pruebas, hay que borrarlo
 	
 	public String getUserByAccountId(String accountId, String sessionId);

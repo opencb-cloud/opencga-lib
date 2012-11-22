@@ -17,13 +17,32 @@ public class IOManager {
 				&& new File(pathGCSA).canRead()
 				&& new File(pathGCSA).canExecute()) {
 			try {
+				FileUtils.createDirectory(pathGCSA + accountId);
+				System.out.println("account creada");
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+			
+			try {
 				FileUtils.createDirectory(pathGCSA + accountId + "/jobs");
 			} catch (IOException e1) {
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 
 			try {
-				FileUtils.createDirectory(pathGCSA + accountId + "/analisys");
+				FileUtils.createDirectory(pathGCSA + accountId + "/analysis");
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+			
+			try {
+				FileUtils.createDirectory(pathGCSA + accountId + "/projects");
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+			
+			try {
+				FileUtils.createDirectory(pathGCSA + accountId + "/projects/default");
 			} catch (IOException e1) {
 				throw new UserManagementException("IOException" + e1.toString());
 			}
