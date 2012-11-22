@@ -7,23 +7,44 @@ import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
 public class IOManager {
-	private String pathGCSA = CloudSessionManager.properties.getProperty("GCSA.USERS.PATH");
+	
+	private String GCSA_ENV = System.getenv(CloudSessionManager.properties.getProperty("GCSA.ENV.PATH"));
+	private String GCSA_ACCOUNT = GCSA_ENV+CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
 
 	public void createScaffoldAccountId(String accountId)
 			throws UserManagementException {
 		
-		System.out.println("---------------->>>>> PATHGCSA: " + pathGCSA);
-		if (new File(pathGCSA).exists() && new File(pathGCSA).canWrite()
-				&& new File(pathGCSA).canRead()
-				&& new File(pathGCSA).canExecute()) {
+		System.out.println("---------------->>>>> PATHGCSA: " + GCSA_ACCOUNT);
+		if (new File(GCSA_ACCOUNT).exists() && new File(GCSA_ACCOUNT).canWrite()
+				&& new File(GCSA_ACCOUNT).canRead()
+				&& new File(GCSA_ACCOUNT).canExecute()) {
 			try {
-				FileUtils.createDirectory(pathGCSA + accountId + "/jobs");
+				FileUtils.createDirectory(GCSA_ACCOUNT+ "/" + accountId);
+				System.out.println("account creada");
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+			
+			try {
+				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/jobs");
 			} catch (IOException e1) {
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 
 			try {
-				FileUtils.createDirectory(pathGCSA + accountId + "/analisys");
+				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/analysis");
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+			
+			try {
+				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/projects");
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+			
+			try {
+				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/projects/default");
 			} catch (IOException e1) {
 				throw new UserManagementException("IOException" + e1.toString());
 			}

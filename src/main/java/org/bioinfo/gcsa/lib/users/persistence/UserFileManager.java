@@ -68,5 +68,11 @@ public class UserFileManager implements UserManager {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public String logout(String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

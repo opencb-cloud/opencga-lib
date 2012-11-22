@@ -17,7 +17,7 @@ public class CloudSessionManager {
 	public static Properties properties;
 
 	public CloudSessionManager() throws FileNotFoundException, IOException, UserManagementException {
-		this("GCSA_HOME");
+		this(System.getenv("GCSA_HOME"));
 	}
 
 	public CloudSessionManager(String gcsaHome) throws FileNotFoundException,
@@ -25,8 +25,8 @@ public class CloudSessionManager {
 		// read config file
 		System.err.println ("-----------------> creado CloudSessionManager");
 		properties = new Properties();
-		properties.load(new FileInputStream(gcsaHome + "/conf/users.properties"));
-		if (properties.getProperty("GCSA.USERS.MODE").equals("file")) {
+		properties.load(new FileInputStream(gcsaHome + "/conf/account.properties"));
+		if (properties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
 			userManager = new UserFileManager();
 		} else {
 			 userManager = new UserMongoDBManager();
