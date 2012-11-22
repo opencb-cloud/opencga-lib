@@ -13,7 +13,9 @@ public class BamManagerTest {
 		if(new File("/home/examples").exists()){
 			try {
 				BamManager bu = new BamManager();
-				String result = bu.getByRegion("/home/examples","HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114", "20",168414,168414);
+				Boolean viewAsPairs = false;
+				Boolean showSoftclipping = true;
+				String result = bu.getByRegion("/home/examples","HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114",viewAsPairs, showSoftclipping, "20",32875000,32879999);
 //			String result = bu.getByRegion("/home/examples","out_sorted", "1", 90604245, 93604245);
 //			System.out.println(result);
 			} catch (IOException e) {
