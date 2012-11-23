@@ -58,5 +58,16 @@ public class IOManager {
 	public void createFile(){
 		
 	}
+	
+	public void createJobFolder(String accountId, String jobId)throws UserManagementException {
+		String path = GCSA_ACCOUNT+ "/"  + accountId + "/jobs";
+		if(new File(path).exists() && new File(path).canWrite()) {
+			try {
+				FileUtils.createDirectory(path + "/" + jobId);
+			} catch (IOException e) {
+				throw new UserManagementException("IOException" + e.toString());
+			}
+		}
+	}
 
 }

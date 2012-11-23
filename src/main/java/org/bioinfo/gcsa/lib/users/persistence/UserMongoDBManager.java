@@ -315,14 +315,17 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 	
-	public String getAccountIdBySessionId(String sessionId){
+	public String getAccountIdBySessionId(String sessionId) {
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
 		query.put("sessions.id", sessionId);
 		fields.put("_id", 0);
 		fields.put("accountId", 1);
 		DBObject item = userCollection.findOne(query,fields);
-		return (String) item.get("accountId");
+		
+		String accountId = null;
+		if(item != null) accountId = (String) item.get("accountId");
+		return accountId;
 	}
 	
 	@Override
@@ -361,8 +364,20 @@ public class UserMongoDBManager implements UserManager {
 		String accountId = getAccountIdBySessionId(sessionId);
 		System.out.println(accountId);
 		
-//		ioManager.createJobFolder(accountId);
-		return jobId;
+		try {
+			ioManager.createJobFolder(accountId, jobId);
+			
+			BasicDBObject query = new BasicDBObject();
+			BasicDBObject fields = new BasicDBObject();
+			query.put("sessions.id", sessionId);
+			fields.put("_id", 0);
+			fields.put("accountId", 1);
+			
+			return jobId;
+		} catch (UserManagementException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override

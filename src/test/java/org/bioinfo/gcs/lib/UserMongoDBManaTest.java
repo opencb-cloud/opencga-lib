@@ -33,7 +33,7 @@ public class UserMongoDBManaTest {
 			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
 			userManager = cloudSessionManager.userManager;
 			
-			String sessionId = "oRO0Z0N1EWhRUH2gJxrL";
+			String sessionId = "z5ZhOVqKkyypCMrYIgXS";
 			
 			userManager.createJob("", "", new ArrayList<String>(), sessionId);
 		} catch (Exception e) {
