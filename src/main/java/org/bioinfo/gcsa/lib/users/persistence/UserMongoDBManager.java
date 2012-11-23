@@ -347,7 +347,10 @@ public class UserMongoDBManager implements UserManager {
 	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId) {
 		String jobId = StringUtils.randomString(8);
 		System.out.println(jobId);
-//		ioManager.createScaffoldAccountId(accountId);
+		String accountId = getAccountIdBySessionId(sessionId);
+		System.out.println(accountId);
+		
+//		ioManager.createJobFolder(accountId);
 		return jobId;
 	}
 
