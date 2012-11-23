@@ -13,28 +13,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.bioinfo.commons.Config;
-import org.bioinfo.commons.exec.Command;
-import org.bioinfo.commons.exec.SingleProcess;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.log.Logger;
-import org.bioinfo.gcsa.lib.analysis.SgeManager;
 import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
 import org.bioinfo.gcsa.lib.analysis.beans.InputParam;
 import org.bioinfo.gcsa.lib.analysis.beans.Option;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
-
-import com.google.gson.Gson;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import com.google.gson.Gson;
 
 public class AnalysisJobExecuter {
 	
