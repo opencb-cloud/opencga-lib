@@ -1,5 +1,6 @@
 package org.bioinfo.gcsa.lib.users.persistence;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.users.beans.Project;
@@ -63,14 +64,15 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
-	@Override
-	public String createFileToProject(Project project, String accountId, String sessionId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
 	@Override
 	public String logout(String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,15 +1,22 @@
 package org.bioinfo.gcsa.lib.users.persistence;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.bioinfo.commons.io.utils.FileUtils;
+import org.bioinfo.commons.io.utils.IOUtils;
+import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
@@ -32,14 +39,11 @@ public class UserMongoDBManager implements UserManager {
 	private Mongo mongo;
 	private DB mongoDB;
 	private DBCollection userCollection;
-	private String GCSA_MONGO_DB = CloudSessionManager.properties
-			.getProperty("GCSA.MONGO.DB");
-	private String GCSA_MONGO_COLLECTION = CloudSessionManager.properties
-			.getProperty("GCSA.MONGO.COLLECTION");
-	private String GCSA_ENV = System.getenv(CloudSessionManager.properties
-			.getProperty("GCSA.ENV.PATH"));
-	private String GCSA_ACCOUNT = GCSA_ENV+CloudSessionManager.properties
-			.getProperty("GCSA.ACCOUNT.PATH");
+	private String GCSA_MONGO_DB = CloudSessionManager.properties.getProperty("GCSA.MONGO.DB");
+	private String GCSA_MONGO_COLLECTION = CloudSessionManager.properties.getProperty("GCSA.MONGO.COLLECTION");
+	private String GCSA_ENV = System.getenv(CloudSessionManager.properties.getProperty("GCSA.ENV.PATH"));
+	private String GCSA_ACCOUNT = GCSA_ENV+CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
+	private String TMP = CloudSessionManager.properties.getProperty("TMP.PATH");
 
 	
 	public UserMongoDBManager() throws UserManagementException {
@@ -298,10 +302,42 @@ public class UserMongoDBManager implements UserManager {
 		userCollection.update(container, set);
 
 	}
-
+	
+	public String getAccountIdBySessionId(String sessionId){
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("sessions.id", sessionId);
+		fields.put("_id", 0);
+		fields.put("accountId", 1);
+		DBObject item = userCollection.findOne(query,fields);
+		return (String) item.get("accountId");
+	}
+	
 	@Override
-	public String createFileToProject(Project project, String accountId, String sessionId) {
+	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId) {
 		
+		System.out.println(getAccountIdBySessionId(sessionId));
+		
+		System.out.println(project);
+		System.out.println(fileName);
+		
+		System.out.println(sessionId);
+		//CREATING A RANDOM TEMP FOLDER
+		String randomFolder = TMP+"/"+StringUtils.randomString(20);
+		try {
+			FileUtils.createDirectory(randomFolder);
+		}catch(Exception e){
+			e.printStackTrace();
+			return "Could not create the upload temp directory";
+		}
+		// COPYING TO DISK
+		File tmpFile = new File(randomFolder+"/"+ fileName);
+		try {
+			IOUtils.write(tmpFile, fileData);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "Writing the file on disk";	
+		}
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -11,8 +11,7 @@ public class IOManager {
 	private String GCSA_ENV = System.getenv(CloudSessionManager.properties.getProperty("GCSA.ENV.PATH"));
 	private String GCSA_ACCOUNT = GCSA_ENV+CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
 
-	public void createScaffoldAccountId(String accountId)
-			throws UserManagementException {
+	public void createScaffoldAccountId(String accountId)throws UserManagementException {
 		
 		System.out.println("---------------->>>>> PATHGCSA: " + GCSA_ACCOUNT);
 		if (new File(GCSA_ACCOUNT).exists() && new File(GCSA_ACCOUNT).canWrite()
@@ -54,6 +53,10 @@ public class IOManager {
 					"ERROR: The project has not been created ");
 		}
 
+	}
+	
+	public void createFile(){
+		
 	}
 
 }
