@@ -173,12 +173,7 @@ public class UserMongoDBManager implements UserManager {
 		
 		if(checkValidSession(accountId, sessionId)){
 			
-			sessions = getAllSessions(accountId, sessionId);
-			oldSessions = getAllOldSessions(accountId, sessionId);
-			
-			
-			
-			oldSessions.add(sessions.get(sessions.indexOf()));
+//			oldSessions.add();
 			
 		}
 		
@@ -415,28 +410,33 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	@Override
-	public HashSet<String> getAllOldIdSessions(String accountId, String sessionId) {
-
-		
-		Set<String> oldSessions = new HashSet<String>();
-		
-		//ArrayList<Session> oldSessions = new ArrayList<Session>();
-		
-		BasicDBObject query = new BasicDBObject();
-		BasicDBObject fields = new BasicDBObject();
-		query.put("accountId", accountId);
-		query.put("sessions.id", sessionId);
-		fields.put("_id", 0);
-		fields.put("oldSessions", 1);
-		
-		DBCursor iterator = userCollection.find(query,fields);
-
-		while (iterator.hasNext()) {
-			oldSessions.add(new Gson().fromJson(iterator.next().toString(), Session.class));
-		}
-		
-		return oldSessions;
-		
+	public Set<String> getAllOldIdSessions(String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
+
+//	public HashSet<String> getAllOldIdSessions(String accountId, String sessionId) {
+//
+//		
+//		Set<String> oldSessions = new HashSet<String>();
+//		
+//		//ArrayList<Session> oldSessions = new ArrayList<Session>();
+//		
+//		BasicDBObject query = new BasicDBObject();
+//		BasicDBObject fields = new BasicDBObject();
+//		query.put("accountId", accountId);
+//		query.put("sessions.id", sessionId);
+//		fields.put("_id", 0);
+//		fields.put("oldSessions", 1);
+//		
+//		DBCursor iterator = userCollection.find(query,fields);
+//
+//		while (iterator.hasNext()) {
+//			oldSessions.add(new Gson().fromJson(iterator.next().toString(), Session.class));
+//		}
+//		
+//		return oldSessions;
+//		
+//	}
 
 }
