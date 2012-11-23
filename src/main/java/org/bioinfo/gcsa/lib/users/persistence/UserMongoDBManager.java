@@ -161,14 +161,14 @@ public class UserMongoDBManager implements UserManager {
 		return id;
 	}
 	
-	@Override
 	public String logout(String accountId, String sessionId) {
+
+		if(checkValidSession(accountId, sessionId)){
+			
+		}
 		
 		
-		
-		
-		
-		return null;
+		return "worked";
 	}
 
 	public String testPipe(String accountId, String password) {
@@ -198,10 +198,6 @@ public class UserMongoDBManager implements UserManager {
 		return null;
 	}
 
-	public void checkSessionId(String accountId, String sessionId) {
-
-	}
-
 	public String getAllProjectsBySessionId(String accountId, String sessionId) {
 		return null;
 	}
@@ -224,6 +220,21 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 
+	public boolean checkValidSession(String accountId,String sessionId){
+		boolean isValidSession = true;
+
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		DBCursor iterator = userCollection.find(query);
+
+		if (iterator.count() < 1)
+			isValidSession = false;
+		
+		return isValidSession;
+	}
+	
+	
 	private void getCollection(String nameCollection) {
 
 		if (!mongoDB.collectionExists(nameCollection)) {
@@ -235,11 +246,11 @@ public class UserMongoDBManager implements UserManager {
 		}
 	}
 
-	private boolean userExist(String accountID) throws UserManagementException {
+	private boolean userExist(String accountId) throws UserManagementException {
 		boolean userExist = true;
 
 		BasicDBObject query = new BasicDBObject();
-		query.put("accountId", accountID);
+		query.put("accountId", accountId);
 		DBCursor iterator = userCollection.find(query);
 
 		if (iterator.count() < 1)
@@ -299,10 +310,8 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 
-	@Override
 	public String createFileToProject(Project project, String accountId, String sessionId) {
 		
-		// TODO Auto-generated method stub
 		return null;
 	}
 

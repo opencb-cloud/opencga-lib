@@ -12,6 +12,7 @@ public class User {
 	private String mailingList;
 	private String diskQuota;
 	private String diskUsage;
+	private String lastActivity;
 	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
 	private List<Project> projects = new ArrayList<Project>();
@@ -29,6 +30,7 @@ public class User {
 		this.status = "";
 		this.password = "";
 		this.email = "";
+		this.lastActivity = "";
 		this.mailingList = "";
 		this.accountId = "";
 		this.accountName = "";
@@ -43,6 +45,7 @@ public class User {
 		this.password = password;
 		this.status = "1";
 		this.mailingList = "";
+		this.lastActivity = "";
 		this.diskQuota = "2000000";
 		this.diskUsage = "";
 		this.sessions.add(session);
@@ -52,7 +55,7 @@ public class User {
 	public User(String accountId, String accountName, String email,
 			String password, String status, String mailingList,
 			String diskQuota, String diskUsage, Session session,
-			List<Session> oldSessions, List<Project> projects,
+			List<Session> oldSessions, List<Project> projects,String lastAccess,
 			List<Account> accounts, List<Plugin> plugins, List<Config> configs) {
 		this.accountId = accountId;
 		this.accountName = accountName;
@@ -63,6 +66,7 @@ public class User {
 		this.diskQuota = diskQuota;
 		this.diskUsage = diskUsage;
 		this.sessions.add(session);
+		this.lastActivity = lastAccess;
 		this.oldSessions = oldSessions;
 		this.projects = projects;
 		this.accounts = accounts;
