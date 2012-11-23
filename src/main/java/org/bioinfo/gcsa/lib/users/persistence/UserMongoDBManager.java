@@ -168,16 +168,14 @@ public class UserMongoDBManager implements UserManager {
 	
 	public String logout(String accountId, String sessionId) {
 		String logoutStatus = "SUCCESS";
-		ArrayList<Session> sessions;
-		ArrayList<Session> oldSessions;
+		ArrayList<Session> sessions = null;
+		ArrayList<Session> oldSessions = null;
 		
 		if(checkValidSession(accountId, sessionId)){
-			
-//			oldSessions.add();
-			
+			oldSessions.add(getSessionId(accountId, sessionId));
 		}
 		
-		return "worked";
+		return logoutStatus;
 	}
 
 	public String testPipe(String accountId, String password) {
