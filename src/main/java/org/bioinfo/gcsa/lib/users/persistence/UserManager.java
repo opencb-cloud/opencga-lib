@@ -29,7 +29,12 @@ public interface UserManager {
 	/*
 	 * Project methods
 	 */
+	
 	public void checkSessionId(String accountId, String sessionId);
+	
+	public void getAllSessions(String accountId, String sessionId);
+	
+	public void getAllOldSessions(String accountId, String sessionId);
 	
 	public String getAllProjectsBySessionId(String accountId, String sessionId);
 	
