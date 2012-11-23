@@ -171,12 +171,24 @@ public class UserMongoDBManager implements UserManager {
 	}
 	
 	public String logout(String accountId, String sessionId) {
-		String logoutStatus = "SUCCESS";
+		String logoutStatus = "ERROR";
 		ArrayList<Session> sessions = null;
 		ArrayList<Session> oldSessions = null;
 		
 		if(checkValidSession(accountId, sessionId)){
-			oldSessions.add(getSessionId(accountId, sessionId));
+			
+			//INSERT DATA OBJECT ON MONGO
+			Data data = new Data();
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(getSessionId(accountId, sessionId)));
+			BasicDBObject query = new BasicDBObject();
+			BasicDBObject item = new BasicDBObject();
+			BasicDBObject action = new BasicDBObject();
+			query.put("sessions.id", sessionId);
+			item.put("oldSessions", dataDBObject);
+			action.put("$push", item);
+			WriteResult result = userCollection.update(query, action);
+			logoutStatus = "SUCCESS";
+			//oldSessions.add(getSessionId(accountId, sessionId));
 		}
 		
 		return logoutStatus;
