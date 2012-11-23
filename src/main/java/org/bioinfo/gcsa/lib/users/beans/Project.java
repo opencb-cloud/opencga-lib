@@ -19,7 +19,7 @@ public class Project {
 	private String descripcion;
 	private List<Acl> acl;
 	private List<Job> jobs;
-	private List<Data> data;
+	
 	
 	public Project(){
 
@@ -34,8 +34,7 @@ public class Project {
 	}
 
 	public Project(String id, String name, String status, String diskUsage
-			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs,
-			List<Data> data) {
+			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs) {
 		this.id = id;
 		this.name = name;
 		this.status = status;
@@ -46,7 +45,6 @@ public class Project {
 		this.descripcion = descripcion;
 		this.acl = acl;
 		this.jobs = jobs;
-		this.data = data;
 	}
 
 	public String getId() {

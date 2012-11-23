@@ -1,5 +1,6 @@
 package org.bioinfo.gcsa.lib.users.persistence;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.users.beans.Project;
@@ -33,12 +34,20 @@ public interface UserManager {
 	
 	public void getAllSessions(String accountId, String sessionId);
 	
+	public void getAllOldSessions(String accountId, String sessionId);
+	
 	public String getAllProjectsBySessionId(String accountId, String sessionId);
 	
 	public void createProject(Project project, String accountId, String sessionId) throws UserManagementException;
 
 	//add file to project
-	public String createFileToProject(Project project, String accountId, String sessionId);
+	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId);
+	
+	
+	/*
+	 * Job methods
+	 */
+	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId);
 	
 	
 	/*

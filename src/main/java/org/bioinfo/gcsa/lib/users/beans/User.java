@@ -19,6 +19,7 @@ public class User {
 	private List<Account> accounts = new ArrayList<Account>();
 	private List<Plugin> plugins = new ArrayList<Plugin>();
 	private List<Config> configs = new ArrayList<Config>();
+	private List<Data> data = new ArrayList<Data>();
 
 	public User() {
 		oldSessions = new ArrayList<Session>();
@@ -50,12 +51,13 @@ public class User {
 		this.diskUsage = "";
 		this.sessions.add(session);
 		this.projects.add(new Project());
+		this.data.add(new Data());
 	}
 
 	public User(String accountId, String accountName, String email,
 			String password, String status, String mailingList,
 			String diskQuota, String diskUsage, Session session,
-			List<Session> oldSessions, List<Project> projects,String lastAccess,
+			List<Session> oldSessions, List<Project> projects,String lastActivity,
 			List<Account> accounts, List<Plugin> plugins, List<Config> configs) {
 		this.accountId = accountId;
 		this.accountName = accountName;
@@ -66,7 +68,7 @@ public class User {
 		this.diskQuota = diskQuota;
 		this.diskUsage = diskUsage;
 		this.sessions.add(session);
-		this.lastActivity = lastAccess;
+		this.lastActivity = lastActivity;
 		this.oldSessions = oldSessions;
 		this.projects = projects;
 		this.accounts = accounts;
@@ -132,6 +134,14 @@ public class User {
 
 	public String getDiskUsage() {
 		return diskUsage;
+	}
+
+	public String getLastActivity() {
+		return lastActivity;
+	}
+
+	public void setLastActivity(String lastActivity) {
+		this.lastActivity = lastActivity;
 	}
 
 	public void setDiskUsage(String diskUsage) {
