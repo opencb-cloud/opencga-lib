@@ -23,7 +23,7 @@ public class SgeManager {
 		logger.setLevel(Integer.parseInt(defaultConfig.getProperty("SGE.LOG.LEVEL")));
 	}
 
-	public void queueJob(String toolName, int wumJobId, int wumUserId, String outdir, String commandLine, String queue) throws Exception{
+	public void queueJob(String toolName, String wumJobId, int wumUserId, String outdir, String commandLine, String queue) throws Exception{
 		// init sge job
 		String sgeCommandLine = "qsub -N " + getSgeJobName(toolName,wumJobId) + " -o " + outdir + "/sge_out.log -e " + outdir + "/sge_err.log -q " + queue + " -b y " + commandLine;
 		logger.info("SgeManager: Enqueuing job: "+sgeCommandLine);
@@ -34,7 +34,7 @@ public class SgeManager {
 		sp.getRunnableProcess().run();
 	}
 	
-	public void queueJob(String toolName, int wumJobId, int wumUserId, String outdir, String commandLine) throws Exception{
+	public void queueJob(String toolName, String wumJobId, int wumUserId, String outdir, String commandLine) throws Exception{
 
 		// init sge job
 		String sgeCommandLine = "qsub -N " + getSgeJobName(toolName,wumJobId) + " -o " + outdir + "/sge_out.log -e " + outdir + "/sge_err.log -q " + getQueueName(toolName) + " -b y " + commandLine;
@@ -46,7 +46,7 @@ public class SgeManager {
 		sp.getRunnableProcess().run();
 	}
 
-	private String getSgeJobName(String toolName,int wumJobId){
+	private String getSgeJobName(String toolName,String wumJobId){
 		return toolName.replace(" ", "_") + "_j" +wumJobId + "_u";
 	}
 

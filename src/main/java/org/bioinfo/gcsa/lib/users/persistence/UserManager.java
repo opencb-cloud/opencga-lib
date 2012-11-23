@@ -39,6 +39,12 @@ public interface UserManager {
 	
 	
 	/*
+	 * Job methods
+	 */
+	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId);
+	
+	
+	/*
 	 * Utils
 	 */
 	public List<Project> jsonToProjectList(String json);

@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +23,8 @@ import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
 import org.bioinfo.gcsa.lib.analysis.beans.InputParam;
 import org.bioinfo.gcsa.lib.analysis.beans.Option;
+import org.bioinfo.gcsa.lib.users.CloudSessionManager;
+import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
 import com.google.gson.Gson;
 
@@ -45,21 +48,23 @@ public class AnalysisJobExecuter {
 	protected String executionName;
 	protected String manifestFile;
 	protected String sessionId;
+	protected CloudSessionManager cloudSessionManager;
 	
-	public AnalysisJobExecuter() throws IOException {
+	public AnalysisJobExecuter() throws IOException, UserManagementException {
 		homePath = System.getenv("GCSA_HOME");
 		config = new Config(homePath + "/conf/analysis.properties");
 		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
-		
+		cloudSessionManager = new CloudSessionManager();
 		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
 	}
 	
-	public AnalysisJobExecuter(String analysis) throws IOException {
+	public AnalysisJobExecuter(String analysis) throws IOException, UserManagementException {
 		homePath = System.getenv("GCSA_HOME");
 		config = new Config(homePath + "/conf/analysis.properties");
 		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
+		cloudSessionManager = new CloudSessionManager();
 		
 		gson = new Gson();
 		logger = new Logger();
@@ -112,7 +117,8 @@ public class AnalysisJobExecuter {
 		}
 		
 		// create job
-		int jobId = 0;
+//		int jobId = 0;
+		String jobId = cloudSessionManager.createJob("", "", new ArrayList<String>(), sessionId);
 		String jobFolder = "/tmp/testoutdir/";
 		//TODO crear job
 //		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);
@@ -214,7 +220,7 @@ public class AnalysisJobExecuter {
 		return cmdLine.toString();
 	}
 	
-	private void executeCommandLine(String commandLine, int jobId, String jobFolder) {
+	private void executeCommandLine(String commandLine, String jobId, String jobFolder) {
 //		try {
 //			logger.debug("AnalysisJobExecuter: execute, creating form.txt, input_params.txt and cli.txt");
 //			IOUtils.write(new File(jobFolder + "/input_params.txt"), MapUtils.toString(params));
@@ -370,7 +376,7 @@ public class AnalysisJobExecuter {
 		}
 		
 		// create job
-		int jobId = 0;
+		String jobId = cloudSessionManager.createJob("", "", new ArrayList<String>(), sessionId);
 		String jobFolder = "/tmp/";
 		//TODO crear job
 //		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);

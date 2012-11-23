@@ -75,4 +75,11 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
+	@Override
+	public String createJob(String jobName, String toolName,
+			List<String> dataList, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

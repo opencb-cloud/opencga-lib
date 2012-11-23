@@ -9,7 +9,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Random;
 
+import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
@@ -304,6 +306,14 @@ public class UserMongoDBManager implements UserManager {
 		
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId) {
+		String jobId = StringUtils.randomString(8);
+		System.out.println(jobId);
+		ioManager.createScaffoldAccountId(accountId);
+		return jobId;
 	}
 
 }
