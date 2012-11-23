@@ -13,6 +13,14 @@ public class IOManager {
 
 	public void createScaffoldAccountId(String accountId)throws UserManagementException {
 		
+		if(!new File(GCSA_ACCOUNT).exists()){
+			try {
+				FileUtils.createDirectory(GCSA_ACCOUNT);
+			} catch (IOException e1) {
+				throw new UserManagementException("IOException" + e1.toString());
+			}
+		}
+		
 		System.out.println("---------------->>>>> PATHGCSA: " + GCSA_ACCOUNT);
 		if (new File(GCSA_ACCOUNT).exists() && new File(GCSA_ACCOUNT).canWrite()
 				&& new File(GCSA_ACCOUNT).canRead()

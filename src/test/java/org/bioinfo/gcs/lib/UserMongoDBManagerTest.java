@@ -7,7 +7,7 @@ import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.persistence.UserManager;
 import org.junit.Test;
 
-public class UserMongoDBManaTest {
+public class UserMongoDBManagerTest {
 	private UserManager userManager;
 	@Test
 	public void createFileToProjectTest() {
@@ -15,7 +15,7 @@ public class UserMongoDBManaTest {
 			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
 			userManager = cloudSessionManager.userManager;
 			
-			String sessionId = "oRO0Z0N1EWhRUH2gJxrL";
+			String sessionId = "JIzomN9jETGIC4RSXsX0";
 			String fileName = "datos_experimento.txt";
 			String data = "sampletext";
 			InputStream fileData = new ByteArrayInputStream(data.getBytes("UTF-8"));  
