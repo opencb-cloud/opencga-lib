@@ -1,19 +1,19 @@
 package org.bioinfo.gcsa.lib.users.persistence;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
 
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
@@ -167,11 +167,20 @@ public class UserMongoDBManager implements UserManager {
 	}
 	
 	public String logout(String accountId, String sessionId) {
-
+		String logoutStatus = "SUCCESS";
+		ArrayList<Session> sessions;
+		ArrayList<Session> oldSessions;
+		
 		if(checkValidSession(accountId, sessionId)){
 			
+			sessions = getAllSessions(accountId, sessionId);
+			oldSessions = getAllOldSessions(accountId, sessionId);
+			
+			
+			
+			oldSessions.add(sessions.get(sessions.indexOf()));
+			
 		}
-		
 		
 		return "worked";
 	}
@@ -287,9 +296,7 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	private void updateMongo(DBObject filter, String field, Object value) {
-		BasicDBObject set = new BasicDBObject("$set",
-				new BasicDBObject().append(field,
-						(DBObject) JSON.parse(new Gson().toJson(value))));
+		BasicDBObject set = new BasicDBObject("$set",new BasicDBObject().append(field,	(DBObject) JSON.parse(new Gson().toJson(value))));
 		userCollection.update(filter, set);
 	}
 
@@ -387,14 +394,48 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	@Override
-	public void getAllSessions(String accountId, String sessionId) {
-		// TODO Auto-generated method stub
+	public Session getSessionId(String accountId, String sessionId) {
+//		ArrayList<Session> sessions = new ArrayList<Session>();
+
+		Set<String> sessionsId = new HashSet<String>();
 		
+		//db.users.find({"accountId":"imedina","sessions.id":"8l665MB3Q7MdKzfGJBJd"}, { "sessions.$":1 ,"_id":0})
+		//ESTO DEVOLVERA SOLO UN OBJETO SESION, EL QUE CORRESPONDA CON LA ID DEL FIND
+		
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		fields.put("_id", 0);
+		fields.put("sessions.$", 1);
+		
+		DBCursor iterator = userCollection.find(query,fields);
+
+		return new Gson().fromJson(iterator.next().toString(), Session.class);
 	}
 
 	@Override
-	public void getAllOldSessions(String accountId, String sessionId) {
-		// TODO Auto-generated method stub
+	public HashSet<String> getAllOldIdSessions(String accountId, String sessionId) {
+
+		
+		Set<String> oldSessions = new HashSet<String>();
+		
+		//ArrayList<Session> oldSessions = new ArrayList<Session>();
+		
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		fields.put("_id", 0);
+		fields.put("oldSessions", 1);
+		
+		DBCursor iterator = userCollection.find(query,fields);
+
+		while (iterator.hasNext()) {
+			oldSessions.add(new Gson().fromJson(iterator.next().toString(), Session.class));
+		}
+		
+		return oldSessions;
 		
 	}
 
