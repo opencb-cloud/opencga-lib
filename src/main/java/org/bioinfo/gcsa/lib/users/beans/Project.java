@@ -1,6 +1,7 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -18,11 +19,10 @@ public class Project {
 	private String type;
 	private String descripcion;
 	private List<Acl> acl;
-	private List<Job> jobs;
+	private List<Job> jobs = new ArrayList<Job>();
 	
 	
 	public Project(){
-
 		this.status ="1";
 		this.id = "";//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
@@ -31,6 +31,7 @@ public class Project {
 		this.creationDate = GcsaUtils.getTime();
 		this.type = "";
 		this.descripcion = "Default Project";
+//		this.jobs.add(new Job());
 	}
 
 	public Project(String id, String name, String status, String diskUsage

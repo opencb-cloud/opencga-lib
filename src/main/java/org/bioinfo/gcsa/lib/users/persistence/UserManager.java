@@ -2,6 +2,7 @@ package org.bioinfo.gcsa.lib.users.persistence;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
@@ -32,9 +33,9 @@ public interface UserManager {
 	
 	public void checkSessionId(String accountId, String sessionId);
 	
-	public void getAllSessions(String accountId, String sessionId);
+	public Session getSessionId(String accountId, String sessionId);
 	
-	public void getAllOldSessions(String accountId, String sessionId);
+	public Set<String> getAllOldIdSessions(String accountId, String sessionId);
 	
 	public String getAllProjectsBySessionId(String accountId, String sessionId);
 	
