@@ -126,17 +126,5 @@ public class Project {
 	public void setJobs(List<Job> jobs) {
 		this.jobs = jobs;
 	}
-
-	public List<Data> getData() {
-		return data;
-	}
-
-	public void setData(List<Data> data) {
-		this.data = data;
-	}
-
-
-
-
 	
 }

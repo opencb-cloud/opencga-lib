@@ -374,4 +374,10 @@ public class UserMongoDBManager implements UserManager {
 		
 	}
 
+	@Override
+	public void getAllOldSessions(String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
