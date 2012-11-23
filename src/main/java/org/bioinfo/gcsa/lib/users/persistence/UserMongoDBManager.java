@@ -21,6 +21,7 @@ import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
+import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.beans.User;
@@ -317,6 +318,7 @@ public class UserMongoDBManager implements UserManager {
 	@Override
 	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId) {
 		
+		Data data = new Data();
 		System.out.println(getAccountIdBySessionId(sessionId));
 		
 		System.out.println(project);
