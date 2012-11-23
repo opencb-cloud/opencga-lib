@@ -84,4 +84,16 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
+	@Override
+	public void getAllSessions(String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void getAllOldSessions(String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
