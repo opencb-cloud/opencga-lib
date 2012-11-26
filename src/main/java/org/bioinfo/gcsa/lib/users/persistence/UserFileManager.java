@@ -96,4 +96,10 @@ public class UserFileManager implements UserManager {
 		
 	}
 
+	@Override
+	public String getUserBySessionId(String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

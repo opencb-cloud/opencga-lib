@@ -120,8 +120,7 @@ public class UserMongoDBManager implements UserManager {
 		DBCursor iterator = userCollection.find(query);
 
 		if (iterator.count() == 1) {
-			User user = new Gson().fromJson(iterator.next().toString(),
-					User.class);
+			User user = new Gson().fromJson(iterator.next().toString(), User.class);
 			user.addSession(session);
 			id = session.getId();
 			List<Session> sess = user.getSessions();
@@ -336,6 +335,7 @@ public class UserMongoDBManager implements UserManager {
 	@Override
 	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId) {
 		//CREATING A RANDOM TEMP FOLDER
+		
 		String randomFolder = TMP+"/"+StringUtils.randomString(20);
 		try {
 			FileUtils.createDirectory(randomFolder);
@@ -364,7 +364,7 @@ public class UserMongoDBManager implements UserManager {
 			BasicDBObject item = new BasicDBObject();
 			BasicDBObject action = new BasicDBObject();
 			query.put("sessions.id", sessionId);
-			item.put("data", dataDBObject);
+			item.put("projects.$.data", dataDBObject);
 			action.put("$push", item);
 			WriteResult result = userCollection.update(query, action);
 			
@@ -373,6 +373,7 @@ public class UserMongoDBManager implements UserManager {
 				FileUtils.deleteDirectory(tmpFile);
 				return "MongoDB error, "+result.getError()+" files will be deleted";
 			}
+			FileUtils.deleteDirectory(tmpFile);
 			return null;
 			
 		} catch (IOException e) {
@@ -406,6 +407,23 @@ public class UserMongoDBManager implements UserManager {
 	public void getAllOldSessions(String accountId, String sessionId) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public String getUserBySessionId(String sessionId) {
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("sessions.id", sessionId);
+		fields.put("_id", 0);
+		fields.put("password", 0);
+		fields.put("sessions", 0);
+		fields.put("oldSessions", 0);
+		DBObject item = userCollection.findOne(query,fields);
+		if(item!=null){
+			return (String) item.toString();
+		}else{
+			return "ERROR: Invalid sessionId";
+		}
 	}
 
 }

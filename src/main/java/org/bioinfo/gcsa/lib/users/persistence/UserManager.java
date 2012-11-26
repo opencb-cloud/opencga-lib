@@ -3,6 +3,7 @@ package org.bioinfo.gcsa.lib.users.persistence;
 import java.io.InputStream;
 import java.util.List;
 
+import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 
@@ -24,6 +25,8 @@ public interface UserManager {
 	public String getUserByAccountId(String accountId, String sessionId);
 	
 	public String getUserByEmail(String email, String sessionId);
+	
+	public String getUserBySessionId(String sessionId);
 	
 	
 	/*
