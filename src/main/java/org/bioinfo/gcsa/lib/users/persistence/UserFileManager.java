@@ -98,4 +98,10 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
+	@Override
+	public String getJobFolder(String jobId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

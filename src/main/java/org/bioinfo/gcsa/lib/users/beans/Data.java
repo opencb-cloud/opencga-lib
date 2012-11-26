@@ -1,12 +1,13 @@
 package org.bioinfo.gcsa.lib.users.beans;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
 
 public class Data {
 	private String id;
+	private String type;
 	private String fileName;
 	private String multiple;
 	private String diskUsage;
@@ -18,11 +19,11 @@ public class Data {
 	private String status;
 	private String statusMessage;
 	private List<Acl> members;
+	private Job job;
 	
 	public Data(){
-		members = new Vector<Acl>();
-		members.add(new Acl());
 		this.id = "";
+		this.type = "";
 		this.fileName = "";
 		this.multiple = "";
 		this.diskUsage = "";
@@ -33,13 +34,14 @@ public class Data {
 		this.description = "";
 		this.status = "";
 		this.statusMessage = "";
+		this.members = new ArrayList<Acl>();
 	}
 
-	public Data(String id, String fileName, String multiple, String diskUsage, String responsible, String organization,
-			String date, String description, String status,
-			String statusMessage, List<Acl> members) {
-		super();
+	public Data(String id, String type, String fileName, String multiple, String diskUsage,
+			String responsible, String organization, String date, String description,
+			String status, String statusMessage, List<Acl> members, Job job) {
 		this.id = id;
+		this.type = type;
 		this.fileName = fileName;
 		this.multiple = multiple;
 		this.diskUsage = diskUsage;
@@ -51,6 +53,7 @@ public class Data {
 		this.status = status;
 		this.statusMessage = statusMessage;
 		this.members = members;
+		this.job = job;
 	}
 
 	public String getId() {
@@ -149,7 +152,19 @@ public class Data {
 		this.members = members;
 	}
 
+	public Job getJob() {
+		return job;
+	}
 
-	
-	
+	public void setJob(Job job) {
+		this.job = job;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 }

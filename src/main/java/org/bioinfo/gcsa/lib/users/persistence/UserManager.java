@@ -55,5 +55,7 @@ public interface UserManager {
 	 * Utils
 	 */
 	public List<Project> jsonToProjectList(String json);
+
+	public String getJobFolder(String jobId, String sessionId);
 	
 }

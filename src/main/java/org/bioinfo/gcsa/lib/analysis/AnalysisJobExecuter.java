@@ -113,10 +113,21 @@ public class AnalysisJobExecuter {
 			params.remove("_");
 		}
 		
-		// create job
-//		int jobId = 0;
-		String jobId = cloudSessionManager.createJob("", "", new ArrayList<String>(), sessionId);
-		String jobFolder = "/tmp/testoutdir/";
+		String jobName = "";
+		if(params.containsKey("jobname")){
+			jobName = params.get("jobname").get(0);
+			params.remove("jobname");
+		}
+		
+		String toolName = null;
+		if(params.containsKey("toolname")){
+			toolName = params.get("toolname").get(0);
+			params.remove("toolname");
+		}
+		
+		// Create job
+		String jobId = cloudSessionManager.createJob(jobName, toolName, new ArrayList<String>(), sessionId);
+		String jobFolder = cloudSessionManager.getJobFolder(jobId, sessionId);
 		//TODO crear job
 //		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);
 //		String jobFolder = wni.getJobFolder(jobId, sessionId);
@@ -127,7 +138,7 @@ public class AnalysisJobExecuter {
 			return "ERROR: Executable not found.";
 		}
 		
-		// set command in binary path
+		// Set command in binary path
 		String binaryPath = null;
 		binaryPath = analysisPath + execution.getExecutable();
 		

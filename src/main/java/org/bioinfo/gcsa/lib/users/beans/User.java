@@ -19,7 +19,6 @@ public class User {
 	private List<Account> accounts = new ArrayList<Account>();
 	private List<Plugin> plugins = new ArrayList<Plugin>();
 	private List<Config> configs = new ArrayList<Config>();
-	private List<Data> data = new ArrayList<Data>();
 
 	public User() {
 		oldSessions = new ArrayList<Session>();
@@ -51,7 +50,6 @@ public class User {
 		this.diskUsage = "";
 		this.sessions.add(session);
 		this.projects.add(new Project());
-		this.data.add(new Data());
 	}
 
 	public User(String accountId, String accountName, String email,

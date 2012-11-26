@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -21,6 +22,9 @@ import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
+import org.bioinfo.gcsa.lib.users.beans.Acl;
+import org.bioinfo.gcsa.lib.users.beans.Data;
+import org.bioinfo.gcsa.lib.users.beans.Job;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.beans.User;
@@ -33,6 +37,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 
 public class UserMongoDBManager implements UserManager {
@@ -62,7 +67,9 @@ public class UserMongoDBManager implements UserManager {
 		
 		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
 			System.out.println("NO EXISTE USUARIO");
-
+			
+			
+			
 			if (new File(GCSA_ACCOUNT + "/" + accountId).exists()
 					&& new File(GCSA_ACCOUNT + "/" + accountId + "/" + "account.conf")
 							.exists()) {
@@ -224,8 +231,7 @@ public class UserMongoDBManager implements UserManager {
 		return null;
 	}
 
-	public void createProject(Project project, String accountId,
-			String sessionId) throws UserManagementException {
+	public void createProject(Project project, String accountId, String sessionId) throws UserManagementException {
 
 	}
 
@@ -324,21 +330,16 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("_id", 0);
 		fields.put("accountId", 1);
 		DBObject item = userCollection.findOne(query,fields);
-		
-		String accountId = null;
-		if(item != null) accountId = (String) item.get("accountId");
-		return accountId;
+
+		if(item!=null){
+			return (String) item.get("accountId");
+		}else{
+			return "ERROR: Invalid sessionId";
+		}
 	}
 	
 	@Override
 	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId) {
-		
-		System.out.println(getAccountIdBySessionId(sessionId));
-		
-		System.out.println(project);
-		System.out.println(fileName);
-		
-		System.out.println(sessionId);
 		//CREATING A RANDOM TEMP FOLDER
 		String randomFolder = TMP+"/"+StringUtils.randomString(20);
 		try {
@@ -353,27 +354,65 @@ public class UserMongoDBManager implements UserManager {
 			IOUtils.write(tmpFile, fileData);
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "Writing the file on disk";	
+			return "Could not write the file on disk";	
 		}
-		// TODO Auto-generated method stub
-		return null;
+		//COPYING FROM TEMP TO ACCOUNT DIR
+		File userFile = new File(GCSA_ACCOUNT+"/"+getAccountIdBySessionId(sessionId)+"/"+project+"/"+fileName);
+		try {
+			FileUtils.touch(userFile);
+			FileUtils.copy(tmpFile, userFile);
+			
+			//INSERT DATA OBJECT ON MONGO
+			Data data = new Data();
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
+			BasicDBObject query = new BasicDBObject();
+			BasicDBObject item = new BasicDBObject();
+			BasicDBObject action = new BasicDBObject();
+			query.put("sessions.id", sessionId);
+			item.put("data", dataDBObject);
+			action.put("$push", item);
+			WriteResult result = userCollection.update(query, action);
+			
+			if(result.getError()!=null){
+				FileUtils.deleteDirectory(userFile);
+				FileUtils.deleteDirectory(tmpFile);
+				return "MongoDB error, "+result.getError()+" files will be deleted";
+			}
+			return null;
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "Copying from tmp folder to account folder";	
+		}
+		
 	}
 
 	@Override
 	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId) {
 		String jobId = StringUtils.randomString(8);
-		System.out.println(jobId);
 		String accountId = getAccountIdBySessionId(sessionId);
-		System.out.println(accountId);
 		
 		try {
+			// CREATE JOB FOLDER
 			ioManager.createJobFolder(accountId, jobId);
 			
+			//INSERT DATA OBJECT ON MONGO
+			Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", "", "", "", "", dataList);
+			Data data = new Data("", "dir", "", "", "", "", "", "", "", "", "", new ArrayList<Acl>(), job);
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
 			BasicDBObject query = new BasicDBObject();
-			BasicDBObject fields = new BasicDBObject();
-			query.put("sessions.id", sessionId);
-			fields.put("_id", 0);
-			fields.put("accountId", 1);
+			BasicDBObject item = new BasicDBObject();
+			BasicDBObject action = new BasicDBObject();
+			query.put("accountId", accountId);
+			query.put("projects.status", "1");
+			item.put("projects.$.data", dataDBObject);
+			action.put("$push", item);
+			WriteResult result = userCollection.update(query, action);
+			
+			if(result.getError()!=null) {
+				ioManager.removeJobFolder(accountId, jobId);
+				return "MongoDB error, "+result.getError()+" files will be deleted";
+			}
 			
 			return jobId;
 		} catch (UserManagementException e) {
@@ -413,6 +452,27 @@ public class UserMongoDBManager implements UserManager {
 	public Set<String> getAllOldIdSessions(String accountId, String sessionId) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String getJobFolder(String jobId, String sessionId) {
+//		String accountId = getAccountIdBySessionId(sessionId);
+//		BasicDBObject query = new BasicDBObject();
+//		BasicDBObject fields = new BasicDBObject();
+//		query.put("accountId", accountId);
+//		query.put("projects.status", "1");
+//		fields.put("_id", 0);
+//		fields.put("projects.$", 1);
+//		DBObject item = userCollection.findOne(query,fields);
+//		Project[] p = new Gson().fromJson(item.get("projects").toString(), Project[].class);
+
+		String jobFolder = GCSA_ACCOUNT+"/"+getAccountIdBySessionId(sessionId)+"/jobs/"+jobId+"/";
+		if(new File(jobFolder).exists()) {
+			return jobFolder;
+		}
+		else {
+			return "ERROR: Invalid jobId";
+		}
 	}
 
 //	public HashSet<String> getAllOldIdSessions(String accountId, String sessionId) {
