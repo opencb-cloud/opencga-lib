@@ -51,5 +51,9 @@ public class CloudSessionManager {
 	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId) {
 		return userManager.createJob(jobName, toolName, dataList, sessionId);
 	}
+	
+	public String getJobFolder(String jobId, String sessionId) {
+		return userManager.getJobFolder(jobId, sessionId);
+	}
 
 }

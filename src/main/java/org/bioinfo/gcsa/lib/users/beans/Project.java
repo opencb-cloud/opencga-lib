@@ -1,12 +1,9 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.GcsaUtils;
-
 
 public class Project {
 	private String id;
@@ -18,11 +15,10 @@ public class Project {
 	private String type;
 	private String descripcion;
 	private List<Acl> acl;
-	private List<Job> jobs;
+	private List<Data> data;
 	
 	
 	public Project(){
-
 		this.status ="1";
 		this.id = "";//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
@@ -31,10 +27,11 @@ public class Project {
 		this.creationDate = GcsaUtils.getTime();
 		this.type = "";
 		this.descripcion = "Default Project";
+		this.data = new ArrayList<Data>();
 	}
 
 	public Project(String id, String name, String status, String diskUsage
-			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs) {
+			, String ownerId, String type, String descripcion, List<Acl> acl) {
 		this.id = id;
 		this.name = name;
 		this.status = status;
@@ -44,7 +41,7 @@ public class Project {
 		this.type = type;
 		this.descripcion = descripcion;
 		this.acl = acl;
-		this.jobs = jobs;
+		this.data = new ArrayList<Data>();
 	}
 
 	public String getId() {
@@ -119,12 +116,12 @@ public class Project {
 		this.acl = acl;
 	}
 
-	public List<Job> getJobs() {
-		return jobs;
+	public List<Data> getData() {
+		return data;
 	}
 
-	public void setJobs(List<Job> jobs) {
-		this.jobs = jobs;
+	public void setData(List<Data> data) {
+		this.data = data;
 	}
 	
 }

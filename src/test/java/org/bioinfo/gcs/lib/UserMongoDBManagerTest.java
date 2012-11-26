@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.beans.Session;
@@ -60,5 +61,19 @@ public class UserMongoDBManagerTest {
 //				e.printStackTrace();
 //			}
 //	}
+	
+//	@Test
+	public void createJobTest() {
+		try {
+			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
+			userManager = cloudSessionManager.userManager;
+			
+			String sessionId = "JLymlrv3eWm5jIjAVwty";
+			
+			userManager.createJob("", "", new ArrayList<String>(), sessionId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 }

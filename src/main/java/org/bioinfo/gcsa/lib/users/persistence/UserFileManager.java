@@ -2,6 +2,7 @@ package org.bioinfo.gcsa.lib.users.persistence;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
@@ -84,16 +85,23 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
+
 	@Override
-	public void getAllSessions(String accountId, String sessionId) {
+	public Session getSessionId(String accountId, String sessionId) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 	@Override
-	public void getAllOldSessions(String accountId, String sessionId) {
+	public Set<String> getAllOldIdSessions(String accountId, String sessionId) {
 		// TODO Auto-generated method stub
-		
+		return null;
+	}
+
+	@Override
+	public String getJobFolder(String jobId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
