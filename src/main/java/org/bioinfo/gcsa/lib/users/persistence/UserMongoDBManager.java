@@ -7,13 +7,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
@@ -55,6 +55,12 @@ public class UserMongoDBManager implements UserManager {
 		getCollection(GCSA_MONGO_COLLECTION);
 	}
 
+	/////////////////////////////////////
+	/*
+	 * User methods
+	 */
+	////////////////////////////////////
+	
 	public void createUser(String accountId, String password,
 			String accountName, String email, Session session)
 			throws UserManagementException {
@@ -64,8 +70,6 @@ public class UserMongoDBManager implements UserManager {
 		
 		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
 			System.out.println("NO EXISTE USUARIO");
-			
-			
 			
 			if (new File(GCSA_ACCOUNT + "/" + accountId).exists()
 					&& new File(GCSA_ACCOUNT + "/" + accountId + "/" + "account.conf")
@@ -89,13 +93,20 @@ public class UserMongoDBManager implements UserManager {
 			ioManager.createScaffoldAccountId(accountId);
 			System.out.println("ha creado las carpetas: " + accountId);
 			
-			if (userLoad == null) {
-				userLoad = new User(accountId, accountName, password, email,
-						session);
+			if (validate(email)){
+			
+				if (userLoad == null) {
+					userLoad = new User(accountId, accountName, password, email,
+							session);
+				}
+	
+				userCollection.insert((DBObject) JSON.parse(new Gson()
+						.toJson(userLoad)));
 			}
-
-			userCollection.insert((DBObject) JSON.parse(new Gson()
-					.toJson(userLoad)));
+			else{
+				throw new UserManagementException(
+						"ERROR: email not valid");
+			}
 
 		} else {// SI EXISTE USUARIO
 			throw new UserManagementException(
@@ -104,8 +115,7 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 
-	public void createAnonymousUser(String accountId, String password,
-			String email) {
+	public void createAnonymousUser(String accountId, String password, String email) {
 
 	}
 
@@ -172,23 +182,23 @@ public class UserMongoDBManager implements UserManager {
 	
 	public String logout(String accountId, String sessionId) {
 		String logoutStatus = "ERROR";
-		ArrayList<Session> sessions = null;
-		ArrayList<Session> oldSessions = null;
-		
-		if(checkValidSession(accountId, sessionId)){
+		if(checkSessionId(accountId, sessionId)){
 			
-			//INSERT DATA OBJECT ON MONGO
-			Data data = new Data();
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(getSessionId(accountId, sessionId)));
+			//INSERT DATA OBJECT IN MONGO
+			Session session = getSessionId(accountId, sessionId);
+			session.setLogout(GcsaUtils.getTime());
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(session));
+			System.out.println("ses_id: " + dataDBObject.toString());
 			BasicDBObject query = new BasicDBObject();
 			BasicDBObject item = new BasicDBObject();
 			BasicDBObject action = new BasicDBObject();
+			query.put("accountId", accountId);
 			query.put("sessions.id", sessionId);
 			item.put("oldSessions", dataDBObject);
 			action.put("$push", item);
-			WriteResult result = userCollection.update(query, action);
+			
+			userCollection.update(query, action);
 			logoutStatus = "SUCCESS";
-			//oldSessions.add(getSessionId(accountId, sessionId));
 		}
 		
 		return logoutStatus;
@@ -214,123 +224,97 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	public String getUserByAccountId(String accountId, String sessionId) {
-		return null;
+		String userStr = "";
+		
+		BasicDBObject query = new BasicDBObject();
+		
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+
+		DBCursor iterator = userCollection.find(query);
+
+		if (iterator.count() == 1) {
+			userStr = iterator.next().toString();
+		}
+		
+		return userStr;
 	}
 
 	public String getUserByEmail(String email, String sessionId) {
-		return null;
+		String userStr = "";
+		
+		BasicDBObject query = new BasicDBObject();
+		
+		query.put("email", email);
+		query.put("sessions.id", sessionId);
+
+		DBCursor iterator = userCollection.find(query);
+
+		if (iterator.count() == 1) {
+			userStr = iterator.next().toString();
+		}
+		
+		return userStr;
 	}
-
-	public String getAllProjectsBySessionId(String accountId, String sessionId) {
-		return null;
-	}
-
-	public void createProject(String accountId, String sessionId)
-			throws UserManagementException {
-		// try {
-		//
-		// }catch(IOException e) {
-		// threo new UserMangeentException("": e.toString);
-		// }
-	}
-
-	public List<Project> jsonToProjectList(String json) {
-		return null;
-	}
-
-	public void createProject(Project project, String accountId,
-			String sessionId) throws UserManagementException {
-
-	}
-
-	public boolean checkValidSession(String accountId,String sessionId){
-		boolean isValidSession = true;
+	
+	//////////////////////////////////////
+	/*
+	 * Project methods
+	 */
+	//////////////////////////////////////
+	
+	@Override
+	public boolean checkSessionId(String accountId, String sessionId) {
+		boolean isValidSession = false;
 
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
 		query.put("sessions.id", sessionId);
 		DBCursor iterator = userCollection.find(query);
-
-		if (iterator.count() < 1)
-			isValidSession = false;
+		
+		if (iterator.count() > 0)
+			isValidSession = true;
 		
 		return isValidSession;
 	}
 	
-	
-	private void getCollection(String nameCollection) {
-
-		if (!mongoDB.collectionExists(nameCollection)) {
-			userCollection = mongoDB.createCollection(nameCollection,
-					new BasicDBObject());
-		} else {
-			userCollection = mongoDB.getCollection(nameCollection);
-			System.out.println(userCollection.toString());
-		}
-	}
-
-	private boolean userExist(String accountId) throws UserManagementException {
-		boolean userExist = true;
-
+	public String getAllProjectsBySessionId(String accountId, String sessionId) {
+		String projectsStr = "";
+		User user = null;
+		
 		BasicDBObject query = new BasicDBObject();
+		
 		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+
 		DBCursor iterator = userCollection.find(query);
 
-		if (iterator.count() < 1)
-			userExist = false;
-
-		return userExist;
-	}
-
-	private void getDataBase(String nameDataBase) {
-		mongoDB = mongo.getDB(nameDataBase);
-	}
-
-	private void connectToMongo() throws UserManagementException {
-		try {
-			 mongo = new Mongo(
-			 CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
-			 Integer.parseInt(CloudSessionManager.properties
-			 .getProperty("GCSA.MONGO.PORT")));
-
-//			// TODO ESTO HAY QUE ARREGLARLO
-//			mongo = new Mongo("127.0.0.1", 27017);
-		} catch (UnknownHostException e) {
-			throw new UserManagementException(
-					"ERROR: Not connected to mongoDB " + e.toString());
-		} catch (MongoException e) {
-			throw new UserManagementException(
-					"ERROR: Not connected to mongoDB " + e.toString());
+		if (iterator.count() == 1) {
+			user = new Gson().fromJson(iterator.next().toString(),User.class);
+			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
 		}
+		
+		return projectsStr;
 	}
 
-	private void updateMongo(DBObject filter, String field, Object value) {
-		BasicDBObject set = new BasicDBObject("$set",new BasicDBObject().append(field,	(DBObject) JSON.parse(new Gson().toJson(value))));
-		userCollection.update(filter, set);
+//	public void createProject(String accountId, String sessionId)
+//			throws UserManagementException {
+//		// try {
+//		//
+//		// }catch(IOException e) {
+//		// throw new UserMangeentException("": e.toString);
+//		// }
+//	}
+
+	public String createProject(Project project, String accountId, String sessionId){
+		BasicDBObject filter = new BasicDBObject("accountId",accountId);
+		filter.put("session.id", sessionId);
+		List<Project> projects = new Gson().fromJson(getUserByAccountId(accountId, sessionId),User.class).getProjects();
+		projects.add(project);
+		updateMongo(filter, "projects", projects);
+		return projects.toString();
 	}
 
-	private void updateMongo(BasicDBObject[] filter, String field, Object value) {
-
-		BasicDBObject container = filter[0];
-		for (int i = 1; i < filter.length; i++) {
-			container.putAll(filter[i].toMap());
-		}
-
-		System.out.println("container ---> " + container.toString());
-
-		System.out.println("value -----> "
-				+ JSON.parse(new Gson().toJson(value)));
-
-		BasicDBObject set = new BasicDBObject("$set",
-				new BasicDBObject().append(field,
-						JSON.parse(new Gson().toJson(value))));
-
-		System.out.println("set -----> " + set.toString());
-
-		userCollection.update(container, set);
-
-	}
-	
 	public String getAccountIdBySessionId(String sessionId){
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
@@ -344,6 +328,62 @@ public class UserMongoDBManager implements UserManager {
 			return "ERROR: Invalid sessionId";
 		}
 	}
+	
+	@Override
+	public Session getSessionId(String accountId, String sessionId) {
+
+		//Set<String> sessionsId = new HashSet<String>();
+		
+		//db.users.find({"accountId":"imedina","sessions.id":"8l665MB3Q7MdKzfGJBJd"}, { "sessions.$":1 ,"_id":0})
+		//ESTO DEVOLVERA SOLO UN OBJETO SESION, EL QUE CORRESPONDA CON LA ID DEL FIND
+		
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		fields.put("_id", 0);
+		fields.put("sessions.$", 1);
+		
+		DBCursor iterator = userCollection.find(query,fields);
+		DBObject dbo = iterator.next();
+		System.out.println("dbo.get(): ----> " + dbo.get("sessions"));
+		
+		Session[] sessions = new Gson().fromJson(dbo.get("sessions").toString(), Session[].class);
+		
+		String next = dbo.toString();
+		System.out.println("next ----> " + next);
+		
+		next = sessions[0].toString();
+		System.out.println("next ----> " + next);
+
+		System.out.println(sessions[0]);
+		
+		return sessions[0];
+	}
+
+//	public HashSet<String> getAllOldIdSessions(String accountId, String sessionId) {
+//
+//		
+//		Set<String> oldSessions = new HashSet<String>();
+		
+//		//ArrayList<Session> oldSessions = new ArrayList<Session>();
+//		
+//		BasicDBObject query = new BasicDBObject();
+//		BasicDBObject fields = new BasicDBObject();
+//		query.put("accountId", accountId);
+//		query.put("sessions.id", sessionId);
+//		fields.put("_id", 0);
+//		fields.put("oldSessions", 1);
+//		
+//		DBCursor iterator = userCollection.find(query,fields);
+//
+//		while (iterator.hasNext()) {
+//			oldSessions.add(new Gson().fromJson(iterator.next().toString(), Session.class));
+//		}
+//		
+//		return oldSessions;
+//		
+//	}
 	
 	@Override
 	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId) {
@@ -393,7 +433,13 @@ public class UserMongoDBManager implements UserManager {
 		}
 		
 	}
-
+	
+	/////////////////////////
+	/*
+	 * Job methods
+	 */
+	////////////////////////
+	
 	@Override
 	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId) {
 		String jobId = StringUtils.randomString(8);
@@ -401,62 +447,108 @@ public class UserMongoDBManager implements UserManager {
 //		ioManager.createScaffoldAccountId(accountId);
 		return jobId;
 	}
-
-	@Override
-	public void checkSessionId(String accountId, String sessionId) {
-		// TODO Auto-generated method stub
+	
+	
+	////////////////////////
+	/*
+	 * Utils
+	 */
+	///////////////////////
+	
+	public List<Project> jsonToProjectList(String json) {
 		
+		Project[] projects = new Gson().fromJson(json, Project[].class);
+		
+		System.out.println("proyectos del json: " + projects);
+		List<Project> p = Arrays.asList(projects);
+	
+		return p;
+	}
+	
+	
+	//////////////////////
+	/*
+	 * Private classes
+	 */
+	//////////////////////
+	
+	private boolean validate(String email) {
+		String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"	+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+		Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+		Matcher matcher = pattern.matcher(email);
+		return matcher.matches();
+	}
+	
+	private void getCollection(String nameCollection) {
+
+		if (!mongoDB.collectionExists(nameCollection)) {
+			userCollection = mongoDB.createCollection(nameCollection,
+					new BasicDBObject());
+		} else {
+			userCollection = mongoDB.getCollection(nameCollection);
+			System.out.println(userCollection.toString());
+		}
 	}
 
-	@Override
-	public Session getSessionId(String accountId, String sessionId) {
-//		ArrayList<Session> sessions = new ArrayList<Session>();
+	private boolean userExist(String accountId) throws UserManagementException {
+		boolean userExist = true;
 
-		Set<String> sessionsId = new HashSet<String>();
-		
-		//db.users.find({"accountId":"imedina","sessions.id":"8l665MB3Q7MdKzfGJBJd"}, { "sessions.$":1 ,"_id":0})
-		//ESTO DEVOLVERA SOLO UN OBJETO SESION, EL QUE CORRESPONDA CON LA ID DEL FIND
-		
 		BasicDBObject query = new BasicDBObject();
-		BasicDBObject fields = new BasicDBObject();
 		query.put("accountId", accountId);
-		query.put("sessions.id", sessionId);
-		fields.put("_id", 0);
-		fields.put("sessions.$", 1);
-		
-		DBCursor iterator = userCollection.find(query,fields);
+		DBCursor iterator = userCollection.find(query);
 
-		return new Gson().fromJson(iterator.next().toString(), Session.class);
+		if (iterator.count() < 1)
+			userExist = false;
+
+		return userExist;
 	}
 
-	@Override
-	public Set<String> getAllOldIdSessions(String accountId, String sessionId) {
-		// TODO Auto-generated method stub
-		return null;
+	private void getDataBase(String nameDataBase) {
+		mongoDB = mongo.getDB(nameDataBase);
 	}
 
-//	public HashSet<String> getAllOldIdSessions(String accountId, String sessionId) {
-//
-//		
-//		Set<String> oldSessions = new HashSet<String>();
-//		
-//		//ArrayList<Session> oldSessions = new ArrayList<Session>();
-//		
-//		BasicDBObject query = new BasicDBObject();
-//		BasicDBObject fields = new BasicDBObject();
-//		query.put("accountId", accountId);
-//		query.put("sessions.id", sessionId);
-//		fields.put("_id", 0);
-//		fields.put("oldSessions", 1);
-//		
-//		DBCursor iterator = userCollection.find(query,fields);
-//
-//		while (iterator.hasNext()) {
-//			oldSessions.add(new Gson().fromJson(iterator.next().toString(), Session.class));
-//		}
-//		
-//		return oldSessions;
-//		
-//	}
+	private void connectToMongo() throws UserManagementException {
+		try {
+			 mongo = new Mongo(
+			 CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
+			 Integer.parseInt(CloudSessionManager.properties
+			 .getProperty("GCSA.MONGO.PORT")));
+
+		} catch (UnknownHostException e) {
+			throw new UserManagementException(
+					"ERROR: Not connected to mongoDB " + e.toString());
+		} catch (MongoException e) {
+			throw new UserManagementException(
+					"ERROR: Not connected to mongoDB " + e.toString());
+		}
+	}
+
+	private void updateMongo(DBObject filter, String field, Object value) {
+		BasicDBObject set = new BasicDBObject("$set",new BasicDBObject().append(field,	(DBObject) JSON.parse(new Gson().toJson(value))));
+		userCollection.update(filter, set);
+	}
+
+	@SuppressWarnings("unused")
+	private void updateMongo(BasicDBObject[] filter, String field, Object value) {
+
+		BasicDBObject container = filter[0];
+		for (int i = 1; i < filter.length; i++) {
+			container.putAll(filter[i].toMap());
+		}
+
+		System.out.println("container ---> " + container.toString());
+
+		System.out.println("value -----> "
+				+ JSON.parse(new Gson().toJson(value)));
+
+		BasicDBObject set = new BasicDBObject("$set",
+				new BasicDBObject().append(field,
+						JSON.parse(new Gson().toJson(value))));
+
+		System.out.println("set -----> " + set.toString());
+
+		userCollection.update(container, set);
+
+	}
 
 }

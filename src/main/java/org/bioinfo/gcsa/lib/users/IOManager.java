@@ -17,6 +17,7 @@ public class IOManager {
 			try {
 				FileUtils.createDirectory(GCSA_ACCOUNT);
 			} catch (IOException e1) {
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 		}
@@ -29,24 +30,38 @@ public class IOManager {
 				FileUtils.createDirectory(GCSA_ACCOUNT+ "/" + accountId);
 				System.out.println("account creada");
 			} catch (IOException e1) {
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 			
 			try {
 				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/jobs");
 			} catch (IOException e1) {
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/jobs"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 
 			try {
 				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/analysis");
 			} catch (IOException e1) {
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/analysis"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/jobs"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 			
 			try {
 				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/projects");
 			} catch (IOException e1) {
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/projects"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/analysis"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/jobs"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 			
@@ -63,8 +78,4 @@ public class IOManager {
 
 	}
 	
-	public void createFile(){
-		
-	}
-
 }
