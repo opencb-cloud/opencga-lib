@@ -78,4 +78,26 @@ public class UserFileManager implements UserManager {
 	public Session getSessionId(String accountId, String sessionId) {
 		return null;
 	}
+<<<<<<< HEAD
+=======
+
+	@Override
+	public Set<String> getAllOldIdSessions(String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getJobFolder(String jobId, String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getUserBySessionId(String sessionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+>>>>>>> 7441380b4db5743266b9fa709c89ac77fe4c043b
 }
