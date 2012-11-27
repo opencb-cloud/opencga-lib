@@ -183,7 +183,7 @@ public class UserMongoDBManager implements UserManager {
 			
 		}
 		
-		return "worked";
+		return "You are now signed out";
 	}
 
 	public String testPipe(String accountId, String password) {
@@ -477,7 +477,8 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	@Override
-	public String getUserBySessionId(String sessionId) {
+	public String getAccountBySessionId(String sessionId) {
+		System.out.println(sessionId);
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
 		query.put("sessions.id", sessionId);
