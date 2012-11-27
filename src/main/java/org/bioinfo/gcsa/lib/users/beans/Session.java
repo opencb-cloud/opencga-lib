@@ -2,6 +2,8 @@ package org.bioinfo.gcsa.lib.users.beans;
 
 import java.util.Map;
 
+import javax.persistence.Version;
+
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
 
@@ -10,11 +12,11 @@ public class Session {
 	private String ip;
 	private String login;
 	private String logout;
-	private Map<String, String> attributes;
+//	private Map<String, String> attributes;
 
 	public Session() {
 		this.id = GcsaUtils.getSessionId();
-		this.ip = "";
+		this.ip = "jhgjhjhj";
 		this.login = GcsaUtils.getTime();
 		this.logout = "";
 	}
@@ -33,7 +35,19 @@ public class Session {
 		this.login = GcsaUtils.getTime();
 		this.logout = logout;
 	}
+	
+	public Session(String id, String ip, String login, String logout) {
+		this.id = id;
+		this.ip = ip;
+		this.login = login;
+		this.logout = logout;
+	}
 
+	@Override
+	public String toString() {
+		return id+"\t"+ip+"\t"+login+"\t"+logout;
+	}
+	
 	public String getId() {
 		return id;
 	}

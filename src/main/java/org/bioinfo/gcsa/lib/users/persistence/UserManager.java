@@ -2,7 +2,6 @@ package org.bioinfo.gcsa.lib.users.persistence;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Set;
 
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
@@ -21,7 +20,7 @@ public interface UserManager {
 	
 	public String logout(String accountId, String sessionId);
 	
-	public String testPipe(String accountId, String password); //Pruebas, hay que borrarlo
+//	public String testPipe(String accountId, String password); //Pruebas, hay que borrarlo
 	
 	public String getUserByAccountId(String accountId, String sessionId);
 	
@@ -34,15 +33,13 @@ public interface UserManager {
 	 * Project methods
 	 */
 	
-	public void checkSessionId(String accountId, String sessionId);
+	public boolean checkSessionId(String accountId, String sessionId);
 	
 	public Session getSessionId(String accountId, String sessionId);
 	
-	public Set<String> getAllOldIdSessions(String accountId, String sessionId);
-	
 	public String getAllProjectsBySessionId(String accountId, String sessionId);
 	
-	public void createProject(Project project, String accountId, String sessionId) throws UserManagementException;
+	public String createProject(Project project, String accountId, String sessionId);
 
 	//add file to project
 	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId);
