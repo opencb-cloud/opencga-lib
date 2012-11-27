@@ -35,7 +35,6 @@ public class User {
 		this.diskUsage = "";
 		this.sessions.add(new Session());
 		this.projects.add(new Project());
-		this.data.add(new Data());
 	}
 
 	public User(String accountId, String accountName, String password, String email,Session session) {

@@ -78,12 +78,6 @@ public class IOManager {
 
 	}
 	
-<<<<<<< HEAD
-=======
-	public void createFile(){
-		
-	}
-	
 	public void createJobFolder(String accountId, String jobId)throws UserManagementException {
 		String path = GCSA_ACCOUNT+ "/"  + accountId + "/jobs";
 		if(new File(path).exists() && new File(path).canWrite()) {
@@ -100,5 +94,4 @@ public class IOManager {
 		FileUtils.deleteDirectory(path);
 	}
 
->>>>>>> 7441380b4db5743266b9fa709c89ac77fe4c043b
 }
