@@ -13,35 +13,35 @@ import org.junit.Test;
 
 public class UserMongoDBManagerTest {
 	private UserManager userManager;
-//	@Test
-//	public void createFileToProjectTest() {
-//		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
-//			try {
-//				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-//				userManager = cloudSessionManager.userManager;
-//				
-//				String sessionId = "vXdrMs4CrKQcq2GueyMA";
-//				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
-//				String data = "sampletext";
-//				InputStream fileData = new FileInputStream(f);
-//				userManager.createFileToProject("Default", f.getName(), fileData, sessionId);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
-//	}
 	@Test
-	public void getUserBySessionIdTest() {
-		try {
-			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-			userManager = cloudSessionManager.userManager;
-			
-			String sessionId = "vXdrMs4CrKQcq2GueyMA";
-			System.out.println(userManager.getAccountBySessionId(sessionId));
-		} catch (Exception e) {
-			e.printStackTrace();
+	public void createFileToProjectTest() {
+		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
+			try {
+				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
+				userManager = cloudSessionManager.userManager;
+				
+				String sessionId = "2kPfNpHqYgRoMloMBuqf";
+				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
+				String data = "sampletext";
+				InputStream fileData = new FileInputStream(f);
+				userManager.createFileToProject("Default", f.getName(), fileData, sessionId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
+//	@Test
+//	public void getUserBySessionIdTest() {
+//		try {
+//			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
+//			userManager = cloudSessionManager.userManager;
+//			
+//			String sessionId = "vXdrMs4CrKQcq2GueyMA";
+//			System.out.println(userManager.getAccountBySessionId(sessionId));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 //	@Test
 //	public void loginTest() {
 //	}
