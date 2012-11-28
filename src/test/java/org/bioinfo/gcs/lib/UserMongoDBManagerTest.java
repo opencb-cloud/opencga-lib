@@ -18,7 +18,7 @@ public class UserMongoDBManagerTest {
 		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
 			try {
 				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-				userManager = cloudSessionManager.userManager;
+				userManager = cloudSessionManager.getUserManager();
 				
 				String sessionId = "2kPfNpHqYgRoMloMBuqf";
 				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
@@ -30,6 +30,7 @@ public class UserMongoDBManagerTest {
 			}
 		}
 	}
+
 //	@Test
 //	public void getUserBySessionIdTest() {
 //		try {
@@ -42,6 +43,7 @@ public class UserMongoDBManagerTest {
 //			e.printStackTrace();
 //		}
 //	}
+
 //	@Test
 //	public void loginTest() {
 //	}
@@ -62,18 +64,6 @@ public class UserMongoDBManagerTest {
 //			}
 //	}
 	
-//	@Test
-//	public void createJobTest() {
-//		try {
-//			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-//			userManager = cloudSessionManager.userManager;
-//			
-//			String sessionId = "vXdrMs4CrKQcq2GueyMA";
-//			
-//			userManager.createJob("", "", new ArrayList<String>(), sessionId);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
+
 
 }

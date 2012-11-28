@@ -13,6 +13,7 @@ public class User {
 	private String diskQuota;
 	private String diskUsage;
 	private String lastActivity;
+	private List<Acl> acls = new ArrayList<Acl>();
 	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
 	private List<Project> projects = new ArrayList<Project>();
@@ -21,9 +22,6 @@ public class User {
 	private List<Config> configs = new ArrayList<Config>();
 
 	public User() {
-//		oldSessions.add(new Session());
-//		projects.add(new Project());
-//		accounts.add(new Account());
 		this.status = "1";
 		this.password = "";
 		this.email = "";
@@ -37,7 +35,7 @@ public class User {
 		this.projects.add(new Project());
 	}
 
-	public User(String accountId, String accountName, String password, String email,Session session) {
+	public User(String accountId, String accountName, String password, String email) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
@@ -47,7 +45,6 @@ public class User {
 		this.lastActivity = "";
 		this.diskQuota = "";
 		this.diskUsage = "";
-		this.sessions.add(session);
 		this.projects.add(new Project());
 	}
 

@@ -16,11 +16,11 @@ public class Project {
 	private String descripcion;
 	private List<Acl> acl;
 	private List<Data> data;
-	
+	private List<Job> jobs;
 	
 	public Project(){
 		this.status ="1";
-		this.id = "";//Esto hay que ver como lo numeramos
+		this.id = "default";//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
 		this.name = "Default";
 		this.diskUsage = "";
@@ -28,10 +28,11 @@ public class Project {
 		this.type = "";
 		this.descripcion = "Default Project";
 		this.data = new ArrayList<Data>();
+		this.jobs = new ArrayList<Job>();
 	}
 
 	public Project(String id, String name, String status, String diskUsage
-			, String ownerId, String type, String descripcion, List<Acl> acl) {
+			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs) {
 		this.id = id;
 		this.name = name;
 		this.status = status;
@@ -42,6 +43,7 @@ public class Project {
 		this.descripcion = descripcion;
 		this.acl = acl;
 		this.data = new ArrayList<Data>();
+		this.jobs = jobs;
 	}
 
 	public String getId() {
@@ -122,6 +124,15 @@ public class Project {
 
 	public void setData(List<Data> data) {
 		this.data = data;
+	}
+	
+
+	public List<Job> getJobs() {
+		return jobs;
+	}
+
+	public void setJobs(List<Job> jobs) {
+		this.jobs = jobs;
 	}
 	
 }

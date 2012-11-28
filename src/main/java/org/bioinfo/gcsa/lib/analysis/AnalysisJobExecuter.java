@@ -125,13 +125,17 @@ public class AnalysisJobExecuter {
 			params.remove("toolname");
 		}
 		
-		// Create job
-		String jobId = cloudSessionManager.createJob(jobName, toolName, new ArrayList<String>(), sessionId);
-		String jobFolder = cloudSessionManager.getJobFolder(jobId, sessionId);
-		//TODO crear job
-//		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);
-//		String jobFolder = wni.getJobFolder(jobId, sessionId);
-		logger.debug("AnalysisJobExecuter: execute, 'jobId': "+jobId+", 'jobFolder': "+jobFolder);
+		String jobFolder = null;
+		if(params.containsKey("jobfolder")){
+			jobFolder = params.get("jobfolder").get(0);
+			params.remove("jobfolder");
+		}
+		
+		String project = "default";
+		if(params.containsKey("project")){
+			project = params.get("project").get(0);
+			params.remove("project");
+		}
 		
 		Execution execution = getExecution(analysis);
 		if(execution == null) {
@@ -142,6 +146,7 @@ public class AnalysisJobExecuter {
 		String binaryPath = null;
 		binaryPath = analysisPath + execution.getExecutable();
 		
+		// Set output param
 		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 		
 		// Check required params
@@ -163,9 +168,23 @@ public class AnalysisJobExecuter {
 			}
 		}
 		
-		// set command line
+		// Set command line
 		String commandLine = binaryPath + createCommandLine(params);
 		logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
+		
+		// Create job
+		String jobId = cloudSessionManager.getUserManager().createJob(jobName, jobFolder, project, toolName, new ArrayList<String>(), commandLine, sessionId);
+		
+		if(jobFolder == null) {
+			jobFolder = cloudSessionManager.getUserManager().getJobFolder(project, jobId, sessionId);
+			params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
+			
+			// Set command line
+			commandLine = binaryPath + createCommandLine(params);
+			logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
+		}
+		
+		logger.debug("AnalysisJobExecuter: execute, 'jobId': "+jobId+", 'jobFolder': "+jobFolder);
 
 		executeCommandLine(commandLine, jobId, jobFolder);
 		
@@ -384,7 +403,7 @@ public class AnalysisJobExecuter {
 		}
 		
 		// create job
-		String jobId = cloudSessionManager.createJob("", "", new ArrayList<String>(), sessionId);
+		String jobId = cloudSessionManager.getUserManager().createJob("", null, "", "", new ArrayList<String>(), "", sessionId);
 		String jobFolder = "/tmp/";
 		//TODO crear job
 //		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);

@@ -3,7 +3,6 @@ package org.bioinfo.gcsa.lib.users.persistence;
 import java.io.InputStream;
 import java.util.List;
 
-import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 
@@ -48,7 +47,7 @@ public interface UserManager {
 	/*
 	 * Job methods
 	 */
-	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId);
+	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList, String commandLine, String sessionId);
 	
 	
 	/*
@@ -56,6 +55,6 @@ public interface UserManager {
 	 */
 	public List<Project> jsonToProjectList(String json);
 
-	public String getJobFolder(String jobId, String sessionId);
+	public String getJobFolder(String project, String jobId, String sessionId);
 	
 }
