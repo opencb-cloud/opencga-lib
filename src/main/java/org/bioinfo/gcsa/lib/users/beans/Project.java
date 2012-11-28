@@ -30,6 +30,19 @@ public class Project {
 		this.data = new ArrayList<Data>();
 		this.jobs = new ArrayList<Job>();
 	}
+	
+	public Project(String nameProject){
+		this.status ="1";
+		this.id = "";//Esto hay que ver como lo numeramos
+		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
+		this.name = nameProject;
+		this.diskUsage = "";
+		this.creationDate = GcsaUtils.getTime();
+		this.type = "";
+		this.descripcion = "";
+		this.data = new ArrayList<Data>();
+		this.jobs = new ArrayList<Job>();
+	}
 
 	public Project(String id, String name, String status, String diskUsage
 			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs) {

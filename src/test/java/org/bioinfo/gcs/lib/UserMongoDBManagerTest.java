@@ -7,12 +7,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
+import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.persistence.UserManager;
 import org.junit.Test;
 
 public class UserMongoDBManagerTest {
 	private UserManager userManager;
+	
 	@Test
 	public void createFileToProjectTest() {
 		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
@@ -20,7 +22,7 @@ public class UserMongoDBManagerTest {
 				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
 				userManager = cloudSessionManager.getUserManager();
 				
-				String sessionId = "c33HbnyKp2EWnRxVSCkq";
+				String sessionId = "uqCpu5b4qfwt1VMuQFrR";
 				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
 				String data = "sampletext";
 				InputStream fileData = new FileInputStream(f);
@@ -63,7 +65,5 @@ public class UserMongoDBManagerTest {
 //				e.printStackTrace();
 //			}
 //	}
-	
-
 
 }

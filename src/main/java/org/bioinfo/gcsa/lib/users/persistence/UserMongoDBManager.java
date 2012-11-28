@@ -273,12 +273,17 @@ public class UserMongoDBManager implements UserManager {
 
 	public String createProject(Project project, String accountId, String sessionId){
 		BasicDBObject filter = new BasicDBObject("accountId",accountId);
-		filter.put("session.id", sessionId);
-		List<Project> projects = new Gson().fromJson(getUserByAccountId(accountId, sessionId),User.class).getProjects();
-		projects.add(project);
-		updateMongo("set", filter, "projects", projects);
+//		filter.put("session.id", sessionId);
+//		List<Project> projects = new Gson().fromJson(getUserByAccountId(accountId, sessionId),User.class).getProjects();
+//		projects.add(project);
+		try {
+			ioManager.createProjectFolder(accountId,project.getName());
+		} catch (UserManagementException e) {
+			e.printStackTrace();
+		}
+		updateMongo("push", filter, "projects", project);
 		updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
-		return projects.toString();
+		return "";
 	}
 	
 	public String getAccountIdBySessionId(String sessionId) {
@@ -348,9 +353,12 @@ public class UserMongoDBManager implements UserManager {
 			BasicDBObject item = new BasicDBObject();
 			BasicDBObject action = new BasicDBObject();
 			query.put("sessions.id", sessionId);
+			query.put("projects.id", project.toLowerCase());
 			item.put("projects.$.data", dataDBObject);
 			action.put("$push", item);
+			System.out.println(action);
 			WriteResult result = userCollection.update(query, action);
+//			db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
 			
 			if(result.getError()!=null){
 				FileUtils.deleteDirectory(userFile);
