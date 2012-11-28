@@ -167,10 +167,10 @@ public class AnalysisJobExecuter {
 		logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
 		
 		// Create job
-		String jobId = cloudSessionManager.userManager.createJob(jobName, jobFolder, toolName, new ArrayList<String>(), commandLine, sessionId);
+		String jobId = cloudSessionManager.getUserManager().createJob(jobName, jobFolder, toolName, new ArrayList<String>(), commandLine, sessionId);
 		
 		if(jobFolder == null) {
-			jobFolder = cloudSessionManager.userManager.getJobFolder(jobId, sessionId);
+			jobFolder = cloudSessionManager.getUserManager().getJobFolder(jobId, sessionId);
 			params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 			
 			// Set command line

@@ -13,7 +13,7 @@ import org.bioinfo.gcsa.lib.users.persistence.UserMongoDBManager;
 
 public class CloudSessionManager {
 
-	public static UserManager userManager;
+	private UserManager userManager;
 
 	public static Properties properties;
 
@@ -54,6 +54,10 @@ public class CloudSessionManager {
 	
 	public String getJobFolder(String jobId, String sessionId) {
 		return userManager.getJobFolder(jobId, sessionId);
+	}
+	
+	public UserManager getUserManager() {
+		return userManager;
 	}
 
 }
