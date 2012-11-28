@@ -3,7 +3,6 @@ package org.bioinfo.gcsa.lib.users;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
 import org.bioinfo.gcsa.lib.users.persistence.UserFileManager;
@@ -46,14 +45,6 @@ public class CloudSessionManager {
 		userManager.checkSessionId(accountId, sessionId);
 
 		return null;
-	}
-	
-	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String commandLine, String sessionId) {
-		return userManager.createJob(jobName, jobFolder, toolName, dataList, commandLine, sessionId);
-	}
-	
-	public String getJobFolder(String jobId, String sessionId) {
-		return userManager.getJobFolder(jobId, sessionId);
 	}
 	
 	public UserManager getUserManager() {

@@ -131,6 +131,12 @@ public class AnalysisJobExecuter {
 			params.remove("jobfolder");
 		}
 		
+		String project = "default";
+		if(params.containsKey("project")){
+			project = params.get("project").get(0);
+			params.remove("project");
+		}
+		
 		Execution execution = getExecution(analysis);
 		if(execution == null) {
 			return "ERROR: Executable not found.";
@@ -167,10 +173,10 @@ public class AnalysisJobExecuter {
 		logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
 		
 		// Create job
-		String jobId = cloudSessionManager.getUserManager().createJob(jobName, jobFolder, toolName, new ArrayList<String>(), commandLine, sessionId);
+		String jobId = cloudSessionManager.getUserManager().createJob(jobName, jobFolder, project, toolName, new ArrayList<String>(), commandLine, sessionId);
 		
 		if(jobFolder == null) {
-			jobFolder = cloudSessionManager.getUserManager().getJobFolder(jobId, sessionId);
+			jobFolder = cloudSessionManager.getUserManager().getJobFolder(project, jobId, sessionId);
 			params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 			
 			// Set command line
@@ -178,9 +184,6 @@ public class AnalysisJobExecuter {
 			logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
 		}
 		
-		//TODO crear job
-//		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);
-//		String jobFolder = wni.getJobFolder(jobId, sessionId);
 		logger.debug("AnalysisJobExecuter: execute, 'jobId': "+jobId+", 'jobFolder': "+jobFolder);
 
 		executeCommandLine(commandLine, jobId, jobFolder);
@@ -400,7 +403,7 @@ public class AnalysisJobExecuter {
 		}
 		
 		// create job
-		String jobId = cloudSessionManager.createJob("", null, "", new ArrayList<String>(), "", sessionId);
+		String jobId = cloudSessionManager.getUserManager().createJob("", null, "", "", new ArrayList<String>(), "", sessionId);
 		String jobFolder = "/tmp/";
 		//TODO crear job
 //		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);

@@ -68,7 +68,7 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String commandLine, String sessionId) {
+	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList, String commandLine, String sessionId) {
 		return null;
 	}
 
@@ -78,7 +78,7 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String getJobFolder(String jobId, String sessionId) {
+	public String getJobFolder(String project, String jobId, String sessionId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
