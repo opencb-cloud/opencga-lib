@@ -19,7 +19,6 @@ public class Data {
 	private String status;
 	private String statusMessage;
 	private List<Acl> members;
-	private Job job;
 	
 	public Data(){
 		this.id = "";
@@ -39,7 +38,7 @@ public class Data {
 
 	public Data(String id, String type, String fileName, String multiple, String diskUsage,
 			String responsible, String organization, String date, String description,
-			String status, String statusMessage, List<Acl> members, Job job) {
+			String status, String statusMessage, List<Acl> members) {
 		this.id = id;
 		this.type = type;
 		this.fileName = fileName;
@@ -53,7 +52,6 @@ public class Data {
 		this.status = status;
 		this.statusMessage = statusMessage;
 		this.members = members;
-		this.job = job;
 	}
 
 	public String getId() {
@@ -150,14 +148,6 @@ public class Data {
 
 	public void setMembers(List<Acl> members) {
 		this.members = members;
-	}
-
-	public Job getJob() {
-		return job;
-	}
-
-	public void setJob(Job job) {
-		this.job = job;
 	}
 
 	public String getType() {

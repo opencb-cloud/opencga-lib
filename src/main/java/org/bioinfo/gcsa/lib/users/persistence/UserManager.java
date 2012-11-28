@@ -48,7 +48,7 @@ public interface UserManager {
 	/*
 	 * Job methods
 	 */
-	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId);
+	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String sessionId);
 	
 	
 	/*
