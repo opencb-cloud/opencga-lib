@@ -28,6 +28,7 @@ public class Project {
 		this.type = "";
 		this.descripcion = "Default Project";
 		this.data = new ArrayList<Data>();
+		this.jobs = new ArrayList<Job>();
 	}
 
 	public Project(String id, String name, String status, String diskUsage

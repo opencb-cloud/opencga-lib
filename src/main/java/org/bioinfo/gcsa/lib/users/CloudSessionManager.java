@@ -48,8 +48,8 @@ public class CloudSessionManager {
 		return null;
 	}
 	
-	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String sessionId) {
-		return userManager.createJob(jobName, jobFolder, toolName, dataList, sessionId);
+	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String commandLine, String sessionId) {
+		return userManager.createJob(jobName, jobFolder, toolName, dataList, commandLine, sessionId);
 	}
 	
 	public String getJobFolder(String jobId, String sessionId) {
