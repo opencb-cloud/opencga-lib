@@ -88,12 +88,12 @@ public class UserMongoDBManager implements UserManager {
 			if (validate(email)){
 			
 				if (userLoad == null) {
-					userLoad = new User(accountId, accountName, password, email,
-							session);
+					userLoad = new User(accountId, accountName, password, email);
 				}
 	
 				userCollection.insert((DBObject) JSON.parse(new Gson()
 						.toJson(userLoad)));
+				updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());				
 			}
 			else{
 				throw new UserManagementException(
@@ -127,7 +127,7 @@ public class UserMongoDBManager implements UserManager {
 
 			BasicDBObject filter = new BasicDBObject("accountId", accountId);
 			updateMongo("set", filter, "sessions", sess);
-
+			updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
 			// mover a oldSessions todas las sesiones con mas de 24 horas.
 			Calendar cal;
 			List<Session> s = user.getSessions();
@@ -158,6 +158,7 @@ public class UserMongoDBManager implements UserManager {
 			if (changed){
 				updateMongo("set", new BasicDBObject("accountId",user.getAccountId()), "sessions", s);
 				updateMongo("set", new BasicDBObject("accountId",user.getAccountId()), "oldSessions", oldSes);
+				updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
 			}
 			
 
@@ -180,9 +181,10 @@ public class UserMongoDBManager implements UserManager {
 			
 			updateMongo("push", query, "oldSessions", dataDBObject);
 			query.removeField("sessions.id");
-			
+			//TODO
 			BasicDBObject value = new BasicDBObject("id", sessionId);
 			updateMongo("pull", query, "sessions", value);
+			updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
 			
 			logoutStatus = "SUCCESS";
 		}
@@ -202,6 +204,7 @@ public class UserMongoDBManager implements UserManager {
 
 		if (iterator.count() == 1) {
 			userStr = iterator.next().toString();
+			updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
 		}
 		
 		return userStr;
@@ -219,6 +222,7 @@ public class UserMongoDBManager implements UserManager {
 
 		if (iterator.count() == 1) {
 			userStr = iterator.next().toString();
+			updateMongo("set", query, "lastActivity", GcsaUtils.getTime());
 		}
 		
 		return userStr;
@@ -239,8 +243,9 @@ public class UserMongoDBManager implements UserManager {
 		query.put("sessions.id", sessionId);
 		DBCursor iterator = userCollection.find(query);
 		
-		if (iterator.count() > 0)
+		if (iterator.count() > 0){
 			isValidSession = true;
+		}
 		
 		return isValidSession;
 	}
@@ -259,6 +264,7 @@ public class UserMongoDBManager implements UserManager {
 		if (iterator.count() == 1) {
 			user = new Gson().fromJson(iterator.next().toString(),User.class);
 			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
+			updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
 		}
 		
 		return projectsStr;
@@ -270,6 +276,7 @@ public class UserMongoDBManager implements UserManager {
 		List<Project> projects = new Gson().fromJson(getUserByAccountId(accountId, sessionId),User.class).getProjects();
 		projects.add(project);
 		updateMongo("set", filter, "projects", projects);
+		updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
 		return projects.toString();
 	}
 	
@@ -302,17 +309,8 @@ public class UserMongoDBManager implements UserManager {
 		
 		DBCursor iterator = userCollection.find(query,fields);
 		DBObject dbo = iterator.next();
-		System.out.println("dbo.get(): ----> " + dbo.get("sessions"));
 		
 		Session[] sessions = new Gson().fromJson(dbo.get("sessions").toString(), Session[].class);
-		
-		String next = dbo.toString();
-		System.out.println("next ----> " + next);
-		
-		next = sessions[0].toString();
-		System.out.println("next ----> " + next);
-
-		System.out.println(sessions[0]);
 		
 		return sessions[0];
 	}
@@ -500,7 +498,16 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	private void updateMongo(String operator, DBObject filter, String field, Object value) {
-		BasicDBObject set = new BasicDBObject("$" + operator,new BasicDBObject().append(field,	(DBObject) JSON.parse(new Gson().toJson(value))));
+		BasicDBObject set = null;
+		System.out.println("CLASE: " + 	value.getClass().toString());
+		if (String.class.isInstance(value)){
+			System.out.println("IF CLASE: " + 	value.getClass().isInstance(String.class));
+			set = new BasicDBObject("$" + operator,new BasicDBObject().append(field,value));
+		}
+		else{
+			set = new BasicDBObject("$" + operator,new BasicDBObject().append(field, (DBObject) JSON.parse(new Gson().toJson(value))));
+			System.out.println("ELSE CLASE: " + 	value.getClass().isInstance(String.class));
+		}
 		userCollection.update(filter, set);
 	}
 
