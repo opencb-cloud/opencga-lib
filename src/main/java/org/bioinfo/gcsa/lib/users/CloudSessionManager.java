@@ -24,7 +24,7 @@ public class CloudSessionManager {
 	public CloudSessionManager(String gcsaHome) throws FileNotFoundException,
 			IOException, UserManagementException {
 		// read config file
-		System.err.println ("-----------------> creado CloudSessionManager");
+		System.err.println ("----------------> creado CloudSessionManager");
 		properties = new Properties();
 		properties.load(new FileInputStream(gcsaHome + "/conf/account.properties"));
 		if (properties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {

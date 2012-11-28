@@ -273,12 +273,12 @@ public class UserMongoDBManager implements UserManager {
 
 	public String createProject(Project project, String accountId, String sessionId){
 		BasicDBObject filter = new BasicDBObject("accountId",accountId);
-		filter.put("session.id", sessionId);
-		List<Project> projects = new Gson().fromJson(getUserByAccountId(accountId, sessionId),User.class).getProjects();
-		projects.add(project);
-		updateMongo("set", filter, "projects", projects);
+//		filter.put("session.id", sessionId);
+//		List<Project> projects = new Gson().fromJson(getUserByAccountId(accountId, sessionId),User.class).getProjects();
+//		projects.add(project);
+		updateMongo("push", filter, "projects", project);
 		updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
-		return projects.toString();
+		return "";
 	}
 	
 	public String getAccountIdBySessionId(String sessionId) {
@@ -531,7 +531,8 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	@Override
-	public String getUserBySessionId(String sessionId) {
+	public String getAccountBySessionId(String sessionId) {
+		System.out.println(sessionId);
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
 		query.put("sessions.id", sessionId);
