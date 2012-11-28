@@ -178,9 +178,6 @@ public class AnalysisJobExecuter {
 			logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
 		}
 		
-		//TODO crear job
-//		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);
-//		String jobFolder = wni.getJobFolder(jobId, sessionId);
 		logger.debug("AnalysisJobExecuter: execute, 'jobId': "+jobId+", 'jobFolder': "+jobFolder);
 
 		executeCommandLine(commandLine, jobId, jobFolder);
