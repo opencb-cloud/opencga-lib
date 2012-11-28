@@ -20,7 +20,7 @@ public class UserMongoDBManagerTest {
 				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
 				userManager = cloudSessionManager.getUserManager();
 				
-				String sessionId = "2kPfNpHqYgRoMloMBuqf";
+				String sessionId = "c33HbnyKp2EWnRxVSCkq";
 				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
 				String data = "sampletext";
 				InputStream fileData = new FileInputStream(f);
