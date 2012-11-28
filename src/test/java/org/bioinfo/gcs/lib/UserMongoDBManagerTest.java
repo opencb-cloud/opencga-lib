@@ -56,7 +56,7 @@ public class UserMongoDBManagerTest {
 			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
 			userManager = cloudSessionManager.getUserManager();
 			
-			String sessionId = "evzoYSZqKVNhHOrubCo5";
+			String sessionId = "49vtbIxHqHGUA7KHM9Vz";
 			String accountId = "imedina";
 			String password = "imedina";
 			for(int i = 0; i < 5; i++)

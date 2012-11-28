@@ -276,6 +276,11 @@ public class UserMongoDBManager implements UserManager {
 //		filter.put("session.id", sessionId);
 //		List<Project> projects = new Gson().fromJson(getUserByAccountId(accountId, sessionId),User.class).getProjects();
 //		projects.add(project);
+		try {
+			ioManager.createProjectFolder(accountId,project.getName());
+		} catch (UserManagementException e) {
+			e.printStackTrace();
+		}
 		updateMongo("push", filter, "projects", project);
 		updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
 		return "";

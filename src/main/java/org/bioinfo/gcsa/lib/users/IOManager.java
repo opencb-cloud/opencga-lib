@@ -7,13 +7,16 @@ import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 
 public class IOManager {
-	
-	private String GCSA_ENV = System.getenv(CloudSessionManager.properties.getProperty("GCSA.ENV.PATH"));
-	private String GCSA_ACCOUNT = GCSA_ENV+CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
 
-	public void createScaffoldAccountId(String accountId)throws UserManagementException {
-		
-		if(!new File(GCSA_ACCOUNT).exists()){
+	private String GCSA_ENV = System.getenv(CloudSessionManager.properties
+			.getProperty("GCSA.ENV.PATH"));
+	private String GCSA_ACCOUNT = GCSA_ENV
+			+ CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
+
+	public void createScaffoldAccountId(String accountId)
+			throws UserManagementException {
+
+		if (!new File(GCSA_ACCOUNT).exists()) {
 			try {
 				FileUtils.createDirectory(GCSA_ACCOUNT);
 			} catch (IOException e1) {
@@ -21,50 +24,63 @@ public class IOManager {
 				throw new UserManagementException("IOException" + e1.toString());
 			}
 		}
-		
+
 		System.out.println("---------------->>>>> PATHGCSA: " + GCSA_ACCOUNT);
-		if (new File(GCSA_ACCOUNT).exists() && new File(GCSA_ACCOUNT).canWrite()
+		if (new File(GCSA_ACCOUNT).exists()
+				&& new File(GCSA_ACCOUNT).canWrite()
 				&& new File(GCSA_ACCOUNT).canRead()
 				&& new File(GCSA_ACCOUNT).canExecute()) {
 			try {
-				FileUtils.createDirectory(GCSA_ACCOUNT+ "/" + accountId);
+				FileUtils.createDirectory(GCSA_ACCOUNT + "/" + accountId);
 				System.out.println("account creada");
 			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId));
 				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
-			
+
 			try {
-				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/analysis");
+				FileUtils.createDirectory(GCSA_ACCOUNT + "/" + accountId
+						+ "/analysis");
 			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/analysis"));
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId + "/analysis"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId));
 				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
-			
+
 			try {
-				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/projects");
+				FileUtils.createDirectory(GCSA_ACCOUNT + "/" + accountId
+						+ "/projects");
 			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/projects"));
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/analysis"));
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId + "/projects"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId + "/analysis"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId));
 				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
-			
+
 			try {
-				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/projects/default");
+				FileUtils.createDirectory(GCSA_ACCOUNT + "/" + accountId
+						+ "/projects/default");
 			} catch (IOException e1) {
 				throw new UserManagementException("IOException" + e1.toString());
 			}
-			
+
 			try {
-				FileUtils.createDirectory(GCSA_ACCOUNT+ "/"  + accountId + "/projects/default/jobs");
+				FileUtils.createDirectory(GCSA_ACCOUNT + "/" + accountId
+						+ "/projects/default/jobs");
 			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/"  + accountId + "/projects/default/jobs"));
-				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT+ "/" + accountId));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId + "/projects/default/jobs"));
+				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/"
+						+ accountId));
 				FileUtils.deleteDirectory(new File(GCSA_ACCOUNT));
 				throw new UserManagementException("IOException" + e1.toString());
 			}
@@ -75,10 +91,28 @@ public class IOManager {
 		}
 
 	}
-	
-	public void createJobFolder(String accountId, String project, String jobId)throws UserManagementException {
-		String path = GCSA_ACCOUNT+ "/"  + accountId + "/projects/" + project + "/jobs";
-		if(new File(path).exists() && new File(path).canWrite()) {
+
+	public void createProjectFolder(String accountId, String project)
+			throws UserManagementException {
+		try {
+			System.out.println("--------------->     " +GCSA_ACCOUNT + "/" + accountId
+					+ "/projects/" + project + "/jobs");
+			FileUtils.createDirectory(GCSA_ACCOUNT + "/" + accountId
+					+ "/projects/" + project);
+			FileUtils.createDirectory(GCSA_ACCOUNT + "/" + accountId
+					+ "/projects/" + project + "/jobs");
+		} catch (IOException e1) {
+			FileUtils.deleteDirectory(new File(GCSA_ACCOUNT + "/" + accountId
+					+ "/projects/" + project + "/jobs"));
+			throw new UserManagementException("IOException" + e1.toString());
+		}
+	}
+
+	public void createJobFolder(String accountId, String project, String jobId)
+			throws UserManagementException {
+		String path = GCSA_ACCOUNT + "/" + accountId + "/projects/" + project
+				+ "/jobs";
+		if (new File(path).exists() && new File(path).canWrite()) {
 			try {
 				FileUtils.createDirectory(path + "/" + jobId);
 			} catch (IOException e) {
@@ -86,9 +120,11 @@ public class IOManager {
 			}
 		}
 	}
-	
-	public void removeJobFolder(String accountId, String project, String jobId)throws UserManagementException {
-		File path = new File(GCSA_ACCOUNT+ "/"  + accountId + "/projects/" + project + "/jobs/"+ jobId);
+
+	public void removeJobFolder(String accountId, String project, String jobId)
+			throws UserManagementException {
+		File path = new File(GCSA_ACCOUNT + "/" + accountId + "/projects/"
+				+ project + "/jobs/" + jobId);
 		FileUtils.deleteDirectory(path);
 	}
 
