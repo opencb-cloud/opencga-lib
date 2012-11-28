@@ -20,7 +20,7 @@ public class Project {
 	
 	public Project(){
 		this.status ="1";
-		this.id = "";//Esto hay que ver como lo numeramos
+		this.id = "default";//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
 		this.name = "Default";
 		this.diskUsage = "";

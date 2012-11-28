@@ -374,16 +374,16 @@ public class UserMongoDBManager implements UserManager {
 	////////////////////////
 	
 	@Override
-	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String commandLine, String sessionId) {
+	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList, String commandLine, String sessionId) {
 		String jobId = StringUtils.randomString(8);
 		String accountId = getAccountIdBySessionId(sessionId);
 		
 		try {
 			if(jobFolder == null) {
 				// CREATE JOB FOLDER
-				ioManager.createJobFolder(accountId, jobId);
+				ioManager.createJobFolder(accountId, project, jobId);
 				
-				jobFolder = "jobs:"+jobId+":";
+//				jobFolder = "jobs:"+jobId+":";
 				
 				//INSERT JOB OBJECT ON MONGO
 				Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
@@ -392,13 +392,13 @@ public class UserMongoDBManager implements UserManager {
 				BasicDBObject item = new BasicDBObject();
 				BasicDBObject action = new BasicDBObject();
 				query.put("accountId", accountId);
-				query.put("projects.status", "1");
+				query.put("projects.id", project);
 				item.put("projects.$.jobs", jobDBObject);
 				action.put("$push", item);
 				WriteResult result = userCollection.update(query, action);
 				
 				if(result.getError()!=null) {
-					ioManager.removeJobFolder(accountId, jobId);
+					ioManager.removeJobFolder(accountId, project, jobId);
 					return "MongoDB error, "+result.getError()+" files will be deleted";
 				}
 			}
@@ -409,7 +409,6 @@ public class UserMongoDBManager implements UserManager {
 			return null;
 		}
 	}
-//	
 	
 	////////////////////////
 	/*
@@ -510,7 +509,7 @@ public class UserMongoDBManager implements UserManager {
 	}
 	
 	@Override
-	public String getJobFolder(String jobId, String sessionId) {
+	public String getJobFolder(String project, String jobId, String sessionId) {
 //		String accountId = getAccountIdBySessionId(sessionId);
 //		BasicDBObject query = new BasicDBObject();
 //		BasicDBObject fields = new BasicDBObject();
@@ -521,7 +520,7 @@ public class UserMongoDBManager implements UserManager {
 //		DBObject item = userCollection.findOne(query,fields);
 //		Project[] p = new Gson().fromJson(item.get("projects").toString(), Project[].class);
 
-		String jobFolder = GCSA_ACCOUNT+"/"+getAccountIdBySessionId(sessionId)+"/jobs/"+jobId+"/";
+		String jobFolder = GCSA_ACCOUNT+"/"+getAccountIdBySessionId(sessionId)+"/projects/"+project+"/jobs/"+jobId+"/";
 		if(new File(jobFolder).exists()) {
 			return jobFolder;
 		}

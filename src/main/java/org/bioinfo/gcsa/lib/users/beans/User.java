@@ -13,6 +13,7 @@ public class User {
 	private String diskQuota;
 	private String diskUsage;
 	private String lastActivity;
+	private List<Acl> acls = new ArrayList<Acl>();
 	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
 	private List<Project> projects = new ArrayList<Project>();

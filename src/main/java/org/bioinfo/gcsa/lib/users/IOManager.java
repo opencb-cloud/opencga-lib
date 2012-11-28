@@ -76,8 +76,8 @@ public class IOManager {
 
 	}
 	
-	public void createJobFolder(String accountId, String jobId)throws UserManagementException {
-		String path = GCSA_ACCOUNT+ "/"  + accountId + "/jobs";
+	public void createJobFolder(String accountId, String project, String jobId)throws UserManagementException {
+		String path = GCSA_ACCOUNT+ "/"  + accountId + "/projects/" + project + "/jobs";
 		if(new File(path).exists() && new File(path).canWrite()) {
 			try {
 				FileUtils.createDirectory(path + "/" + jobId);
@@ -87,8 +87,8 @@ public class IOManager {
 		}
 	}
 	
-	public void removeJobFolder(String accountId, String jobId)throws UserManagementException {
-		File path = new File(GCSA_ACCOUNT+ "/"  + accountId + "/jobs/"+ jobId);
+	public void removeJobFolder(String accountId, String project, String jobId)throws UserManagementException {
+		File path = new File(GCSA_ACCOUNT+ "/"  + accountId + "/projects/" + project + "/jobs/"+ jobId);
 		FileUtils.deleteDirectory(path);
 	}
 

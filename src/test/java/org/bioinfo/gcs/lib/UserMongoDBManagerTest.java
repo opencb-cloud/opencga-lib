@@ -18,7 +18,7 @@ public class UserMongoDBManagerTest {
 		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
 			try {
 				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-				userManager = cloudSessionManager.userManager;
+				userManager = cloudSessionManager.getUserManager();
 				
 				String sessionId = "JIzomN9jETGIC4RSXsX0";
 				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
@@ -34,7 +34,7 @@ public class UserMongoDBManagerTest {
 	public void getUserBySessionIdTest() {
 		try {
 			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-			userManager = cloudSessionManager.userManager;
+			userManager = cloudSessionManager.getUserManager();
 			
 			String sessionId = "OPq8ebQ3FQAPsVZ8cFAc";
 			System.out.println(userManager.getUserBySessionId(sessionId));
@@ -66,7 +66,7 @@ public class UserMongoDBManagerTest {
 	public void createJobTest() {
 		try {
 			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-			userManager = cloudSessionManager.userManager;
+			userManager = cloudSessionManager.getUserManager();
 			
 			String sessionId = "JLymlrv3eWm5jIjAVwty";
 			

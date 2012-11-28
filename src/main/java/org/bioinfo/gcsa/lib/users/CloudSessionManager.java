@@ -3,7 +3,6 @@ package org.bioinfo.gcsa.lib.users;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
 import org.bioinfo.gcsa.lib.users.persistence.UserFileManager;
@@ -13,7 +12,7 @@ import org.bioinfo.gcsa.lib.users.persistence.UserMongoDBManager;
 
 public class CloudSessionManager {
 
-	public static UserManager userManager;
+	private UserManager userManager;
 
 	public static Properties properties;
 
@@ -47,4 +46,9 @@ public class CloudSessionManager {
 
 		return null;
 	}
+	
+	public UserManager getUserManager() {
+		return userManager;
+	}
+
 }
