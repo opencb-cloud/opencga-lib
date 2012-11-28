@@ -126,7 +126,7 @@ public class AnalysisJobExecuter {
 		}
 		
 		// Create job
-		String jobId = cloudSessionManager.createJob(jobName, toolName, new ArrayList<String>(), sessionId);
+		String jobId = cloudSessionManager.createJob(jobName, null, toolName, new ArrayList<String>(), sessionId);
 		String jobFolder = cloudSessionManager.getJobFolder(jobId, sessionId);
 		//TODO crear job
 //		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);
@@ -384,7 +384,7 @@ public class AnalysisJobExecuter {
 		}
 		
 		// create job
-		String jobId = cloudSessionManager.createJob("", "", new ArrayList<String>(), sessionId);
+		String jobId = cloudSessionManager.createJob("", null, "", new ArrayList<String>(), sessionId);
 		String jobFolder = "/tmp/";
 		//TODO crear job
 //		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);

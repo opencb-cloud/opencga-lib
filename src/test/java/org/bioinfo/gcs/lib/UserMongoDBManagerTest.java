@@ -70,7 +70,7 @@ public class UserMongoDBManagerTest {
 			
 			String sessionId = "JLymlrv3eWm5jIjAVwty";
 			
-			userManager.createJob("", "", new ArrayList<String>(), sessionId);
+			userManager.createJob("", null, "", new ArrayList<String>(), sessionId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

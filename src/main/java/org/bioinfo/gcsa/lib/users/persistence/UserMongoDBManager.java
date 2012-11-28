@@ -379,31 +379,53 @@ public class UserMongoDBManager implements UserManager {
 	////////////////////////
 	
 	@Override
-	public String createJob(String jobName, String toolName, List<String> dataList, String sessionId) {
+	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String sessionId) {
 		String jobId = StringUtils.randomString(8);
 		String accountId = getAccountIdBySessionId(sessionId);
 		
 		try {
-			// CREATE JOB FOLDER
-			ioManager.createJobFolder(accountId, jobId);
-			
-			//INSERT DATA OBJECT ON MONGO
-			Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", "", "", "", "", dataList);
-			Data data = new Data("", "dir", "", "", "", "", "", "", "", "", "", new ArrayList<Acl>(), job);
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
-			BasicDBObject query = new BasicDBObject();
-			BasicDBObject item = new BasicDBObject();
-			BasicDBObject action = new BasicDBObject();
-			query.put("accountId", accountId);
-			query.put("projects.status", "1");
-			item.put("projects.$.data", dataDBObject);
-			action.put("$push", item);
-			WriteResult result = userCollection.update(query, action);
-			
-			if(result.getError()!=null) {
-				ioManager.removeJobFolder(accountId, jobId);
-				return "MongoDB error, "+result.getError()+" files will be deleted";
+			if(jobFolder == null) {
+				// CREATE JOB FOLDER
+				ioManager.createJobFolder(accountId, jobId);
+				
+				jobFolder = "jobs:"+jobId+":";
+				
+				//INSERT DATA OBJECT ON MONGO
+				Data data = new Data(jobFolder, "dir", "", "", "", "", "", "", "", "", "", new ArrayList<Acl>(), new ArrayList<Job>());
+				BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
+				BasicDBObject query = new BasicDBObject();
+				BasicDBObject item = new BasicDBObject();
+				BasicDBObject action = new BasicDBObject();
+				query.put("accountId", accountId);
+				query.put("projects.status", "1");
+				item.put("projects.$.data", dataDBObject);
+				action.put("$push", item);
+				WriteResult result = userCollection.update(query, action);
+				
+				if(result.getError()!=null) {
+					ioManager.removeJobFolder(accountId, jobId);
+					return "MongoDB error, "+result.getError()+" files will be deleted";
+				}
 			}
+			else {
+				//INSERT JOB OBJECT ON MONGO
+				Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", "", "", "", "", dataList);
+				BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
+				BasicDBObject query = new BasicDBObject();
+				BasicDBObject item = new BasicDBObject();
+				BasicDBObject action = new BasicDBObject();
+				query.put("accountId", accountId);
+				query.put("projects.data.id", jobFolder);
+				item.put("projects.$.data", jobDBObject);
+				action.put("$push", item);
+				WriteResult result = userCollection.update(query, action);
+				
+				if(result.getError()!=null) {
+					ioManager.removeJobFolder(accountId, jobId);
+					return "MongoDB error, "+result.getError()+" files will be deleted";
+				}
+			}
+			
 			
 			return jobId;
 		} catch (UserManagementException e) {

@@ -68,11 +68,9 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String createJob(String jobName, String toolName,
-			List<String> dataList, String sessionId) {
+	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String sessionId) {
 		return null;
 	}
-
 
 	@Override
 	public Session getSessionId(String accountId, String sessionId) {
