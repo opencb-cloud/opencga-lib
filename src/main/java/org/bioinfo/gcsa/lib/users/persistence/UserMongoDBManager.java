@@ -7,13 +7,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bioinfo.commons.io.utils.FileUtils;
@@ -22,9 +20,7 @@ import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
-import org.bioinfo.gcsa.lib.users.beans.Acl;
 import org.bioinfo.gcsa.lib.users.beans.Data;
-import org.bioinfo.gcsa.lib.users.beans.Job;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.beans.User;
@@ -380,60 +376,60 @@ public class UserMongoDBManager implements UserManager {
 	
 	@Override
 	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList, String sessionId) {
-		String jobId = StringUtils.randomString(8);
-		String accountId = getAccountIdBySessionId(sessionId);
-		
-		try {
-			if(jobFolder == null) {
-				// CREATE JOB FOLDER
-				ioManager.createJobFolder(accountId, jobId);
-				
-				jobFolder = "jobs:"+jobId+":";
-				
-				//INSERT DATA OBJECT ON MONGO
-				Data data = new Data(jobFolder, "dir", "", "", "", "", "", "", "", "", "", new ArrayList<Acl>(), new ArrayList<Job>());
-				BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
-				BasicDBObject query = new BasicDBObject();
-				BasicDBObject item = new BasicDBObject();
-				BasicDBObject action = new BasicDBObject();
-				query.put("accountId", accountId);
-				query.put("projects.status", "1");
-				item.put("projects.$.data", dataDBObject);
-				action.put("$push", item);
-				WriteResult result = userCollection.update(query, action);
-				
-				if(result.getError()!=null) {
-					ioManager.removeJobFolder(accountId, jobId);
-					return "MongoDB error, "+result.getError()+" files will be deleted";
-				}
-			}
-			else {
-				//INSERT JOB OBJECT ON MONGO
-				Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", "", "", "", "", dataList);
-				BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
-				BasicDBObject query = new BasicDBObject();
-				BasicDBObject item = new BasicDBObject();
-				BasicDBObject action = new BasicDBObject();
-				query.put("accountId", accountId);
-				query.put("projects.data.id", jobFolder);
-				item.put("projects.$.data", jobDBObject);
-				action.put("$push", item);
-				WriteResult result = userCollection.update(query, action);
-				
-				if(result.getError()!=null) {
-					ioManager.removeJobFolder(accountId, jobId);
-					return "MongoDB error, "+result.getError()+" files will be deleted";
-				}
-			}
-			
-			
-			return jobId;
-		} catch (UserManagementException e) {
-			e.printStackTrace();
+//		String jobId = StringUtils.randomString(8);
+//		String accountId = getAccountIdBySessionId(sessionId);
+//		
+//		try {
+//			if(jobFolder == null) {
+//				// CREATE JOB FOLDER
+//				ioManager.createJobFolder(accountId, jobId);
+//				
+//				jobFolder = "jobs:"+jobId+":";
+//				
+//				//INSERT DATA OBJECT ON MONGO
+//				Data data = new Data(jobFolder, "dir", "", "", "", "", "", "", "", "", "", new ArrayList<Acl>(), new ArrayList<Job>());
+//				BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
+//				BasicDBObject query = new BasicDBObject();
+//				BasicDBObject item = new BasicDBObject();
+//				BasicDBObject action = new BasicDBObject();
+//				query.put("accountId", accountId);
+//				query.put("projects.status", "1");
+//				item.put("projects.$.data", dataDBObject);
+//				action.put("$push", item);
+//				WriteResult result = userCollection.update(query, action);
+//				
+//				if(result.getError()!=null) {
+//					ioManager.removeJobFolder(accountId, jobId);
+//					return "MongoDB error, "+result.getError()+" files will be deleted";
+//				}
+//			}
+//			else {
+//				//INSERT JOB OBJECT ON MONGO
+//				Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", "", "", "", "", dataList);
+//				BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
+//				BasicDBObject query = new BasicDBObject();
+//				BasicDBObject item = new BasicDBObject();
+//				BasicDBObject action = new BasicDBObject();
+//				query.put("accountId", accountId);
+//				query.put("projects.data.id", jobFolder);
+//				item.put("projects.$.data", jobDBObject);
+//				action.put("$push", item);
+//				WriteResult result = userCollection.update(query, action);
+//				
+//				if(result.getError()!=null) {
+//					ioManager.removeJobFolder(accountId, jobId);
+//					return "MongoDB error, "+result.getError()+" files will be deleted";
+//				}
+//			}
+//			
+//			
+//			return jobId;
+//		} catch (UserManagementException e) {
+//			e.printStackTrace();
 			return null;
-		}
+//		}
 	}
-	
+//	
 	
 	////////////////////////
 	/*
