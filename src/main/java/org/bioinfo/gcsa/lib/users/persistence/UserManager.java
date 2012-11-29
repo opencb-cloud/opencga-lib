@@ -19,13 +19,15 @@ public interface UserManager {
 	
 	public String logout(String accountId, String sessionId);
 	
-//	public String testPipe(String accountId, String password); //Pruebas, hay que borrarlo
-	
 	public String getUserByAccountId(String accountId, String sessionId);
 	
 	public String getUserByEmail(String email, String sessionId);
 	
 	public String getAccountBySessionId(String sessionId);
+	
+	public String changePassword (String accountId, String password, String nPassword);
+	
+	public String changeEmail (String accountId, String sessionId, String nEmail);
 	
 	
 	/*
