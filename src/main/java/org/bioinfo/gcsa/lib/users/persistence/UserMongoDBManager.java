@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -236,11 +237,12 @@ public class UserMongoDBManager implements UserManager {
 		return userStr;
 	}
 
-	public String changePassword(String accountId, String password,
+	public String changePassword(String accountId, String sessionId, String password,
 			String nPassword1, String nPassword2) {
-		String msg = "IMPOSIBLE TO CHANGE";
+		String msg = "ERROR: Imposible to change";
 		if (nPassword1.equals(nPassword2)) {
 			BasicDBObject query = new BasicDBObject("accountId", accountId);
+			query.put("sessions.id", sessionId);
 			query.put("password", password);
 
 			DBCursor iterator = userCollection.find(query);
@@ -249,10 +251,10 @@ public class UserMongoDBManager implements UserManager {
 				updateMongo("set", query, "password", nPassword1);
 				updateMongo("set", new BasicDBObject("accountId", accountId),
 						"lastActivity", GcsaUtils.getTime());
-				msg = "PASSWORD CHANGED";
+				msg = "Password changed";
 			}
 		}else{
-			msg = "The new pass is not the same in both fields";
+			msg = "ERROR: The new pass is not the same in both fields";
 		}
 		return msg;
 	}
@@ -279,8 +281,44 @@ public class UserMongoDBManager implements UserManager {
 	}
 	
 	@Override
-	public String resetPassword(String acccountId, String email) {
-		return null;
+	public String resetPassword(String accountId, String email){
+		if(email != null && !email.trim().equals("") && accountId !=null){
+			
+			String newPassword = StringUtils.randomString(6);
+			String sha1Password = null;
+			try {
+				sha1Password = StringUtils.sha1(newPassword);
+			} catch (NoSuchAlgorithmException e) {
+				return "ERROR generating new password";
+			}
+			
+			BasicDBObject query = new BasicDBObject();
+			query.put("accountId", accountId);
+			query.put("email", email);
+			BasicDBObject item = new BasicDBObject("password", sha1Password);
+			BasicDBObject action = new BasicDBObject("$set", item);
+			WriteResult result = userCollection.update(query, action);
+			
+			if(result.getN()!=1){
+				return "MongoDB ERROR, "+result.getError()+", not found";
+			}
+			if(result.getError() != null) {
+				return "MongoDB ERROR, "+result.getError()+", error updating password";
+			}
+			
+			StringBuilder message = new StringBuilder();
+			message.append("Hello,").append("\n");
+			message.append("You can now login using this new password:").append("\n\n");
+			message.append(newPassword).append("\n\n\n");
+			message.append("Please change it when you first login.").append("\n\n");
+			message.append("Best regards,").append("\n\n");
+			message.append("Bioinformatic and Genomics Group").append("\n");
+			
+			GcsaUtils.sendResetPasswordMail(email, message.toString());
+			return "Password reset";
+		} else {
+			return "ERROR: The email is not valid";				
+		}
 	}
 
 	// ////////////////////////////////////

@@ -25,7 +25,9 @@ public class CloudSessionManager {
 		// read config file
 		System.err.println ("----------------> creado CloudSessionManager");
 		properties = new Properties();
-		properties.load(new FileInputStream(gcsaHome + "/conf/account.properties"));
+		FileInputStream fis = new FileInputStream(gcsaHome + "/conf/account.properties");
+		properties.load(fis);
+		fis.close();
 		if (properties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
 			userManager = new UserFileManager();
 		} else {

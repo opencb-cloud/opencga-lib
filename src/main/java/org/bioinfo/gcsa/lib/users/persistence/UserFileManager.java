@@ -44,7 +44,7 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String changePassword(String accountId, String password,
+	public String changePassword(String accountId, String sessionId, String password,
 			String nPassword1, String nPassword2) {
 		return null;
 	}

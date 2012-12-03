@@ -25,7 +25,7 @@ public interface UserManager {
 	
 	public String getAccountBySessionId(String sessionId, String lastActivity);
 	
-	public String changePassword (String accountId, String password, String nPassword1, String nPassword2);
+	public String changePassword (String accountId, String sessionId, String password, String nPassword1, String nPassword2);
 	
 	public String changeEmail (String accountId, String sessionId, String nEmail);
 	
