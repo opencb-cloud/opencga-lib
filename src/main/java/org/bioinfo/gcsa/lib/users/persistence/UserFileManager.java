@@ -50,7 +50,7 @@ public class UserFileManager implements UserManager {
 
 	@Override
 	public String changePassword(String accountId, String password,
-			String nPassword) {
+			String nPassword1, String nPassword2) {
 		return null;
 	}
 
@@ -100,6 +100,11 @@ public class UserFileManager implements UserManager {
 
 	@Override
 	public String getJobFolder(String project, String jobId, String sessionId) {
+		return null;
+	}
+
+	@Override
+	public String resetPassword(String acccountId, String email) {
 		return null;
 	}
 

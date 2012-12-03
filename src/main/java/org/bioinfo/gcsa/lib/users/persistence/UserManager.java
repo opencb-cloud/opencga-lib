@@ -25,10 +25,11 @@ public interface UserManager {
 	
 	public String getAccountBySessionId(String sessionId);
 	
-	public String changePassword (String accountId, String password, String nPassword);
+	public String changePassword (String accountId, String password, String nPassword1, String nPassword2);
 	
 	public String changeEmail (String accountId, String sessionId, String nEmail);
 	
+	public String resetPassword (String acccountId, String email);
 	
 	/*
 	 * Project methods

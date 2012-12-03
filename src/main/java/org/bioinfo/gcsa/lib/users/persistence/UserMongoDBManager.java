@@ -237,21 +237,23 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	public String changePassword(String accountId, String password,
-			String nPassword) {
+			String nPassword1, String nPassword2) {
 		String msg = "IMPOSIBLE TO CHANGE";
+		if (nPassword1.equals(nPassword2)) {
+			BasicDBObject query = new BasicDBObject("accountId", accountId);
+			query.put("password", password);
 
-		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		query.put("password", password);
+			DBCursor iterator = userCollection.find(query);
 
-		DBCursor iterator = userCollection.find(query);
-
-		if (iterator.count() == 1) {
-			updateMongo("set", query, "password", nPassword);
-			updateMongo("set", new BasicDBObject("accountId", accountId),
-					"lastActivity", GcsaUtils.getTime());
-			msg = "PASSWORD CHANGED";
+			if (iterator.count() == 1) {
+				updateMongo("set", query, "password", nPassword1);
+				updateMongo("set", new BasicDBObject("accountId", accountId),
+						"lastActivity", GcsaUtils.getTime());
+				msg = "PASSWORD CHANGED";
+			}
+		}else{
+			msg = "The new pass is not the same in both fields";
 		}
-
 		return msg;
 	}
 
@@ -274,6 +276,11 @@ public class UserMongoDBManager implements UserManager {
 		}
 
 		return msg;
+	}
+	
+	@Override
+	public String resetPassword(String acccountId, String email) {
+		return null;
 	}
 
 	// ////////////////////////////////////
@@ -609,4 +616,5 @@ public class UserMongoDBManager implements UserManager {
 			return "ERROR: Invalid sessionId";
 		}
 	}
+
 }
