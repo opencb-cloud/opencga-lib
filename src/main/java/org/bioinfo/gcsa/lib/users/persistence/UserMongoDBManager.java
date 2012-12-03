@@ -676,6 +676,7 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("password", 0);
 		fields.put("sessions", 0);
 		fields.put("oldSessions", 0);
+		fields.put("data", 0);
 
 		DBObject item = userCollection.findOne(query,fields);
 		if(item!=null){
@@ -683,6 +684,7 @@ public class UserMongoDBManager implements UserManager {
 			if(lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)){
 				return "{}";
 			}
+//			item.put(arg0, arg1)
 			return item.toString();
 		}else{
 			return "ERROR: Invalid sessionId";

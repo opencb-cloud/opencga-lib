@@ -4,19 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
-import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.persistence.UserManager;
 import org.junit.Test;
 
 public class UserMongoDBManagerTest {
 	private UserManager userManager;
 	
-	@Test
-	public void mailTest() {
-		GcsaUtils.sendResetPasswordMail("pakosala@gmail.com", "hola");
-	}
+//	@Test
+//	public void mailTest() {
+//		GcsaUtils.sendResetPasswordMail("pakosala@gmail.com", "hola");
+//	}
 	
 //	@Test
 //	public void createProject() {
@@ -39,23 +37,24 @@ public class UserMongoDBManagerTest {
 //			e.printStackTrace();
 //		}
 //	}
+	@Test
+	public void createFileToProjectTest() {
+		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
+			try {
+				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
+				userManager = cloudSessionManager.getUserManager();
+				
+				String sessionId = "tdTrtexts7s6Dl1eNmlk";
+				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
+				String data = "sampletext";
+				InputStream fileData = new FileInputStream(f);
+				userManager.createFileToProject("Default", f.getName(), fileData, sessionId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	
-//	public void createFileToProjectTest() {
-//		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
-//			try {
-//				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-//				userManager = cloudSessionManager.getUserManager();
-//				
-//				String sessionId = "puflZ9VhY7WW1xU6D469";
-//				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
-//				String data = "sampletext";
-//				InputStream fileData = new FileInputStream(f);
-//				userManager.createFileToProject("Default", f.getName(), fileData, sessionId);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
-//	}
 	// @Test
 	// public void loginTest() {
 	// }
