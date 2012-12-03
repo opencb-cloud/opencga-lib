@@ -23,13 +23,14 @@ public interface UserManager {
 	
 	public String getUserByEmail(String email, String sessionId);
 	
-	public String getAccountBySessionId(String sessionId);
+	public String getAccountBySessionId(String sessionId, String lastActivity);
 	
 	public String changePassword (String accountId, String password, String nPassword1, String nPassword2);
 	
 	public String changeEmail (String accountId, String sessionId, String nEmail);
 	
 	public String resetPassword (String acccountId, String email);
+	
 	
 	/*
 	 * Project methods
@@ -42,7 +43,7 @@ public interface UserManager {
 	public String getAllProjectsBySessionId(String accountId, String sessionId);
 	
 	public String createProject(Project project, String accountId, String sessionId);
-
+	
 	//add file to project
 	public String createFileToProject(String project, String fileName, InputStream fileData, String sessionId);
 	

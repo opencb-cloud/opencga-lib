@@ -44,11 +44,6 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String getAccountBySessionId(String sessionId) {
-		return null;
-	}
-
-	@Override
 	public String changePassword(String accountId, String password,
 			String nPassword1, String nPassword2) {
 		return null;
@@ -110,7 +105,10 @@ public class UserFileManager implements UserManager {
 
 	@Override
 	public String getDataPath(String dataId, String sessionId) {
-		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public String getAccountBySessionId(String sessionId, String lastActivity) {
 		return null;
 	}
 

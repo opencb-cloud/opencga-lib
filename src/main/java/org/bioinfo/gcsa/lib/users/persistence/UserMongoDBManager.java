@@ -210,7 +210,7 @@ public class UserMongoDBManager implements UserManager {
 		query.put("sessions.id", sessionId);
 
 		DBCursor iterator = userCollection.find(query);
-
+		
 		if (iterator.count() == 1) {
 			userStr = iterator.next().toString();
 			updateMongo("set", new BasicDBObject("accountId", accountId),
@@ -346,9 +346,10 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("accountId", 1);
 		DBObject item = userCollection.findOne(query, fields);
 
-		if (item != null) {
-			return (String) item.get("accountId");
-		} else {
+
+		if(item!=null){
+			return item.get("accountId").toString();
+		}else{
 			return "ERROR: Invalid sessionId";
 		}
 	}
@@ -411,11 +412,15 @@ public class UserMongoDBManager implements UserManager {
 			BasicDBObject item = new BasicDBObject();
 			BasicDBObject action = new BasicDBObject();
 			query.put("sessions.id", sessionId);
+			query.put("projects.id", project.toLowerCase());
 			item.put("projects.$.data", dataDBObject);
 			action.put("$push", item);
+			System.out.println(action);
 			WriteResult result = userCollection.update(query, action);
 
-			if (result.getError() != null) {
+//			db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
+			
+			if(result.getError()!=null){
 				FileUtils.deleteDirectory(userFile);
 				FileUtils.deleteDirectory(tmpFile);
 				return "MongoDB error, " + result.getError()
@@ -624,7 +629,7 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	@Override
-	public String getAccountBySessionId(String sessionId) {
+	public String getAccountBySessionId(String sessionId, String lastActivity) {
 		System.out.println(sessionId);
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
@@ -633,12 +638,18 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("password", 0);
 		fields.put("sessions", 0);
 		fields.put("oldSessions", 0);
-		DBObject item = userCollection.findOne(query, fields);
-		if (item != null) {
-			return (String) item.toString();
-		} else {
+
+		DBObject item = userCollection.findOne(query,fields);
+		if(item!=null){
+			//if has not been modified since last time was call
+			if(lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)){
+				return "{}";
+			}
+			return item.toString();
+		}else{
 			return "ERROR: Invalid sessionId";
 		}
 	}
 
 }
+
