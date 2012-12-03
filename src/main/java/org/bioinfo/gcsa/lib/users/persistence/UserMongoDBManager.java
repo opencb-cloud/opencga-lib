@@ -202,7 +202,7 @@ public class UserMongoDBManager implements UserManager {
 		query.put("sessions.id", sessionId);
 
 		DBCursor iterator = userCollection.find(query);
-
+		
 		if (iterator.count() == 1) {
 			userStr = iterator.next().toString();
 			updateMongo("set", new BasicDBObject("accountId",accountId), "lastActivity", GcsaUtils.getTime());
@@ -295,7 +295,7 @@ public class UserMongoDBManager implements UserManager {
 		DBObject item = userCollection.findOne(query,fields);
 
 		if(item!=null){
-			return (String) item.get("accountId");
+			return item.get("accountId").toString();
 		}else{
 			return "ERROR: Invalid sessionId";
 		}
@@ -538,7 +538,7 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	@Override
-	public String getAccountBySessionId(String sessionId) {
+	public String getAccountBySessionId(String sessionId, String lastActivity) {
 		System.out.println(sessionId);
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
@@ -549,7 +549,11 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("oldSessions", 0);
 		DBObject item = userCollection.findOne(query,fields);
 		if(item!=null){
-			return (String) item.toString();
+			//if has not been modified since last time was call
+			if(lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)){
+				return "{}";
+			}
+			return item.toString();
 		}else{
 			return "ERROR: Invalid sessionId";
 		}

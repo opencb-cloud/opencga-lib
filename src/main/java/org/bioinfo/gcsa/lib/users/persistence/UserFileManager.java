@@ -84,7 +84,7 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String getAccountBySessionId(String sessionId) {
+	public String getAccountBySessionId(String sessionId, String lastActivity) {
 		// TODO Auto-generated method stub
 		return null;
 	}

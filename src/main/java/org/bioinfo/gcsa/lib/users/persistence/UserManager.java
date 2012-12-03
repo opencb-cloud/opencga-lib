@@ -25,7 +25,7 @@ public interface UserManager {
 	
 	public String getUserByEmail(String email, String sessionId);
 	
-	public String getAccountBySessionId(String sessionId);
+	public String getAccountBySessionId(String sessionId, String lastActivity);
 	
 	
 	/*
