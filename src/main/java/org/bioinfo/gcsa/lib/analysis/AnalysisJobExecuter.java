@@ -78,7 +78,7 @@ public class AnalysisJobExecuter {
 		manifestFile = analysisPath + "manifest.json";
 	}
 	
-	public String execute(Map<String, List<String>> params) { //TODO probar cuando funcione lo de usuarios
+	public String execute(Map<String, List<String>> params) {
 		System.out.println("params received in execute: "+params);
 		
 		if(params.containsKey("sessionid")) {
@@ -99,18 +99,32 @@ public class AnalysisJobExecuter {
 			FileUtils.checkFile(manifestFile);
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "Manifest for " + analysisName + " not found.";
+			return "ERROR: Manifest for " + analysisName + " not found.";
 		}
 		
 		Analysis analysis = parseJsonToAnalysis();
 		
 		if(analysis == null) {
-			return "Invalid manifest.json for " + analysisName + ".";
+			return "ERROR: Invalid manifest.json for " + analysisName + ".";
 		}
 		
 		/** Jquery put this parameter and it is sent to the tool **/
 		if(params.containsKey("_")){
 			params.remove("_");
+		}
+		
+		String project = null;
+		if(params.containsKey("project")){
+			project = params.get("project").get(0);
+			params.remove("project");
+		}
+		else {
+			return "ERROR: unspecified project id.";
+		}
+		
+		Execution execution = getExecution(analysis);
+		if(execution == null) {
+			return "ERROR: Executable not found.";
 		}
 		
 		String jobName = "";
@@ -119,35 +133,11 @@ public class AnalysisJobExecuter {
 			params.remove("jobname");
 		}
 		
-		String toolName = null;
-		if(params.containsKey("toolname")){
-			toolName = params.get("toolname").get(0);
-			params.remove("toolname");
-		}
-		
 		String jobFolder = null;
-		if(params.containsKey("jobfolder")){
-			jobFolder = params.get("jobfolder").get(0);
-			params.remove("jobfolder");
+		if(params.containsKey("outdir")){
+			jobFolder = params.get("outdir").get(0);
+			params.remove("outdir");
 		}
-		
-		String project = "default";
-		if(params.containsKey("project")){
-			project = params.get("project").get(0);
-			params.remove("project");
-		}
-		
-		Execution execution = getExecution(analysis);
-		if(execution == null) {
-			return "ERROR: Executable not found.";
-		}
-		
-		// Set command in binary path
-		String binaryPath = null;
-		binaryPath = analysisPath + execution.getExecutable();
-		
-		// Set output param
-		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 		
 		// Check required params
 		List<Option> validParams = execution.getValidParams();
@@ -159,12 +149,29 @@ public class AnalysisJobExecuter {
 			return "ERROR: missing some required params.";
 		}
 		
-		for(InputParam inputParam: execution.getInputParams()) {
-			if(params.containsKey(inputParam)) {
-				//TODO obtener el path del input param a partir del dataId recibido
-				String dataPath = "/fake/data/path";
-				
-				params.put(inputParam.getName(), Arrays.asList(dataPath));
+		// Get tool name
+		String toolName = analysis.getId();
+		
+		// Set command in binary path
+		String binaryPath = null;
+		binaryPath = analysisPath + execution.getExecutable();
+		
+		// Set input param
+		for(InputParam inputParam : execution.getInputParams()) {
+			if(params.containsKey(inputParam.getName())) {
+				List<String> dataIds = Arrays.asList(params.get(inputParam.getName()).get(0).split(","));
+				System.out.println("Number of data ids: "+dataIds.size());
+				List<String> dataPaths = new ArrayList<String>();
+				for(String dataId : dataIds) {
+					String dataPath = cloudSessionManager.getUserManager().getDataPath(dataId, sessionId);
+					if(dataPath.contains("ERROR")) {
+						return dataPath;
+					}
+					else {
+						dataPaths.add(dataPath);
+					}
+				}
+				params.put(inputParam.getName(), dataPaths);
 			}
 		}
 		
@@ -177,18 +184,21 @@ public class AnalysisJobExecuter {
 		
 		if(jobFolder == null) {
 			jobFolder = cloudSessionManager.getUserManager().getJobFolder(project, jobId, sessionId);
-			params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
-			
-			// Set command line
-			commandLine = binaryPath + createCommandLine(params);
-			logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
 		}
+		
+		// Set output param
+		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
+		
+		// Set command line
+		commandLine = binaryPath + createCommandLine(params);
+		logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
 		
 		logger.debug("AnalysisJobExecuter: execute, 'jobId': "+jobId+", 'jobFolder': "+jobFolder);
 
 		executeCommandLine(commandLine, jobId, jobFolder);
 		
 		return commandLine;
+//		return jobId;
 	}
 	
 	private boolean checkRequiredParams(Map<String, List<String>> params, List<Option> validParams) {
@@ -228,8 +238,6 @@ public class AnalysisJobExecuter {
 		}
 		
 		for(String key: params.keySet()) {
-			//if (!key.equalsIgnoreCase("sessionid")) {
-			
 			// Removing renato param
 			if(!key.equals("renato")){
 				if(key.length() == 1){
@@ -239,24 +247,16 @@ public class AnalysisJobExecuter {
 					cmdLine.append(" --").append(key);
 				}
 				if (params.get(key)!=null) {
-					cmdLine.append(" ").append(params.get(key).get(0));
+					String paramsArray = params.get(key).toString();
+					String paramValue = paramsArray.substring(1, paramsArray.length()-1).replaceAll("\\s","");
+					cmdLine.append(" ").append(paramValue);
 				}
 			}
-			//}
 		}
 		return cmdLine.toString();
 	}
 	
 	private void executeCommandLine(String commandLine, String jobId, String jobFolder) {
-//		try {
-//			logger.debug("AnalysisJobExecuter: execute, creating form.txt, input_params.txt and cli.txt");
-//			IOUtils.write(new File(jobFolder + "/input_params.txt"), MapUtils.toString(params));
-//			IOUtils.write(new File(jobFolder + "/cli.txt"), commandLine);
-//		} catch (IOException ioe){
-//			logger.error(ioe.toString());
-//			ioe.printStackTrace();
-//		}
-		
 		// read execution param
 		String jobExecutor = config.getProperty("ANALYSIS.JOB.EXECUTOR");
 
@@ -402,14 +402,11 @@ public class AnalysisJobExecuter {
 			return "ERROR: Executable not found.";
 		}
 		
-		// create job
+		// Create job
 		String jobId = cloudSessionManager.getUserManager().createJob("", null, "", "", new ArrayList<String>(), "", sessionId);
 		String jobFolder = "/tmp/";
-		//TODO crear job
-//		int jobId = wni.createJob(jobName, toolName, ListUtils.toString(dataList,","), sessionId);
-//		String jobFolder = wni.getJobFolder(jobId, sessionId);
 		
-//		executeCommandLine(execution.getTestCmd(), jobId, jobFolder);
+		executeCommandLine(execution.getTestCmd(), jobId, jobFolder);
 		
 		return String.valueOf(jobId);
 	}

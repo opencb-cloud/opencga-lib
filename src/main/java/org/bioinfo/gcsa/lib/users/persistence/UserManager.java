@@ -49,12 +49,18 @@ public interface UserManager {
 	 */
 	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList, String commandLine, String sessionId);
 	
+	public String getJobFolder(String project, String jobId, String sessionId);
+	
+	
+	/*
+	 * Data methods
+	 */
+	public String getDataPath(String dataId, String sessionId);
 	
 	/*
 	 * Utils
 	 */
 	public List<Project> jsonToProjectList(String json);
 
-	public String getJobFolder(String project, String jobId, String sessionId);
 	
 }

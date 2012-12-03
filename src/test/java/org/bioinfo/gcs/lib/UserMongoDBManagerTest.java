@@ -63,17 +63,17 @@ public class UserMongoDBManagerTest {
 //	}
 	
 //	@Test
-	public void createJobTest() {
-		try {
-			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
-			userManager = cloudSessionManager.getUserManager();
-			
-			String sessionId = "JLymlrv3eWm5jIjAVwty";
-			
-			userManager.createJob("", null, "", new ArrayList<String>(), "", sessionId);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	public void createJobTest() {
+//		try {
+//			CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
+//			userManager = cloudSessionManager.getUserManager();
+//			
+//			String sessionId = "JLymlrv3eWm5jIjAVwty";
+//			
+//			userManager.createJob("", null, "", new ArrayList<String>(), "", sessionId);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 }

@@ -382,25 +382,23 @@ public class UserMongoDBManager implements UserManager {
 			if(jobFolder == null) {
 				// CREATE JOB FOLDER
 				ioManager.createJobFolder(accountId, project, jobId);
-				
-//				jobFolder = "jobs:"+jobId+":";
-				
-				//INSERT JOB OBJECT ON MONGO
-				Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
-				BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
-				BasicDBObject query = new BasicDBObject();
-				BasicDBObject item = new BasicDBObject();
-				BasicDBObject action = new BasicDBObject();
-				query.put("accountId", accountId);
-				query.put("projects.id", project);
-				item.put("projects.$.jobs", jobDBObject);
-				action.put("$push", item);
-				WriteResult result = userCollection.update(query, action);
-				
-				if(result.getError()!=null) {
-					ioManager.removeJobFolder(accountId, project, jobId);
-					return "MongoDB error, "+result.getError()+" files will be deleted";
-				}
+			}
+			
+			//INSERT JOB OBJECT ON MONGO
+			Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
+			BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
+			BasicDBObject query = new BasicDBObject();
+			BasicDBObject item = new BasicDBObject();
+			BasicDBObject action = new BasicDBObject();
+			query.put("accountId", accountId);
+			query.put("projects.id", project);
+			item.put("projects.$.jobs", jobDBObject);
+			action.put("$push", item);
+			WriteResult result = userCollection.update(query, action);
+			
+			if(result.getError()!=null) {
+				ioManager.removeJobFolder(accountId, project, jobId);
+				return "MongoDB error, "+result.getError()+" files will be deleted";
 			}
 			
 			return jobId;
@@ -527,6 +525,35 @@ public class UserMongoDBManager implements UserManager {
 		else {
 			return "ERROR: Invalid jobId";
 		}
+	}
+	
+	@Override
+	public String getDataPath(String dataId, String sessionId) {
+		// projects:default:jobs:ae8Bhh8Y:test.txt
+		// projects:default:virtualdir:test.txt
+		String path = null;
+		if(dataId.contains(":jobs:")) {
+			path = "/"+dataId.replaceAll(":", "/");
+		}
+		else {
+			String[] fields = dataId.split(":", 3);
+			if(fields.length > 3) {
+				return "ERROR: unexpected format on '"+dataId+"'";
+			}
+			else {
+				path = "/"+fields[0]+"/"+fields[1]+"/"+fields[2];
+			}
+		}
+		
+		String dataPath = GCSA_ACCOUNT+"/"+getAccountIdBySessionId(sessionId)+path;
+		
+		if(new File(dataPath).exists()) {
+			return dataPath;
+		}
+		else {
+			return "ERROR: data '"+dataId+"' not found";
+		}
+//		return dataPath;
 	}
 
 	@Override
