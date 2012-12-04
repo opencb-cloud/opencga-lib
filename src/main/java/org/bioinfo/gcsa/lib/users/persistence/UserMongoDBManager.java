@@ -43,14 +43,10 @@ public class UserMongoDBManager implements UserManager {
 	private Mongo mongo;
 	private DB mongoDB;
 	private DBCollection userCollection;
-	private String GCSA_MONGO_DB = CloudSessionManager.properties
-			.getProperty("GCSA.MONGO.DB");
-	private String GCSA_MONGO_COLLECTION = CloudSessionManager.properties
-			.getProperty("GCSA.MONGO.COLLECTION");
-	private String GCSA_ENV = System.getenv(CloudSessionManager.properties
-			.getProperty("GCSA.ENV.PATH"));
-	private String GCSA_ACCOUNT = GCSA_ENV
-			+ CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
+	private String GCSA_MONGO_DB = CloudSessionManager.properties.getProperty("GCSA.MONGO.DB");
+	private String GCSA_MONGO_COLLECTION = CloudSessionManager.properties.getProperty("GCSA.MONGO.COLLECTION");
+	private String GCSA_ENV = System.getenv(CloudSessionManager.properties.getProperty("GCSA.ENV.PATH"));
+	private String GCSA_ACCOUNT = GCSA_ENV + CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
 	private String TMP = CloudSessionManager.properties.getProperty("TMP.PATH");
 
 	public UserMongoDBManager() throws UserManagementException {
@@ -65,21 +61,19 @@ public class UserMongoDBManager implements UserManager {
 	 */
 	// //////////////////////////////////
 
-	public void createUser(String accountId, String password,
-			String accountName, String email, Session session)
+	public void createUser(String accountId, String password, String accountName, String email, Session session)
 			throws UserManagementException {
 		User userLoad = null;
 
 		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
 
 			if (new File(GCSA_ACCOUNT + "/" + accountId).exists()
-					&& new File(GCSA_ACCOUNT + "/" + accountId + "/"
-							+ "account.conf").exists()) {
+					&& new File(GCSA_ACCOUNT + "/" + accountId + "/" + "account.conf").exists()) {
 				// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
 				// CONFIGURACION
 				try {
-					BufferedReader br = new BufferedReader(new FileReader(
-							GCSA_ACCOUNT + "/" + accountId + "/" + "user.conf"));
+					BufferedReader br = new BufferedReader(new FileReader(GCSA_ACCOUNT + "/" + accountId + "/"
+							+ "user.conf"));
 					userLoad = new Gson().fromJson(br, User.class);
 					userLoad.addSession(session);
 				} catch (FileNotFoundException e) {
@@ -96,23 +90,19 @@ public class UserMongoDBManager implements UserManager {
 					userLoad = new User(accountId, accountName, password, email);
 				}
 
-				userCollection.insert((DBObject) JSON.parse(new Gson()
-						.toJson(userLoad)));
-				updateMongo("set", new BasicDBObject("accountId", accountId),
-						"lastActivity", GcsaUtils.getTime());
+				userCollection.insert((DBObject) JSON.parse(new Gson().toJson(userLoad)));
+				updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 			} else {
 				throw new UserManagementException("ERROR: email not valid");
 			}
 
 		} else {// SI EXISTE USUARIO
-			throw new UserManagementException(
-					"ERROR: The account already exists");
+			throw new UserManagementException("ERROR: The account already exists");
 		}
 
 	}
 
-	public void createAnonymousUser(String accountId, String password,
-			String email) {
+	public void createAnonymousUser(String accountId, String password, String email) {
 
 	}
 
@@ -125,16 +115,14 @@ public class UserMongoDBManager implements UserManager {
 		DBCursor iterator = userCollection.find(query);
 
 		if (iterator.count() == 1) {
-			User user = new Gson().fromJson(iterator.next().toString(),
-					User.class);
+			User user = new Gson().fromJson(iterator.next().toString(), User.class);
 			user.addSession(session);
 			id = session.getId();
 			List<Session> sess = user.getSessions();
 
 			BasicDBObject filter = new BasicDBObject("accountId", accountId);
 			updateMongo("set", filter, "sessions", sess);
-			updateMongo("set", new BasicDBObject("accountId", accountId),
-					"lastActivity", GcsaUtils.getTime());
+			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 			// mover a oldSessions todas las sesiones con mas de 24 horas.
 			Calendar cal;
 			List<Session> s = user.getSessions();
@@ -163,14 +151,9 @@ public class UserMongoDBManager implements UserManager {
 			}
 
 			if (changed) {
-				updateMongo("set",
-						new BasicDBObject("accountId", user.getAccountId()),
-						"sessions", s);
-				updateMongo("set",
-						new BasicDBObject("accountId", user.getAccountId()),
-						"oldSessions", oldSes);
-				updateMongo("set", new BasicDBObject("accountId", accountId),
-						"lastActivity", GcsaUtils.getTime());
+				updateMongo("set", new BasicDBObject("accountId", user.getAccountId()), "sessions", s);
+				updateMongo("set", new BasicDBObject("accountId", user.getAccountId()), "oldSessions", oldSes);
+				updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 			}
 
 		}
@@ -185,8 +168,7 @@ public class UserMongoDBManager implements UserManager {
 			// INSERT DATA OBJECT IN MONGO
 			Session session = getSessionId(accountId, sessionId);
 			session.setLogout(GcsaUtils.getTime());
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson()
-					.toJson(session));
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(session));
 			BasicDBObject query = new BasicDBObject();
 			query.put("accountId", accountId);
 			query.put("sessions.id", sessionId);
@@ -195,8 +177,7 @@ public class UserMongoDBManager implements UserManager {
 			query.removeField("sessions.id");
 			BasicDBObject value = new BasicDBObject("id", sessionId);
 			updateMongo("pull", query, "sessions", value);
-			updateMongo("set", new BasicDBObject("accountId", accountId),
-					"lastActivity", GcsaUtils.getTime());
+			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 
 			logoutStatus = "SUCCESS";
 		}
@@ -211,11 +192,10 @@ public class UserMongoDBManager implements UserManager {
 		query.put("sessions.id", sessionId);
 
 		DBCursor iterator = userCollection.find(query);
-		
+
 		if (iterator.count() == 1) {
 			userStr = iterator.next().toString();
-			updateMongo("set", new BasicDBObject("accountId", accountId),
-					"lastActivity", GcsaUtils.getTime());
+			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 		}
 
 		return userStr;
@@ -237,8 +217,8 @@ public class UserMongoDBManager implements UserManager {
 		return userStr;
 	}
 
-	public String changePassword(String accountId, String sessionId, String password,
-			String nPassword1, String nPassword2) {
+	public String changePassword(String accountId, String sessionId, String password, String nPassword1,
+			String nPassword2) {
 		String msg = "ERROR: Imposible to change";
 		if (nPassword1.equals(nPassword2)) {
 			BasicDBObject query = new BasicDBObject("accountId", accountId);
@@ -249,11 +229,10 @@ public class UserMongoDBManager implements UserManager {
 
 			if (iterator.count() == 1) {
 				updateMongo("set", query, "password", nPassword1);
-				updateMongo("set", new BasicDBObject("accountId", accountId),
-						"lastActivity", GcsaUtils.getTime());
+				updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 				msg = "Password changed";
 			}
-		}else{
+		} else {
 			msg = "ERROR: The new pass is not the same in both fields";
 		}
 		return msg;
@@ -269,8 +248,7 @@ public class UserMongoDBManager implements UserManager {
 
 			if (iterator.count() == 1) {
 				updateMongo("set", query, "email", nEmail);
-				updateMongo("set", new BasicDBObject("accountId", accountId),
-						"lastActivity", GcsaUtils.getTime());
+				updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 				msg = "EMAIL CHANGED";
 			}
 		} else {
@@ -279,11 +257,11 @@ public class UserMongoDBManager implements UserManager {
 
 		return msg;
 	}
-	
+
 	@Override
-	public String resetPassword(String accountId, String email){
-		if(email != null && !email.trim().equals("") && accountId !=null){
-			
+	public String resetPassword(String accountId, String email) {
+		if (email != null && !email.trim().equals("") && accountId != null) {
+
 			String newPassword = StringUtils.randomString(6);
 			String sha1Password = null;
 			try {
@@ -291,21 +269,21 @@ public class UserMongoDBManager implements UserManager {
 			} catch (NoSuchAlgorithmException e) {
 				return "ERROR generating new password";
 			}
-			
+
 			BasicDBObject query = new BasicDBObject();
 			query.put("accountId", accountId);
 			query.put("email", email);
 			BasicDBObject item = new BasicDBObject("password", sha1Password);
 			BasicDBObject action = new BasicDBObject("$set", item);
 			WriteResult result = userCollection.update(query, action);
-			
-			if(result.getN()!=1){
-				return "MongoDB ERROR, "+result.getError()+", not found";
+
+			if (result.getN() != 1) {
+				return "MongoDB ERROR, " + result.getError() + ", not found";
 			}
-			if(result.getError() != null) {
-				return "MongoDB ERROR, "+result.getError()+", error updating password";
+			if (result.getError() != null) {
+				return "MongoDB ERROR, " + result.getError() + ", error updating password";
 			}
-			
+
 			StringBuilder message = new StringBuilder();
 			message.append("Hello,").append("\n");
 			message.append("You can now login using this new password:").append("\n\n");
@@ -313,11 +291,11 @@ public class UserMongoDBManager implements UserManager {
 			message.append("Please change it when you first login.").append("\n\n");
 			message.append("Best regards,").append("\n\n");
 			message.append("Bioinformatic and Genomics Group").append("\n");
-			
+
 			GcsaUtils.sendResetPasswordMail(email, message.toString());
 			return "Password reset";
 		} else {
-			return "ERROR: The email is not valid";				
+			return "ERROR: The email is not valid";
 		}
 	}
 
@@ -353,17 +331,14 @@ public class UserMongoDBManager implements UserManager {
 
 		if (iterator.count() == 1) {
 			user = new Gson().fromJson(iterator.next().toString(), User.class);
-			projectsStr = JSON.parse(new Gson().toJson(user.getProjects()))
-					.toString();
-			updateMongo("set", new BasicDBObject("accountId", accountId),
-					"lastActivity", GcsaUtils.getTime());
+			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
+			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 		}
 
 		return projectsStr;
 	}
 
-	public String createProject(Project project, String accountId,
-			String sessionId) {
+	public String createProject(Project project, String accountId, String sessionId) {
 		BasicDBObject filter = new BasicDBObject("accountId", accountId);
 		try {
 			ioManager.createProjectFolder(accountId, project.getName());
@@ -371,8 +346,7 @@ public class UserMongoDBManager implements UserManager {
 			e.printStackTrace();
 		}
 		updateMongo("push", filter, "projects", project);
-		updateMongo("set", new BasicDBObject("accountId", accountId),
-				"lastActivity", GcsaUtils.getTime());
+		updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 		return "";
 	}
 
@@ -384,10 +358,9 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("accountId", 1);
 		DBObject item = userCollection.findOne(query, fields);
 
-
-		if(item!=null){
+		if (item != null) {
 			return item.get("accountId").toString();
-		}else{
+		} else {
 			return "ERROR: Invalid sessionId";
 		}
 	}
@@ -408,17 +381,16 @@ public class UserMongoDBManager implements UserManager {
 		DBCursor iterator = userCollection.find(query, fields);
 		DBObject dbo = iterator.next();
 
-		Session[] sessions = new Gson().fromJson(
-				dbo.get("sessions").toString(), Session[].class);
+		Session[] sessions = new Gson().fromJson(dbo.get("sessions").toString(), Session[].class);
 
 		return sessions[0];
 	}
 
 	@Override
-	public String createFileToProject(String project, String fileName,
-			InputStream fileData, String sessionId) {
+	public String createDataToProject(String project, String accountId, String sessionId, Data data,
+			InputStream fileData) {
+		String fileName = data.getFileName();
 		// CREATING A RANDOM TEMP FOLDER
-
 		String randomFolder = TMP + "/" + StringUtils.randomString(20);
 		try {
 			FileUtils.createDirectory(randomFolder);
@@ -435,17 +407,14 @@ public class UserMongoDBManager implements UserManager {
 			return "Could not write the file on disk";
 		}
 		// COPYING FROM TEMP TO ACCOUNT DIR
-		File userFile = new File(GCSA_ACCOUNT + "/"
-				+ getAccountIdBySessionId(sessionId) + "/" + project + "/"
+		File userFile = new File(GCSA_ACCOUNT + "/" + getAccountIdBySessionId(sessionId) + "/" + project + "/"
 				+ fileName);
 		try {
 			FileUtils.touch(userFile);
 			FileUtils.copy(tmpFile, userFile);
 
 			// INSERT DATA OBJECT ON MONGO
-			Data data = new Data();
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson()
-					.toJson(data));
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
 			BasicDBObject query = new BasicDBObject();
 			BasicDBObject item = new BasicDBObject();
 			BasicDBObject action = new BasicDBObject();
@@ -456,15 +425,20 @@ public class UserMongoDBManager implements UserManager {
 			System.out.println(action);
 			WriteResult result = userCollection.update(query, action);
 
-//			db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
-			
-			if(result.getError()!=null){
+			// db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
+
+			if (result.getError() != null) {
 				FileUtils.deleteDirectory(userFile);
 				FileUtils.deleteDirectory(tmpFile);
-				return "MongoDB error, " + result.getError()
-						+ " files will be deleted";
+				return "MongoDB error, " + result.getError() + " files will be deleted";
 			}
 			FileUtils.deleteDirectory(tmpFile);
+
+			// BasicDBObject actitvityQuery = new BasicDBObject("accountId",
+			// accountId);
+			// query.put("sessions.id", sessionId);
+			// updateMongo("set", actitvityQuery,"lastActivity",
+			// GcsaUtils.getTime());
 			return null;
 
 		} catch (IOException e) {
@@ -481,9 +455,8 @@ public class UserMongoDBManager implements UserManager {
 	// //////////////////////
 
 	@Override
-	public String createJob(String jobName, String jobFolder, String project,
-			String toolName, List<String> dataList, String commandLine,
-			String sessionId) {
+	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList,
+			String commandLine, String sessionId) {
 		String jobId = StringUtils.randomString(8);
 		String accountId = getAccountIdBySessionId(sessionId);
 
@@ -493,8 +466,8 @@ public class UserMongoDBManager implements UserManager {
 				ioManager.createJobFolder(accountId, project, jobId);
 
 			}
-			
-			//INSERT JOB OBJECT ON MONGO
+
+			// INSERT JOB OBJECT ON MONGO
 			Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
 			BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
 			BasicDBObject query = new BasicDBObject();
@@ -505,10 +478,10 @@ public class UserMongoDBManager implements UserManager {
 			item.put("projects.$.jobs", jobDBObject);
 			action.put("$push", item);
 			WriteResult result = userCollection.update(query, action);
-			
-			if(result.getError()!=null) {
+
+			if (result.getError() != null) {
 				ioManager.removeJobFolder(accountId, project, jobId);
-				return "MongoDB error, "+result.getError()+" files will be deleted";
+				return "MongoDB error, " + result.getError() + " files will be deleted";
 			}
 			return jobId;
 		} catch (UserManagementException e) {
@@ -545,8 +518,7 @@ public class UserMongoDBManager implements UserManager {
 	private void getCollection(String nameCollection) {
 
 		if (!mongoDB.collectionExists(nameCollection)) {
-			userCollection = mongoDB.createCollection(nameCollection,
-					new BasicDBObject());
+			userCollection = mongoDB.createCollection(nameCollection, new BasicDBObject());
 		} else {
 			userCollection = mongoDB.getCollection(nameCollection);
 		}
@@ -571,29 +543,23 @@ public class UserMongoDBManager implements UserManager {
 
 	private void connectToMongo() throws UserManagementException {
 		try {
-			mongo = new Mongo(
-					CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
-					Integer.parseInt(CloudSessionManager.properties
-							.getProperty("GCSA.MONGO.PORT")));
+			mongo = new Mongo(CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
+					Integer.parseInt(CloudSessionManager.properties.getProperty("GCSA.MONGO.PORT")));
 
 		} catch (UnknownHostException e) {
-			throw new UserManagementException(
-					"ERROR: Not connected to mongoDB " + e.toString());
+			throw new UserManagementException("ERROR: Not connected to mongoDB " + e.toString());
 		} catch (MongoException e) {
-			throw new UserManagementException(
-					"ERROR: Not connected to mongoDB " + e.toString());
+			throw new UserManagementException("ERROR: Not connected to mongoDB " + e.toString());
 		}
 	}
 
-	private void updateMongo(String operator, DBObject filter, String field,
-			Object value) {
+	private void updateMongo(String operator, DBObject filter, String field, Object value) {
 		BasicDBObject set = null;
 		if (String.class.isInstance(value)) {
-			set = new BasicDBObject("$" + operator, new BasicDBObject().append(
-					field, value));
+			set = new BasicDBObject("$" + operator, new BasicDBObject().append(field, value));
 		} else {
-			set = new BasicDBObject("$" + operator, new BasicDBObject().append(
-					field, (DBObject) JSON.parse(new Gson().toJson(value))));
+			set = new BasicDBObject("$" + operator, new BasicDBObject().append(field,
+					(DBObject) JSON.parse(new Gson().toJson(value))));
 		}
 		userCollection.update(filter, set);
 	}
@@ -606,9 +572,8 @@ public class UserMongoDBManager implements UserManager {
 			container.putAll(filter[i].toMap());
 		}
 
-		BasicDBObject set = new BasicDBObject("$set",
-				new BasicDBObject().append(field,
-						JSON.parse(new Gson().toJson(value))));
+		BasicDBObject set = new BasicDBObject("$set", new BasicDBObject().append(field,
+				JSON.parse(new Gson().toJson(value))));
 
 		userCollection.update(container, set);
 
@@ -627,43 +592,39 @@ public class UserMongoDBManager implements UserManager {
 		// Project[] p = new Gson().fromJson(item.get("projects").toString(),
 		// Project[].class);
 
-		String jobFolder = GCSA_ACCOUNT + "/"
-				+ getAccountIdBySessionId(sessionId) + "/projects/" + project
-				+ "/jobs/" + jobId + "/";
+		String jobFolder = GCSA_ACCOUNT + "/" + getAccountIdBySessionId(sessionId) + "/projects/" + project + "/jobs/"
+				+ jobId + "/";
 		if (new File(jobFolder).exists()) {
 			return jobFolder;
 		} else {
 			return "ERROR: Invalid jobId";
 		}
 	}
-	
+
 	@Override
 	public String getDataPath(String dataId, String sessionId) {
 		// projects:default:jobs:ae8Bhh8Y:test.txt
 		// projects:default:virtualdir:test.txt
 		String path = null;
-		if(dataId.contains(":jobs:")) {
-			path = "/"+dataId.replaceAll(":", "/");
-		}
-		else {
+		if (dataId.contains(":jobs:")) {
+			path = "/" + dataId.replaceAll(":", "/");
+		} else {
 			String[] fields = dataId.split(":", 3);
-			if(fields.length > 3) {
-				return "ERROR: unexpected format on '"+dataId+"'";
-			}
-			else {
-				path = "/"+fields[0]+"/"+fields[1]+"/"+fields[2];
+			if (fields.length > 3) {
+				return "ERROR: unexpected format on '" + dataId + "'";
+			} else {
+				path = "/" + fields[0] + "/" + fields[1] + "/" + fields[2];
 			}
 		}
-		
-		String dataPath = GCSA_ACCOUNT+"/"+getAccountIdBySessionId(sessionId)+path;
-		
-		if(new File(dataPath).exists()) {
+
+		String dataPath = GCSA_ACCOUNT + "/" + getAccountIdBySessionId(sessionId) + path;
+
+		if (new File(dataPath).exists()) {
 			return dataPath;
+		} else {
+			return "ERROR: data '" + dataId + "' not found";
 		}
-		else {
-			return "ERROR: data '"+dataId+"' not found";
-		}
-//		return dataPath;
+		// return dataPath;
 	}
 
 	@Override
@@ -678,18 +639,17 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("oldSessions", 0);
 		fields.put("data", 0);
 
-		DBObject item = userCollection.findOne(query,fields);
-		if(item!=null){
-			//if has not been modified since last time was call
-			if(lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)){
+		DBObject item = userCollection.findOne(query, fields);
+		if (item != null) {
+			// if has not been modified since last time was call
+			if (lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)) {
 				return "{}";
 			}
-//			item.put(arg0, arg1)
+			// item.put(arg0, arg1)
 			return item.toString();
-		}else{
+		} else {
 			return "ERROR: Invalid sessionId";
 		}
 	}
 
 }
-

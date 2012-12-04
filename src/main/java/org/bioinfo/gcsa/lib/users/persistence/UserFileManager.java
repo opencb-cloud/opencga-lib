@@ -3,6 +3,7 @@ package org.bioinfo.gcsa.lib.users.persistence;
 import java.io.InputStream;
 import java.util.List;
 
+import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 
@@ -76,8 +77,7 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String createFileToProject(String project, String fileName,
-			InputStream fileData, String sessionId) {
+	public String createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData) {
 		return null;
 	}
 

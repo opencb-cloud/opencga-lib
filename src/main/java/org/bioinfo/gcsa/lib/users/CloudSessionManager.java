@@ -13,17 +13,15 @@ import org.bioinfo.gcsa.lib.users.persistence.UserMongoDBManager;
 public class CloudSessionManager {
 
 	private UserManager userManager;
-
 	public static Properties properties;
 
 	public CloudSessionManager() throws FileNotFoundException, IOException, UserManagementException {
 		this(System.getenv("GCSA_HOME"));
 	}
 
-	public CloudSessionManager(String gcsaHome) throws FileNotFoundException,
-			IOException, UserManagementException {
+	public CloudSessionManager(String gcsaHome) throws FileNotFoundException, IOException, UserManagementException {
 		// read config file
-		System.err.println ("----------------> creado CloudSessionManager");
+		System.err.println("----------------> creado CloudSessionManager");
 		properties = new Properties();
 		FileInputStream fis = new FileInputStream(gcsaHome + "/conf/account.properties");
 		properties.load(fis);
@@ -31,7 +29,7 @@ public class CloudSessionManager {
 		if (properties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
 			userManager = new UserFileManager();
 		} else {
-			 userManager = new UserMongoDBManager();
+			userManager = new UserMongoDBManager();
 		}
 		System.out.println(properties.toString());
 	}
@@ -42,13 +40,12 @@ public class CloudSessionManager {
 		return null;
 	}
 
-	public String createProject(String projectId, String accountId,
-			String sessionId) throws UserManagementException {
+	public String createProject(String projectId, String accountId, String sessionId) throws UserManagementException {
 		userManager.checkSessionId(accountId, sessionId);
 
 		return null;
 	}
-	
+
 	public UserManager getUserManager() {
 		return userManager;
 	}
