@@ -18,19 +18,19 @@ public interface UserManager {
 	
 	public String login(String accountId, String password, Session session);
 	
-	public String logout(String accountId, String sessionId);
+	public void logout(String accountId, String sessionId) throws UserManagementException;
 	
 	public String getUserByAccountId(String accountId, String sessionId);
 	
 	public String getUserByEmail(String email, String sessionId);
 	
-	public String getAccountBySessionId(String sessionId, String lastActivity);
+	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity);
 	
-	public String changePassword (String accountId, String sessionId, String password, String nPassword1, String nPassword2);
+	public void changePassword (String accountId, String sessionId, String password, String nPassword1, String nPassword2) throws UserManagementException;
 	
-	public String changeEmail (String accountId, String sessionId, String nEmail);
+	public void changeEmail (String accountId, String sessionId, String nEmail) throws UserManagementException;
 	
-	public String resetPassword (String acccountId, String email);
+	public void resetPassword (String acccountId, String email) throws UserManagementException;
 	
 	
 	/*
@@ -41,9 +41,9 @@ public interface UserManager {
 	
 	public Session getSessionId(String accountId, String sessionId);
 	
-	public String getAllProjectsBySessionId(String accountId, String sessionId);
+	public String getAllProjectsBySessionId(String accountId, String sessionId) throws UserManagementException;
 	
-	public String createProject(Project project, String accountId, String sessionId);
+	public String createProject(Project project, String accountId, String sessionId) throws UserManagementException;
 	
 	//add file to project
 	public String createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData);

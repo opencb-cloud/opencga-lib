@@ -2,19 +2,26 @@ package org.bioinfo.gcs.lib;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 
+import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.beans.Data;
+import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
 import org.bioinfo.gcsa.lib.users.persistence.UserManager;
 import org.junit.Test;
 
 public class UserMongoDBManagerTest {
-	private UserManager userManager;
 	
 //	@Test
-//	public void mailTest() {
-//		GcsaUtils.sendResetPasswordMail("pakosala@gmail.com", "hola");
+//	public void mailTest() throws UserManagementException, FileNotFoundException, IOException {
+//		CloudSessionManager cloudSessionManager = new CloudSessionManager();
+//		String email = "pakosala@gmail.com";
+//		String accountId = "fsalavert";
+//		cloudSessionManager.resetPassword(accountId, email);
 //	}
 	
 //	@Test
@@ -38,53 +45,72 @@ public class UserMongoDBManagerTest {
 //			e.printStackTrace();
 //		}
 //	}
+	
 	@Test
-	public void createFileToProjectTest() {
-		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
-			try {
-//				CloudSessionManager cloudSessionManager = CloudSessionManager.getInstance();
-				CloudSessionManager cloudSessionManager = new CloudSessionManager();
-				userManager = cloudSessionManager.getUserManager();
-				
-				String sessionId = "tdTrtexts7s6Dl1eNmlk";
-				String accountId = "fsalavert";
-				
-				System.out.println(sessionId);
-				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
-				InputStream fileData = new FileInputStream(f);
-//				String projectName = null;
-				String projectName = "Default";
-				Data data = new Data();
-//				"id" : "",
-//				"type" : "",
-				String type = "bam";
-//				"fileName" : "",
-				String fileName = f.getName();
-//				"multiple" : "",
-//				"diskUsage" : "",
-				String diskUsage = "1234321";
-//				"creationTime" : "20121128153118",
-//				"responsible" : "",
-				String responsible = "Paco";
-//				"organization" : "",
-				String organization = "CIPF";
-//				"date" : "",
-//				"description" : "",
-				String description = "ILLUMINA CHR 20 BAM";
-//				"status" : "",
-//				"statusMessage" : "",
-//				"members" : [ ]
-
-				data.setFileName(type);
-				data.setFileName(fileName);
-				data.setDiskUsage(diskUsage);
-				userManager.createDataToProject(projectName, accountId, sessionId, data, fileData);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	public void changePasswordTest() throws FileNotFoundException, IOException, UserManagementException, NoSuchAlgorithmException {
+		CloudSessionManager cloudSessionManager = new CloudSessionManager();
+		String accountId = "fsalavert";
+		String sessionId = "zACSnUM25lVxdgbcUTTb";
+		String password = StringUtils.sha1("pepe");
+		String nPassword1 = StringUtils.sha1("pepe"); 
+		String nPassword2 = StringUtils.sha1("pepe");
+		cloudSessionManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
 	}
+	@Test
+	public void changeEmailTest() throws FileNotFoundException, IOException, UserManagementException, NoSuchAlgorithmException {
+		CloudSessionManager cloudSessionManager = new CloudSessionManager();
+		String accountId = "fsalavert";
+		String sessionId = "zACSnUM25lVxdgbcUTTb";
+		String email = "pakosala@gmail.com";
+		cloudSessionManager.changeEmail(accountId, sessionId, email);
+	}
+//	@Test
+//	public void createFileToProjectTest() {
+//		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
+//			try {
+////				CloudSessionManager cloudSessionManager = CloudSessionManager.getInstance();
+//				CloudSessionManager cloudSessionManager = new CloudSessionManager();
+//				userManager = cloudSessionManager.getUserManager();
+//				
+//				String sessionId = "qXJfMkhflb4GUhEV1GbJ";
+//				String accountId = "fsalavert";
+//				
+//				System.out.println(sessionId);
+//				File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
+//				InputStream fileData = new FileInputStream(f);
+////				String projectName = null;
+//				String projectName = "Default";
+//				Data data = new Data();
+////				"id" : "",
+////				"type" : "",
+//				String type = "bam";
+////				"fileName" : "",
+//				String fileName = f.getName();
+////				"multiple" : "",
+////				"diskUsage" : "",
+//				String diskUsage = "1234321";
+////				"creationTime" : "20121128153118",
+////				"responsible" : "",
+//				String responsible = "Paco";
+////				"organization" : "",
+//				String organization = "CIPF";
+////				"date" : "",
+////				"description" : "",
+//				String description = "ILLUMINA CHR 20 BAM";
+////				"status" : "",
+////				"statusMessage" : "",
+////				"members" : [ ]
+//
+//				data.setFileName(type);
+//				data.setFileName(fileName);
+//				data.setDiskUsage(diskUsage);
+//				userManager.createDataToProject(projectName, accountId, sessionId, data, fileData);
+//				
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
 	
 	// @Test
 	// public void loginTest() {

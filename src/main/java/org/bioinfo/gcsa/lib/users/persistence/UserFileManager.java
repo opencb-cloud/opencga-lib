@@ -9,18 +9,16 @@ import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 
-
-
 public class UserFileManager implements UserManager {
 
 	private Logger logger;
 	private Properties properties;
-	
+
 	private String home;
 	private String accounts;
 	private String tmp;
-	
-	public UserFileManager (Properties properties){
+
+	public UserFileManager(Properties properties) {
 		logger = new Logger();
 		logger.setLevel(Logger.INFO_LEVEL);
 		this.properties = properties;
@@ -28,18 +26,16 @@ public class UserFileManager implements UserManager {
 		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
 		tmp = properties.getProperty("TMP.PATH");
 	}
-	
+
 	@Override
-	public void createUser(String accountId, String password,
-			String accountName, String email, Session session)
+	public void createUser(String accountId, String password, String accountName, String email, Session session)
 			throws UserManagementException {
-		
+
 	}
 
 	@Override
-	public void createAnonymousUser(String accountId, String password,
-			String email) {
-		
+	public void createAnonymousUser(String accountId, String password, String email) {
+
 	}
 
 	@Override
@@ -48,8 +44,8 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String logout(String accountId, String sessionId) {
-		return null;
+	public void logout(String accountId, String sessionId) {
+		
 	}
 
 	@Override
@@ -63,14 +59,13 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String changePassword(String accountId, String sessionId, String password,
-			String nPassword1, String nPassword2) {
-		return null;
+	public void changePassword(String accountId, String sessionId, String password, String nPassword1,
+			String nPassword2) {
 	}
 
 	@Override
-	public String changeEmail(String accountId, String sessionId, String nEmail) {
-		return null;
+	public void changeEmail(String accountId, String sessionId, String nEmail) {
+		
 	}
 
 	@Override
@@ -89,20 +84,19 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String createProject(Project project, String accountId,
-			String sessionId) {
+	public String createProject(Project project, String accountId, String sessionId) {
 		return null;
 	}
 
 	@Override
-	public String createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData) {
+	public String createDataToProject(String project, String accountId, String sessionId, Data data,
+			InputStream fileData) {
 		return null;
 	}
 
 	@Override
-	public String createJob(String jobName, String jobFolder, String project,
-			String toolName, List<String> dataList, String commandLine,
-			String sessionId) {
+	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList,
+			String commandLine, String sessionId) {
 		return null;
 	}
 
@@ -117,16 +111,16 @@ public class UserFileManager implements UserManager {
 	}
 
 	@Override
-	public String resetPassword(String acccountId, String email) {
-		return null;
+	public void resetPassword(String acccountId, String email) {
+		
 	}
 
 	@Override
 	public String getDataPath(String dataId, String sessionId) {
 		return null;
 	}
-	
-	public String getAccountBySessionId(String sessionId, String lastActivity) {
+
+	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) {
 		return null;
 	}
 

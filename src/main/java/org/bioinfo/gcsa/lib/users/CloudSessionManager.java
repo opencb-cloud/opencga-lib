@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.bioinfo.commons.log.Logger;
+import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.persistence.UserFileManager;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
@@ -42,22 +43,45 @@ public class CloudSessionManager {
 		}
 	}
 
-	public String getUserByAccountId(String accountId, String sessionId) {
-		userManager.checkSessionId(accountId, sessionId);
-
-		return null;
-	}
-
-	public String createProject(String projectId, String accountId, String sessionId) throws UserManagementException {
-		userManager.checkSessionId(accountId, sessionId);
-
-		return null;
-	}
-
+	/*******************************/
 	public void createUser(String accountId, String password, String accountName, String email, String sessionIp)
 			throws UserManagementException {
 		Session session = new Session(sessionIp);
 		userManager.createUser(accountId, password, accountName, email, session);
+	}
+
+	public String login(String accountId, String password, String sessionIp) throws UserManagementException {
+		Session session = new Session(sessionIp);
+		return userManager.login(accountId, password, session);
+	}
+
+	public String getAccountInfo(String accountId, String sessionId, String lastActivity) {
+		return userManager.getAccountBySessionId(accountId, sessionId, lastActivity);
+	}
+
+	public void createProject(Project project, String accountId, String sessionId) throws UserManagementException {
+		userManager.createProject(project, accountId, sessionId);
+	}
+
+	public void logout(String accountId, String sessionId) throws UserManagementException {
+		userManager.logout(accountId, sessionId);
+	}
+
+	public String getAccountProjects(String accountId, String sessionId) throws UserManagementException {
+		return userManager.getAllProjectsBySessionId(accountId, sessionId);
+	}
+
+	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
+			throws UserManagementException {
+		userManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
+	}
+
+	public void changeEmail(String accountId, String sessionId, String nEmail) throws UserManagementException {
+		userManager.changeEmail(accountId, sessionId, nEmail);
+	}
+
+	public void resetPassword(String accountId, String email) throws UserManagementException {
+		userManager.resetPassword(accountId, email);
 	}
 
 	@Deprecated
