@@ -13,13 +13,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
+import org.bioinfo.commons.log.Logger;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
-import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Job;
@@ -33,31 +34,62 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
+import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 
 public class UserMongoDBManager implements UserManager {
-	private IOManager ioManager = new IOManager();
-	private Mongo mongo;
+
+	private MongoClient mongoClient;
 	private DB mongoDB;
 	private DBCollection userCollection;
-	private String GCSA_MONGO_DB = CloudSessionManager.properties.getProperty("GCSA.MONGO.DB");
-	private String GCSA_MONGO_COLLECTION = CloudSessionManager.properties.getProperty("GCSA.MONGO.COLLECTION");
-	private String GCSA_ENV = System.getenv(CloudSessionManager.properties.getProperty("GCSA.ENV.PATH"));
-	private String GCSA_ACCOUNT = GCSA_ENV + CloudSessionManager.properties.getProperty("GCSA.ACCOUNT.PATH");
-	private String TMP = CloudSessionManager.properties.getProperty("TMP.PATH");
 
-	public UserMongoDBManager() throws UserManagementException {
-		connectToMongo();
-		getDataBase(GCSA_MONGO_DB);
-		getCollection(GCSA_MONGO_COLLECTION);
+	private Logger logger;
+	private Properties properties;
+	private IOManager ioManager;
+
+	private String home;
+	private String accounts;
+	private String tmp;
+
+	public UserMongoDBManager(Properties properties) throws NumberFormatException, UnknownHostException {
+		logger = new Logger();
+		logger.setLevel(Logger.INFO_LEVEL);
+		this.properties = properties;
+
+		ioManager = new IOManager(properties);
+		home = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
+		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
+		tmp = properties.getProperty("TMP.PATH");
+
+		connect();
+	}
+
+	private void connect() throws NumberFormatException, UnknownHostException {
+		logger.info("mongodb connection");
+		String host = properties.getProperty("GCSA.MONGO.HOST", "localhost");
+		int port = Integer.parseInt(properties.getProperty("GCSA.MONGO.PORT"));
+		String db = properties.getProperty("GCSA.MONGO.DB");
+		String collection = properties.getProperty("GCSA.MONGO.COLLECTION");
+
+		mongoClient = new MongoClient(host, port);
+		mongoDB = mongoClient.getDB(db);
+		userCollection = mongoDB.getCollection(collection);
+	}
+
+	public void disconnect() {
+		userCollection = null;
+		if (mongoDB != null) {
+			mongoDB.cleanCursors(true);
+		}
+		if (mongoClient != null) {
+			mongoClient.close();
+		}
 	}
 
 	// ///////////////////////////////////
 	/*
-	 * User methods
+	 * User method s
 	 */
 	// //////////////////////////////////
 
@@ -67,12 +99,12 @@ public class UserMongoDBManager implements UserManager {
 
 		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
 
-			if (new File(GCSA_ACCOUNT + "/" + accountId).exists()
-					&& new File(GCSA_ACCOUNT + "/" + accountId + "/" + "account.conf").exists()) {
+			if (new File(accounts + "/" + accountId).exists()
+					&& new File(accounts + "/" + accountId + "/" + "account.conf").exists()) {
 				// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
 				// CONFIGURACION
 				try {
-					BufferedReader br = new BufferedReader(new FileReader(GCSA_ACCOUNT + "/" + accountId + "/"
+					BufferedReader br = new BufferedReader(new FileReader(accounts + "/" + accountId + "/"
 							+ "user.conf"));
 					userLoad = new Gson().fromJson(br, User.class);
 					userLoad.addSession(session);
@@ -391,7 +423,7 @@ public class UserMongoDBManager implements UserManager {
 			InputStream fileData) {
 		String fileName = data.getFileName();
 		// CREATING A RANDOM TEMP FOLDER
-		String randomFolder = TMP + "/" + StringUtils.randomString(20);
+		String randomFolder = tmp + "/" + StringUtils.randomString(20);
 		try {
 			FileUtils.createDirectory(randomFolder);
 		} catch (Exception e) {
@@ -407,8 +439,7 @@ public class UserMongoDBManager implements UserManager {
 			return "Could not write the file on disk";
 		}
 		// COPYING FROM TEMP TO ACCOUNT DIR
-		File userFile = new File(GCSA_ACCOUNT + "/" + getAccountIdBySessionId(sessionId) + "/" + project + "/"
-				+ fileName);
+		File userFile = new File(accounts + "/" + getAccountIdBySessionId(sessionId) + "/" + project + "/" + fileName);
 		try {
 			FileUtils.touch(userFile);
 			FileUtils.copy(tmpFile, userFile);
@@ -515,15 +546,6 @@ public class UserMongoDBManager implements UserManager {
 		return pattern.matcher(email).matches();
 	}
 
-	private void getCollection(String nameCollection) {
-
-		if (!mongoDB.collectionExists(nameCollection)) {
-			userCollection = mongoDB.createCollection(nameCollection, new BasicDBObject());
-		} else {
-			userCollection = mongoDB.getCollection(nameCollection);
-		}
-	}
-
 	private boolean userExist(String accountId) throws UserManagementException {
 		boolean userExist = true;
 
@@ -535,22 +557,6 @@ public class UserMongoDBManager implements UserManager {
 			userExist = false;
 
 		return userExist;
-	}
-
-	private void getDataBase(String nameDataBase) {
-		mongoDB = mongo.getDB(nameDataBase);
-	}
-
-	private void connectToMongo() throws UserManagementException {
-		try {
-			mongo = new Mongo(CloudSessionManager.properties.getProperty("GCSA.MONGO.IP"),
-					Integer.parseInt(CloudSessionManager.properties.getProperty("GCSA.MONGO.PORT")));
-
-		} catch (UnknownHostException e) {
-			throw new UserManagementException("ERROR: Not connected to mongoDB " + e.toString());
-		} catch (MongoException e) {
-			throw new UserManagementException("ERROR: Not connected to mongoDB " + e.toString());
-		}
 	}
 
 	private void updateMongo(String operator, DBObject filter, String field, Object value) {
@@ -592,7 +598,7 @@ public class UserMongoDBManager implements UserManager {
 		// Project[] p = new Gson().fromJson(item.get("projects").toString(),
 		// Project[].class);
 
-		String jobFolder = GCSA_ACCOUNT + "/" + getAccountIdBySessionId(sessionId) + "/projects/" + project + "/jobs/"
+		String jobFolder = accounts + "/" + getAccountIdBySessionId(sessionId) + "/projects/" + project + "/jobs/"
 				+ jobId + "/";
 		if (new File(jobFolder).exists()) {
 			return jobFolder;
@@ -617,7 +623,7 @@ public class UserMongoDBManager implements UserManager {
 			}
 		}
 
-		String dataPath = GCSA_ACCOUNT + "/" + getAccountIdBySessionId(sessionId) + path;
+		String dataPath = accounts + "/" + getAccountIdBySessionId(sessionId) + path;
 
 		if (new File(dataPath).exists()) {
 			return dataPath;

@@ -51,6 +51,7 @@ public class AnalysisJobExecuter {
 		homePath = System.getenv("GCSA_HOME");
 		config = new Config(homePath + "/conf/analysis.properties");
 		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
+//		cloudSessionManager = CloudSessionManager.getInstance();
 		cloudSessionManager = new CloudSessionManager();
 		gson = new Gson();
 		logger = new Logger();
@@ -61,6 +62,7 @@ public class AnalysisJobExecuter {
 		homePath = System.getenv("GCSA_HOME");
 		config = new Config(homePath + "/conf/analysis.properties");
 		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
+//		cloudSessionManager = CloudSessionManager.getInstance();
 		cloudSessionManager = new CloudSessionManager();
 		
 		gson = new Gson();

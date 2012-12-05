@@ -2,7 +2,9 @@ package org.bioinfo.gcsa.lib.users.persistence;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 
+import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
@@ -11,6 +13,22 @@ import org.bioinfo.gcsa.lib.users.beans.Session;
 
 public class UserFileManager implements UserManager {
 
+	private Logger logger;
+	private Properties properties;
+	
+	private String home;
+	private String accounts;
+	private String tmp;
+	
+	public UserFileManager (Properties properties){
+		logger = new Logger();
+		logger.setLevel(Logger.INFO_LEVEL);
+		this.properties = properties;
+		home = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
+		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
+		tmp = properties.getProperty("TMP.PATH");
+	}
+	
 	@Override
 	public void createUser(String accountId, String password,
 			String accountName, String email, Session session)

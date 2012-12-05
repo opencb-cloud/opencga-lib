@@ -42,7 +42,8 @@ public class UserMongoDBManagerTest {
 	public void createFileToProjectTest() {
 		if(new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam").exists()){
 			try {
-				CloudSessionManager cloudSessionManager = new CloudSessionManager(System.getenv("GCSA_HOME"));
+//				CloudSessionManager cloudSessionManager = CloudSessionManager.getInstance();
+				CloudSessionManager cloudSessionManager = new CloudSessionManager();
 				userManager = cloudSessionManager.getUserManager();
 				
 				String sessionId = "tdTrtexts7s6Dl1eNmlk";
