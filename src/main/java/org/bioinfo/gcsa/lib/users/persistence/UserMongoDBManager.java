@@ -134,24 +134,20 @@ public class UserMongoDBManager implements UserManager {
 
 	}
 
-	public void createAnonymousUser(String accountId, String password, String email) {
-
-	}
-
 	public String login(String accountId, String password, Session session) {
 		BasicDBObject query = new BasicDBObject();
 		String id = "";
 		query.put("accountId", accountId);
 		query.put("password", password);
-
+	
 		DBCursor iterator = userCollection.find(query);
-
+	
 		if (iterator.count() == 1) {
 			User user = new Gson().fromJson(iterator.next().toString(), User.class);
 			user.addSession(session);
 			id = session.getId();
 			List<Session> sess = user.getSessions();
-
+	
 			BasicDBObject filter = new BasicDBObject("accountId", accountId);
 			updateMongo("set", filter, "sessions", sess);
 			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
@@ -161,18 +157,18 @@ public class UserMongoDBManager implements UserManager {
 			Date fechaActual = GcsaUtils.toDate(GcsaUtils.getTime());
 			List<Session> oldSes = user.getOldSessions();
 			boolean changed = false;
-
+	
 			for (int i = 0; i < s.size(); i++) {
-
+	
 				Date loginDate = GcsaUtils.toDate(s.get(i).getLogin());
 				cal = new GregorianCalendar();
 				cal.setTime(loginDate);
 				cal.setTimeInMillis(loginDate.getTime());
 				// sumamos 24h a la fecha del login
 				cal.add(Calendar.DATE, 1);
-
+	
 				Date fechaCaducidad = new Date(cal.getTimeInMillis());
-
+	
 				if (fechaCaducidad.compareTo(fechaActual) < 0) {
 					// caducada -> movemos a oldSessions
 					s.get(i).setLogout(GcsaUtils.getTime());
@@ -181,15 +177,15 @@ public class UserMongoDBManager implements UserManager {
 					changed = true;
 				}
 			}
-
+	
 			if (changed) {
 				updateMongo("set", new BasicDBObject("accountId", user.getAccountId()), "sessions", s);
 				updateMongo("set", new BasicDBObject("accountId", user.getAccountId()), "oldSessions", oldSes);
 				updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 			}
-
+	
 		}
-
+	
 		return id;
 	}
 
@@ -202,7 +198,7 @@ public class UserMongoDBManager implements UserManager {
 			BasicDBObject query = new BasicDBObject();
 			query.put("accountId", accountId);
 			query.put("sessions.id", sessionId);
-
+	
 			updateMongo("push", query, "oldSessions", dataDBObject);
 			query.removeField("sessions.id");
 			BasicDBObject value = new BasicDBObject("id", sessionId);
@@ -211,6 +207,149 @@ public class UserMongoDBManager implements UserManager {
 		} else {
 			throw new UserManagementException("ERROR: logout");
 		}
+	}
+
+	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
+			throws UserManagementException {
+		if (nPassword1.equals(nPassword2)) {
+			BasicDBObject query = new BasicDBObject("accountId", accountId);
+			query.put("sessions.id", sessionId);
+			query.put("password", password);
+			BasicDBObject fields = new BasicDBObject("password", nPassword1);
+			fields.put("lastActivity", GcsaUtils.getTime());
+			BasicDBObject action = new BasicDBObject("$set", fields);
+			WriteResult result = userCollection.update(query, action);
+	
+			if (result.getError() == null) {
+				if (result.getN() != 1) {
+					throw new UserManagementException("could not change password with this parameters");
+				}
+				logger.info("password changed");
+			} else {
+				throw new UserManagementException("could not change password :" + result.getError());
+			}
+		} else {
+			throw new UserManagementException("the new pass is not the same in both fields");
+		}
+	}
+
+	public void changeEmail(String accountId, String sessionId, String nEmail) throws UserManagementException {
+		if (validate(nEmail)) {
+			BasicDBObject query = new BasicDBObject("accountId", accountId);
+			query.put("sessions.id", sessionId);
+			BasicDBObject fields = new BasicDBObject("email", nEmail);
+			fields.put("lastActivity", GcsaUtils.getTime());
+			BasicDBObject action = new BasicDBObject("$set", fields);
+			WriteResult result = userCollection.update(query, action);
+	
+			if (result.getError() == null) {
+				if (result.getN() != 1) {
+					throw new UserManagementException("could not change email with this parameters");
+				}
+				logger.info("email changed");
+			} else {
+				throw new UserManagementException("could not change email :" + result.getError());
+			}
+		} else {
+			throw new UserManagementException("invalid email");
+		}
+	}
+
+	@Override
+	public void resetPassword(String accountId, String email) throws UserManagementException {
+		if (validate(email)) {
+	
+			String newPassword = StringUtils.randomString(6);
+			String sha1Password = null;
+			try {
+				sha1Password = StringUtils.sha1(newPassword);
+			} catch (NoSuchAlgorithmException e) {
+				throw new UserManagementException("could not encode password");
+			}
+	
+			BasicDBObject query = new BasicDBObject();
+			query.put("accountId", accountId);
+			query.put("email", email);
+			BasicDBObject item = new BasicDBObject("password", sha1Password);
+			BasicDBObject action = new BasicDBObject("$set", item);
+			WriteResult result = userCollection.update(query, action);
+	
+			if (result.getError() == null) {
+				if (result.getN() != 1) {
+					throw new UserManagementException("could not reset password with this parameters");
+				}
+				logger.info("password reset");
+			} else {
+				throw new UserManagementException("could not reset the password");
+			}
+	
+			StringBuilder message = new StringBuilder();
+			message.append("Hello,").append("\n");
+			message.append("You can now login using this new password:").append("\n\n");
+			message.append(newPassword).append("\n\n\n");
+			message.append("Please change it when you first login.").append("\n\n");
+			message.append("Best regards,").append("\n\n");
+			message.append("Computational Biology Unit at Computational Medicine Institute").append("\n");
+	
+			GcsaUtils.sendResetPasswordMail(email, message.toString());
+			
+		} else {
+			throw new UserManagementException("invalid email");
+		}
+	}
+
+	@Override
+	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) throws UserManagementException {
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		fields.put("_id", 0);
+		fields.put("password", 0);
+		fields.put("sessions", 0);
+		fields.put("oldSessions", 0);
+		fields.put("data", 0);
+		
+		DBObject item = userCollection.findOne(query, fields);
+		if (item != null) {
+			// if has not been modified since last time was call
+			if (lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)) {
+				return "{}";
+			}
+			return item.toString();
+		} else {
+			throw new UserManagementException("could not get account info with this parameters");
+		}
+	}
+
+	public String createProject(Project project, String accountId, String sessionId) throws UserManagementException {
+		BasicDBObject filter = new BasicDBObject("accountId", accountId);
+		ioManager.createProjectFolder(accountId, project.getName());
+		updateMongo("push", filter, "projects", project);
+		updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
+		return "";
+	}
+
+	public String getAllProjectsBySessionId(String accountId, String sessionId) throws UserManagementException {
+		String projectsStr = "";
+		User user = null;
+	
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+	
+		DBObject item = userCollection.findOne(query);
+		if (item != null) {
+			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
+			user = new Gson().fromJson(item.toString(), User.class);
+			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
+			return projectsStr;
+		} else {
+			throw new UserManagementException("ERROR: account not found");
+		}
+	}
+
+	public void createAnonymousUser(String accountId, String password, String email) {
+
 	}
 
 	public String getUserByAccountId(String accountId, String sessionId) {
@@ -245,94 +384,7 @@ public class UserMongoDBManager implements UserManager {
 		return userStr;
 	}
 
-	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
-			throws UserManagementException {
-		if (nPassword1.equals(nPassword2)) {
-			BasicDBObject query = new BasicDBObject("accountId", accountId);
-			query.put("sessions.id", sessionId);
-			query.put("password", password);
-			BasicDBObject fields = new BasicDBObject("password", nPassword1);
-			fields.put("lastActivity", GcsaUtils.getTime());
-			BasicDBObject action = new BasicDBObject("$set", fields);
-			WriteResult result = userCollection.update(query, action);
-
-			if (result.getError() == null) {
-				if (result.getN() != 1) {
-					throw new UserManagementException("could not change password with this parameters");
-				}
-				logger.info("password changed");
-			} else {
-				throw new UserManagementException("could not change password :" + result.getError());
-			}
-		} else {
-			throw new UserManagementException("the new pass is not the same in both fields");
-		}
-	}
-
-	public void changeEmail(String accountId, String sessionId, String nEmail) throws UserManagementException {
-		if (validate(nEmail)) {
-			BasicDBObject query = new BasicDBObject("accountId", accountId);
-			query.put("sessions.id", sessionId);
-			BasicDBObject fields = new BasicDBObject("email", nEmail);
-			fields.put("lastActivity", GcsaUtils.getTime());
-			BasicDBObject action = new BasicDBObject("$set", fields);
-			WriteResult result = userCollection.update(query, action);
-
-			if (result.getError() == null) {
-				if (result.getN() != 1) {
-					throw new UserManagementException("could not change email with this parameters");
-				}
-				logger.info("email changed");
-			} else {
-				throw new UserManagementException("could not change email :" + result.getError());
-			}
-		} else {
-			throw new UserManagementException("invalid email");
-		}
-	}
-
-	@Override
-	public void resetPassword(String accountId, String email) throws UserManagementException {
-		if (validate(email)) {
-
-			String newPassword = StringUtils.randomString(6);
-			String sha1Password = null;
-			try {
-				sha1Password = StringUtils.sha1(newPassword);
-			} catch (NoSuchAlgorithmException e) {
-				throw new UserManagementException("could not encode password");
-			}
-
-			BasicDBObject query = new BasicDBObject();
-			query.put("accountId", accountId);
-			query.put("email", email);
-			BasicDBObject item = new BasicDBObject("password", sha1Password);
-			BasicDBObject action = new BasicDBObject("$set", item);
-			WriteResult result = userCollection.update(query, action);
-
-			if (result.getError() == null) {
-				if (result.getN() != 1) {
-					throw new UserManagementException("could not reset password with this parameters");
-				}
-				logger.info("password reset");
-			} else {
-				throw new UserManagementException("could not reset the password");
-			}
-
-			StringBuilder message = new StringBuilder();
-			message.append("Hello,").append("\n");
-			message.append("You can now login using this new password:").append("\n\n");
-			message.append(newPassword).append("\n\n\n");
-			message.append("Please change it when you first login.").append("\n\n");
-			message.append("Best regards,").append("\n\n");
-			message.append("Computational Biology Unit at Computational Medicine Institute").append("\n");
-
-			GcsaUtils.sendResetPasswordMail(email, message.toString());
-			
-		} else {
-			throw new UserManagementException("invalid email");
-		}
-	}
+	
 
 	// ////////////////////////////////////
 	/*
@@ -353,32 +405,6 @@ public class UserMongoDBManager implements UserManager {
 		}
 
 		return isValidSession;
-	}
-
-	public String getAllProjectsBySessionId(String accountId, String sessionId) throws UserManagementException {
-		String projectsStr = "";
-		User user = null;
-
-		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		query.put("sessions.id", sessionId);
-
-		DBObject item = userCollection.findOne(query);
-		if (item != null) {
-			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
-			user = new Gson().fromJson(item.toString(), User.class);
-			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
-			return projectsStr;
-		} else {
-			throw new UserManagementException("ERROR: account not found");
-		}
-	}
-
-	public String createProject(Project project, String accountId, String sessionId) throws UserManagementException {
-		BasicDBObject filter = new BasicDBObject("accountId", accountId);
-		ioManager.createProjectFolder(accountId, project.getName());
-		updateMongo("push", filter, "projects", project);
-		updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
-		return "";
 	}
 
 	public String getAccountIdBySessionId(String sessionId) {
@@ -630,30 +656,6 @@ public class UserMongoDBManager implements UserManager {
 			return "ERROR: data '" + dataId + "' not found";
 		}
 		// return dataPath;
-	}
-
-	@Override
-	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) throws UserManagementException {
-		BasicDBObject query = new BasicDBObject();
-		BasicDBObject fields = new BasicDBObject();
-		query.put("accountId", accountId);
-		query.put("sessions.id", sessionId);
-		fields.put("_id", 0);
-		fields.put("password", 0);
-		fields.put("sessions", 0);
-		fields.put("oldSessions", 0);
-		fields.put("data", 0);
-		
-		DBObject item = userCollection.findOne(query, fields);
-		if (item != null) {
-			// if has not been modified since last time was call
-			if (lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)) {
-				return "{}";
-			}
-			return item.toString();
-		} else {
-			throw new UserManagementException("could not get account info with this parameters");
-		}
 	}
 	
 //	private BasicDBObject createBasicDBQuery(String accountId, String sessionId) {
