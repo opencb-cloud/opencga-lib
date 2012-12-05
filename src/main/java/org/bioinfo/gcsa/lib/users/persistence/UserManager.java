@@ -61,10 +61,14 @@ public interface UserManager {
 	 */
 	public String getDataPath(String dataId, String sessionId);
 	
+	public void createData(String dataName, String accountId, String sessionId);
+	
 	/*
 	 * Utils
 	 */
 	public List<Project> jsonToProjectList(String json);
+
+	
 
 	
 }

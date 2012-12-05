@@ -112,4 +112,10 @@ public class UserFileManager implements UserManager {
 		return null;
 	}
 
+	@Override
+	public void createData(String dataName, String accountId, String sessionId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

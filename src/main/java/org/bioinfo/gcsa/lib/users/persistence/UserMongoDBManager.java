@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,6 +21,7 @@ import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.IOManager;
+import org.bioinfo.gcsa.lib.users.beans.Acl;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Job;
 import org.bioinfo.gcsa.lib.users.beans.Project;
@@ -324,6 +326,7 @@ public class UserMongoDBManager implements UserManager {
 		return projectsStr;
 	}
 
+
 	public String createProject(Project project, String accountId,
 			String sessionId) {
 		BasicDBObject filter = new BasicDBObject("accountId", accountId);
@@ -477,6 +480,29 @@ public class UserMongoDBManager implements UserManager {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public void createData(String dataName, String project, String sessionId) {
+		
+		String dataId = StringUtils.randomString(8);
+		
+		///
+		dataName = StringUtils.randomString(10);
+		///
+		String accountId = getAccountIdBySessionId(sessionId);
+
+		Data data = new Data(dataId, "", dataName, "", "", "", "", GcsaUtils.getTime(), "", "1", "", new ArrayList<Acl>());			
+		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject item = new BasicDBObject();
+		BasicDBObject action = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("projects.id", project);
+		item.put("projects.$.data", dataDBObject);
+		action.put("$push", item);
+		userCollection.update(query, action);
+		
+//		return dataId;
 	}
 
 	// //////////////////////
