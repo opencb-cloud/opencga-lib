@@ -1,6 +1,7 @@
 package org.bioinfo.gcsa.lib.analysis;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -45,14 +46,28 @@ public class AnalysisJobExecuter {
 	protected String executionName;
 	protected String manifestFile;
 	protected String sessionId;
-	protected CloudSessionManager cloudSessionManager;
+	protected static CloudSessionManager cloudSessionManager;
+	
+	static{
+		try {
+			cloudSessionManager = new CloudSessionManager();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UserManagementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("AnalysisJobExecuter: static cloudSessionManager");
+	}
 	
 	public AnalysisJobExecuter() throws IOException, UserManagementException {
 		homePath = System.getenv("GCSA_HOME");
 		config = new Config(homePath + "/conf/analysis.properties");
 		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
-//		cloudSessionManager = CloudSessionManager.getInstance();
-		cloudSessionManager = new CloudSessionManager();
 		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
@@ -62,9 +77,6 @@ public class AnalysisJobExecuter {
 		homePath = System.getenv("GCSA_HOME");
 		config = new Config(homePath + "/conf/analysis.properties");
 		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
-//		cloudSessionManager = CloudSessionManager.getInstance();
-		cloudSessionManager = new CloudSessionManager();
-		
 		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
