@@ -1,8 +1,8 @@
 package org.bioinfo.gcsa.lib.analysis;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -19,6 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.bioinfo.commons.Config;
 import org.bioinfo.commons.io.utils.FileUtils;
+import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
@@ -33,6 +34,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 public class AnalysisJobExecuter {
 	
@@ -46,6 +48,7 @@ public class AnalysisJobExecuter {
 	protected String executionName;
 	protected String manifestFile;
 	protected String sessionId;
+	protected Analysis analysis;
 	protected static CloudSessionManager cloudSessionManager;
 	
 	static{
@@ -73,7 +76,7 @@ public class AnalysisJobExecuter {
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
 	}
 	
-	public AnalysisJobExecuter(String analysis) throws IOException, UserManagementException {
+	public AnalysisJobExecuter(String analysisStr) throws IOException, UserManagementException {
 		homePath = System.getenv("GCSA_HOME");
 		config = new Config(homePath + "/conf/analysis.properties");
 		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
@@ -81,7 +84,7 @@ public class AnalysisJobExecuter {
 		logger = new Logger();
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
 		
-		analysisName = analysis;
+		analysisName = analysisStr;
 		executionName = null;
 		if(analysisName.contains(".")) {
 			executionName = analysisName.split("\\.")[1];
@@ -90,8 +93,10 @@ public class AnalysisJobExecuter {
 		
 		analysisPath = homePath + "/" + analysisRootPath + "/" + analysisName + "/";
 		manifestFile = analysisPath + "manifest.json";
+		
+		analysis = getAnalysis();
 	}
-	
+
 	public String execute(Map<String, List<String>> params) {
 		System.out.println("params received in execute: "+params);
 		
@@ -116,7 +121,7 @@ public class AnalysisJobExecuter {
 			return "ERROR: Manifest for " + analysisName + " not found.";
 		}
 		
-		Analysis analysis = parseJsonToAnalysis();
+//		analysis = getAnalysis();
 		
 		if(analysis == null) {
 			return "ERROR: Invalid manifest.json for " + analysisName + ".";
@@ -296,17 +301,14 @@ public class AnalysisJobExecuter {
 		}
 	}
 	
-	private Analysis parseJsonToAnalysis() {
-		Analysis analysis = null;
-		
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(manifestFile));
-			analysis = gson.fromJson(br, Analysis.class);
-
-		} catch (IOException e) {
-			e.printStackTrace();
+//	private void parseJsonToAnalysis() throws JsonSyntaxException, IOException {
+//		analysis = gson.fromJson(IOUtils.toString(new File(manifestFile)), Analysis.class);
+//	}
+	
+	public Analysis getAnalysis() throws JsonSyntaxException, IOException {
+		if(analysis == null) {
+			analysis = gson.fromJson(IOUtils.toString(new File(manifestFile)), Analysis.class);
 		}
-		
 		return analysis;
 	}
 	
@@ -329,8 +331,6 @@ public class AnalysisJobExecuter {
 	}
 	
 	public String help(String baseUrl) {
-		Analysis analysis = null;
-		
 		try {
 			FileUtils.checkFile(manifestFile);
 		} catch (IOException e) {
@@ -338,45 +338,30 @@ public class AnalysisJobExecuter {
 			return "Manifest for " + analysisName + " not found.";
 		}
 		
-		analysis = parseJsonToAnalysis();
-		
-		if(analysis == null) {
-			return "Invalid manifest.json for " + analysisName + ".";
-		}
-		else {
-			String execName = "";
-			if(executionName != null) execName = "."+executionName;
-			StringBuilder sb = new StringBuilder();
-			sb.append("Analysis: "+analysis.getName()+"\n");
-			sb.append("Description: "+analysis.getDescription()+"\n");
-			sb.append("Version: "+analysis.getVersion()+"\n\n");
-			sb.append("Author: "+analysis.getAuthor().getName()+"\n");
-			sb.append("Email: "+analysis.getAuthor().getEmail()+"\n");
-			if(!analysis.getWebsite().equals("")) sb.append("Website: "+analysis.getWebsite()+"\n");  
-			if(!analysis.getPublication().equals("")) sb.append("Publication: "+analysis.getPublication()+"\n");  
-			sb.append("\nUsage: \n");
-			sb.append(baseUrl+"analysis/"+analysisName+execName+"/{action}?{params}\n\n");
-			sb.append("\twhere: \n");
-			sb.append("\t\t{action} = [run, help, params, test, status]\n");
-			sb.append("\t\t{params} = "+baseUrl+"analysis/"+analysisName+execName+"/params\n");
-			return sb.toString();
-		}
+		String execName = "";
+		if(executionName != null) execName = "."+executionName;
+		StringBuilder sb = new StringBuilder();
+		sb.append("Analysis: "+analysis.getName()+"\n");
+		sb.append("Description: "+analysis.getDescription()+"\n");
+		sb.append("Version: "+analysis.getVersion()+"\n\n");
+		sb.append("Author: "+analysis.getAuthor().getName()+"\n");
+		sb.append("Email: "+analysis.getAuthor().getEmail()+"\n");
+		if(!analysis.getWebsite().equals("")) sb.append("Website: "+analysis.getWebsite()+"\n");  
+		if(!analysis.getPublication().equals("")) sb.append("Publication: "+analysis.getPublication()+"\n");  
+		sb.append("\nUsage: \n");
+		sb.append(baseUrl+"analysis/"+analysisName+execName+"/{action}?{params}\n\n");
+		sb.append("\twhere: \n");
+		sb.append("\t\t{action} = [run, help, params, test, status]\n");
+		sb.append("\t\t{params} = "+baseUrl+"analysis/"+analysisName+execName+"/params\n");
+		return sb.toString();
 	}
 	
 	public String params() {
-		Analysis analysis = null;
-		
 		try {
 			FileUtils.checkFile(manifestFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return "Manifest for " + analysisName + " not found.";
-		}
-		
-		analysis = parseJsonToAnalysis();
-		
-		if(analysis == null) {
-			return "Invalid manifest.json for " + analysisName + ".";
 		}
 		
 		Execution execution = getExecution(analysis);
@@ -396,19 +381,11 @@ public class AnalysisJobExecuter {
 	}
 	
 	public String test() { //TODO probar cuando funcione lo de usuarios
-		Analysis analysis = null;
-		
 		try {
 			FileUtils.checkFile(manifestFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return "Manifest for " + analysisName + " not found.";
-		}
-		
-		analysis = parseJsonToAnalysis();
-		
-		if(analysis == null) {
-			return "Invalid manifest.json for " + analysisName + ".";
 		}
 		
 		Execution execution = getExecution(analysis);
