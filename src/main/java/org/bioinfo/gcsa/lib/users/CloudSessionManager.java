@@ -54,39 +54,33 @@ public class CloudSessionManager {
 		Session session = new Session(sessionIp);
 		return userManager.login(accountId, password, session);
 	}
-
-	public String getAccountInfo(String accountId, String sessionId, String lastActivity) {
+	
+	public void logout(String accountId, String sessionId) throws UserManagementException {
+		userManager.logout(accountId, sessionId);
+	}
+	
+	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
+			throws UserManagementException {
+		userManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
+	}
+	
+	public void changeEmail(String accountId, String sessionId, String nEmail) throws UserManagementException {
+		userManager.changeEmail(accountId, sessionId, nEmail);
+	}
+	
+	public void resetPassword(String accountId, String email) throws UserManagementException {
+		userManager.resetPassword(accountId, email);
+	}
+	
+	public String getAccountInfo(String accountId, String sessionId, String lastActivity) throws UserManagementException {
 		return userManager.getAccountBySessionId(accountId, sessionId, lastActivity);
 	}
 
 	public void createProject(Project project, String accountId, String sessionId) throws UserManagementException {
 		userManager.createProject(project, accountId, sessionId);
 	}
-
-	public void logout(String accountId, String sessionId) throws UserManagementException {
-		userManager.logout(accountId, sessionId);
-	}
-
+	
 	public String getAccountProjects(String accountId, String sessionId) throws UserManagementException {
 		return userManager.getAllProjectsBySessionId(accountId, sessionId);
 	}
-
-	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
-			throws UserManagementException {
-		userManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
-	}
-
-	public void changeEmail(String accountId, String sessionId, String nEmail) throws UserManagementException {
-		userManager.changeEmail(accountId, sessionId, nEmail);
-	}
-
-	public void resetPassword(String accountId, String email) throws UserManagementException {
-		userManager.resetPassword(accountId, email);
-	}
-
-	@Deprecated
-	public UserManager getUserManager() {
-		return userManager;
-	}
-
 }

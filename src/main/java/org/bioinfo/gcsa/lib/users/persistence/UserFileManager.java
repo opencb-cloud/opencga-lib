@@ -119,7 +119,8 @@ public class UserFileManager implements UserManager {
 	public String getDataPath(String dataId, String sessionId) {
 		return null;
 	}
-
+	
+	@Override
 	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) {
 		return null;
 	}

@@ -633,8 +633,7 @@ public class UserMongoDBManager implements UserManager {
 	}
 
 	@Override
-	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) {
-		System.out.println(sessionId);
+	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) throws UserManagementException {
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
 		query.put("accountId", accountId);
@@ -644,18 +643,42 @@ public class UserMongoDBManager implements UserManager {
 		fields.put("sessions", 0);
 		fields.put("oldSessions", 0);
 		fields.put("data", 0);
-
+		
 		DBObject item = userCollection.findOne(query, fields);
 		if (item != null) {
 			// if has not been modified since last time was call
 			if (lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)) {
 				return "{}";
 			}
-			// item.put(arg0, arg1)
 			return item.toString();
 		} else {
-			return "ERROR: Invalid sessionId";
+			throw new UserManagementException("could not get account info with this parameters");
 		}
 	}
-
+	
+//	private BasicDBObject createBasicDBQuery(String accountId, String sessionId) {
+//		BasicDBObject query = new BasicDBObject();
+//		query.put("accountId", accountId);
+//		query.put("sessions.id", sessionId);
+//		return query;
+//	}
+//	
+//	private BasicDBObject createBasicDBQuery(String ... params) {  // String[] params
+//		BasicDBObject query = new BasicDBObject();
+//		for(int i = 0; i<params.length; i += 2) {
+//			query.put(params[i], params[i+1]);
+//		}
+//		return query;
+//	}
+//	
+//	private BasicDBObject createBasicDBFieds() {  // String[] params
+//		BasicDBObject fields = new BasicDBObject();
+//		fields.put("_id", 0);
+//		fields.put("password", 0);
+//		fields.put("sessions", 0);
+//		fields.put("oldSessions", 0);
+//		fields.put("data", 0);
+//		return fields;
+//	}
+	
 }

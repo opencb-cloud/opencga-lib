@@ -24,7 +24,7 @@ public interface UserManager {
 	
 	public String getUserByEmail(String email, String sessionId);
 	
-	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity);
+	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) throws UserManagementException;
 	
 	public void changePassword (String accountId, String sessionId, String password, String nPassword1, String nPassword2) throws UserManagementException;
 	
