@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.users.beans.Data;
+import org.bioinfo.gcsa.lib.users.beans.Plugin;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 
@@ -56,6 +57,8 @@ public interface UserManager {
 	
 	public String getJobFolder(String project, String jobId, String sessionId);
 	
+	public List<Plugin> getUserAnalysis(String sessionId) throws UserManagementException;
+	
 	
 	/*
 	 * Data methods
@@ -67,5 +70,4 @@ public interface UserManager {
 	 */
 	public List<Project> jsonToProjectList(String json);
 
-	
 }

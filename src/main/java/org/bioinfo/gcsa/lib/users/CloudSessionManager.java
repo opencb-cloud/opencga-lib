@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.bioinfo.commons.log.Logger;
+import org.bioinfo.gcsa.lib.users.beans.Plugin;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.persistence.UserFileManager;
 import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
@@ -58,6 +60,23 @@ public class CloudSessionManager {
 			throws UserManagementException {
 		Session session = new Session(sessionIp);
 		userManager.createUser(accountId, password, accountName, email, session);
+	}
+	
+	public String getDataPath(String dataId, String sessionId) {
+		return userManager.getDataPath(dataId, sessionId);
+	}
+	
+	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList,
+			String commandLine, String sessionId) {
+		return userManager.createJob(jobName, jobFolder, project, toolName, dataList, commandLine, sessionId);
+	}
+	
+	public String getJobFolder(String project, String jobId, String sessionId) {
+		return userManager.getJobFolder(project, jobId, sessionId);
+	}
+	
+	public List<Plugin> getUserAnalysis(String sessionId) throws UserManagementException {
+		return userManager.getUserAnalysis(sessionId);
 	}
 
 	@Deprecated

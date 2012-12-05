@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,6 +25,7 @@ import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Job;
+import org.bioinfo.gcsa.lib.users.beans.Plugin;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 import org.bioinfo.gcsa.lib.users.beans.User;
@@ -630,7 +632,6 @@ public class UserMongoDBManager implements UserManager {
 		} else {
 			return "ERROR: data '" + dataId + "' not found";
 		}
-		// return dataPath;
 	}
 
 	@Override
@@ -655,6 +656,22 @@ public class UserMongoDBManager implements UserManager {
 			return item.toString();
 		} else {
 			return "ERROR: Invalid sessionId";
+		}
+	}
+
+	@Override
+	public List<Plugin> getUserAnalysis(String sessionId) throws UserManagementException {
+		BasicDBObject query = new BasicDBObject("sessions.id", sessionId);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("_id", 0);
+		fields.put("plugins", 1);
+
+		DBObject item = userCollection.findOne(query, fields);
+		if (item != null) {
+			Plugin[] userAnalysis = new Gson().fromJson(item.get("plugins").toString(), Plugin[].class);
+			return Arrays.asList(userAnalysis);
+		} else {
+			throw new UserManagementException("invalid session id");
 		}
 	}
 

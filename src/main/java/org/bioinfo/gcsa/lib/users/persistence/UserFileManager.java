@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.users.beans.Data;
+import org.bioinfo.gcsa.lib.users.beans.Plugin;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
 
@@ -127,6 +128,11 @@ public class UserFileManager implements UserManager {
 	}
 	
 	public String getAccountBySessionId(String sessionId, String lastActivity) {
+		return null;
+	}
+
+	@Override
+	public List<Plugin> getUserAnalysis(String sessionId) {
 		return null;
 	}
 
