@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
+import org.bioinfo.gcsa.lib.users.persistence.AccountManagementException;
 
 public class IOManager {
 
@@ -20,14 +20,14 @@ public class IOManager {
 		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
 	}
 
-	public void createScaffoldAccountId(String accountId) throws UserManagementException {
+	public void createScaffoldAccountId(String accountId) throws AccountManagementException {
 
 		if (!new File(accounts).exists()) {
 			try {
 				FileUtils.createDirectory(accounts);
 			} catch (IOException e1) {
 				FileUtils.deleteDirectory(new File(accounts));
-				throw new UserManagementException("IOException" + e1.toString());
+				throw new AccountManagementException("IOException" + e1.toString());
 			}
 		}
 
@@ -40,7 +40,7 @@ public class IOManager {
 			} catch (IOException e1) {
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
 				FileUtils.deleteDirectory(new File(accounts));
-				throw new UserManagementException("IOException" + e1.toString());
+				throw new AccountManagementException("IOException" + e1.toString());
 			}
 
 			try {
@@ -49,7 +49,7 @@ public class IOManager {
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/analysis"));
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
 				FileUtils.deleteDirectory(new File(accounts));
-				throw new UserManagementException("IOException" + e1.toString());
+				throw new AccountManagementException("IOException" + e1.toString());
 			}
 
 			try {
@@ -59,13 +59,13 @@ public class IOManager {
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/analysis"));
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
 				FileUtils.deleteDirectory(new File(accounts));
-				throw new UserManagementException("IOException" + e1.toString());
+				throw new AccountManagementException("IOException" + e1.toString());
 			}
 
 			try {
 				FileUtils.createDirectory(accounts + "/" + accountId + "/projects/default");
 			} catch (IOException e1) {
-				throw new UserManagementException("IOException" + e1.toString());
+				throw new AccountManagementException("IOException" + e1.toString());
 			}
 
 			try {
@@ -74,38 +74,38 @@ public class IOManager {
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/projects/default/jobs"));
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
 				FileUtils.deleteDirectory(new File(accounts));
-				throw new UserManagementException("IOException" + e1.toString());
+				throw new AccountManagementException("IOException" + e1.toString());
 			}
 
 		} else {
-			throw new UserManagementException("ERROR: The project has not been created ");
+			throw new AccountManagementException("ERROR: The project has not been created ");
 		}
 
 	}
 
-	public void createProjectFolder(String accountId, String project) throws UserManagementException {
+	public void createProjectFolder(String accountId, String project) throws AccountManagementException {
 		try {
 			System.out.println("--------------->     " + accounts + "/" + accountId + "/projects/" + project + "/jobs");
 			FileUtils.createDirectory(accounts + "/" + accountId + "/projects/" + project);
 			FileUtils.createDirectory(accounts + "/" + accountId + "/projects/" + project + "/jobs");
 		} catch (IOException e1) {
 			FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/projects/" + project + "/jobs"));
-			throw new UserManagementException("IOException" + e1.toString());
+			throw new AccountManagementException("IOException" + e1.toString());
 		}
 	}
 
-	public void createJobFolder(String accountId, String project, String jobId) throws UserManagementException {
+	public void createJobFolder(String accountId, String project, String jobId) throws AccountManagementException {
 		String path = accounts + "/" + accountId + "/projects/" + project + "/jobs";
 		if (new File(path).exists() && new File(path).canWrite()) {
 			try {
 				FileUtils.createDirectory(path + "/" + jobId);
 			} catch (IOException e) {
-				throw new UserManagementException("IOException" + e.toString());
+				throw new AccountManagementException("IOException" + e.toString());
 			}
 		}
 	}
 
-	public void removeJobFolder(String accountId, String project, String jobId) throws UserManagementException {
+	public void removeJobFolder(String accountId, String project, String jobId) throws AccountManagementException {
 		File path = new File(accounts + "/" + accountId + "/projects/" + project + "/jobs/" + jobId);
 		FileUtils.deleteDirectory(path);
 	}

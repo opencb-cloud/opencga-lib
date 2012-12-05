@@ -10,8 +10,8 @@ import java.security.NoSuchAlgorithmException;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
 import org.bioinfo.gcsa.lib.users.beans.Data;
-import org.bioinfo.gcsa.lib.users.persistence.UserManagementException;
-import org.bioinfo.gcsa.lib.users.persistence.UserManager;
+import org.bioinfo.gcsa.lib.users.persistence.AccountManagementException;
+import org.bioinfo.gcsa.lib.users.persistence.AccountManager;
 import org.junit.Test;
 
 public class UserMongoDBManagerTest {
@@ -47,7 +47,7 @@ public class UserMongoDBManagerTest {
 //	}
 	
 	@Test
-	public void changePasswordTest() throws FileNotFoundException, IOException, UserManagementException, NoSuchAlgorithmException {
+	public void changePasswordTest() throws FileNotFoundException, IOException, AccountManagementException, NoSuchAlgorithmException {
 		CloudSessionManager cloudSessionManager = new CloudSessionManager();
 		String accountId = "fsalavert";
 		String sessionId = "zACSnUM25lVxdgbcUTTb";
@@ -57,7 +57,7 @@ public class UserMongoDBManagerTest {
 		cloudSessionManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
 	}
 	@Test
-	public void changeEmailTest() throws FileNotFoundException, IOException, UserManagementException, NoSuchAlgorithmException {
+	public void changeEmailTest() throws FileNotFoundException, IOException, AccountManagementException, NoSuchAlgorithmException {
 		CloudSessionManager cloudSessionManager = new CloudSessionManager();
 		String accountId = "fsalavert";
 		String sessionId = "zACSnUM25lVxdgbcUTTb";
