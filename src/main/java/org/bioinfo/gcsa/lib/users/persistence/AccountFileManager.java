@@ -49,10 +49,10 @@ public class AccountFileManager implements AccountManager {
 		
 	}
 
-	@Override
-	public String getUserByAccountId(String accountId, String sessionId) {
-		return null;
-	}
+//	@Override
+//	public String getUserByAccountId(String accountId, String sessionId) {
+//		return null;
+//	}
 
 	@Override
 	public String getUserByEmail(String email, String sessionId) {

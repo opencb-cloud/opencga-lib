@@ -21,7 +21,7 @@ public interface AccountManager {
 	
 	public void logout(String accountId, String sessionId) throws AccountManagementException;
 	
-	public String getUserByAccountId(String accountId, String sessionId);
+//	public String getUserByAccountId(String accountId, String sessionId);
 	
 	public String getUserByEmail(String email, String sessionId);
 	
