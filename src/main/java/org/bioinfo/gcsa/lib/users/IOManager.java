@@ -5,16 +5,20 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.bioinfo.commons.io.utils.FileUtils;
+import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.users.persistence.AccountManagementException;
 
 public class IOManager {
 
+	private Logger logger;
 	private Properties properties;
 
 	private String home;
 	private String accounts;
 
 	public IOManager(Properties properties) {
+		logger = new Logger();
+		logger.setLevel(Logger.INFO_LEVEL);
 		this.properties = properties;
 		home = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
 		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
@@ -36,7 +40,7 @@ public class IOManager {
 				&& new File(accounts).canExecute()) {
 			try {
 				FileUtils.createDirectory(accounts + "/" + accountId);
-				System.out.println("account creada");
+				logger.info("account scaffold created");
 			} catch (IOException e1) {
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
 				FileUtils.deleteDirectory(new File(accounts));

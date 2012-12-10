@@ -8,13 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
@@ -22,12 +20,12 @@ import org.bioinfo.commons.log.Logger;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.IOManager;
+import org.bioinfo.gcsa.lib.users.beans.Account;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Job;
 import org.bioinfo.gcsa.lib.users.beans.Plugin;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
-import org.bioinfo.gcsa.lib.users.beans.User;
 
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
@@ -52,8 +50,10 @@ public class AccountMongoDBManager implements AccountManager {
 	private String home;
 	private String accounts;
 	private String tmp;
+	private Gson gson;
 
 	public AccountMongoDBManager(Properties properties) throws NumberFormatException, UnknownHostException {
+		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Logger.INFO_LEVEL);
 		this.properties = properties;
@@ -67,7 +67,7 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	private void connect() throws NumberFormatException, UnknownHostException {
-		logger.info("mongodb connection");
+		logger.info("mongodb connect");
 		String host = properties.getProperty("GCSA.MONGO.HOST", "localhost");
 		int port = Integer.parseInt(properties.getProperty("GCSA.MONGO.PORT"));
 		String db = properties.getProperty("GCSA.MONGO.DB");
@@ -79,6 +79,7 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	public void disconnect() {
+		logger.info("mongodb disconnect");
 		userCollection = null;
 		if (mongoDB != null) {
 			mongoDB.cleanCursors(true);
@@ -90,112 +91,174 @@ public class AccountMongoDBManager implements AccountManager {
 
 	// ///////////////////////////////////
 	/*
-	 * User method s
+	 * Account methods
 	 */
 	// //////////////////////////////////
 
-	public void createUser(String accountId, String password, String accountName, String email, Session session)
-			throws AccountManagementException {
-		User userLoad = null;
-
-		if (!userExist(accountId)) {// SI NO EXISTE USUARIO
-
-			if (new File(accounts + "/" + accountId).exists()
-					&& new File(accounts + "/" + accountId + "/" + "account.conf").exists()) {
-				// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
-				// CONFIGURACION
-				try {
-					BufferedReader br = new BufferedReader(new FileReader(accounts + "/" + accountId + "/"
-							+ "user.conf"));
-					userLoad = new Gson().fromJson(br, User.class);
-					userLoad.addSession(session);
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
-
-			}
-
-			ioManager.createScaffoldAccountId(accountId);
-
-			if (validate(email)) {
-
-				if (userLoad == null) {
-					userLoad = new User(accountId, accountName, password, email);
-				}
-
-				userCollection.insert((DBObject) JSON.parse(new Gson().toJson(userLoad)));
-				updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
-			} else {
-				throw new AccountManagementException("ERROR: email not valid");
-			}
-
-		} else {// SI EXISTE USUARIO
-			throw new AccountManagementException("ERROR: The account already exists");
+	private void checkAccountExists(String accountId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		DBObject obj = userCollection.findOne(query);
+		if (obj != null) {
+			throw new AccountManagementException("the account already exists");
 		}
-
 	}
 
-	public String login(String accountId, String password, Session session) {
+	private String getAccountPath(String accountId) {
+		return accounts + "/" + accountId;
+	}
+
+	private String getProjectPath(String accountId, String projectId) {
+		return getAccountPath(accountId) + "/" + projectId;
+	}
+
+	@Override
+	public String getDataPath(String projectId, String dataId, String sessionId) {
+		String accountId = getAccountIdBySessionId(sessionId);
+		dataId = dataId.replaceAll(":", "/");
+		return getProjectPath(accountId, projectId) + "/" + dataId;
+
+//		// projects:default:jobs:ae8Bhh8Y:test.txt
+//		// projects:default:virtualdir:test.txt
+//		String path = null;
+//		if (dataId.contains(":jobs:")) {
+//			path = "/" + dataId.replaceAll(":", "/");
+//		} else {
+//			String[] fields = dataId.split(":", 3);
+//			if (fields.length > 3) {
+//				return "ERROR: unexpected format on '" + dataId + "'";
+//			} else {
+//				path = "/" + fields[0] + "/" + fields[1] + "/" + fields[2];
+//			}
+//		}
+//
+//		String dataPath = accounts + "/" + getAccountIdBySessionId(sessionId) + path;
+//
+//		if (new File(dataPath).exists()) {
+//			return dataPath;
+//		} else {
+//			return "ERROR: data '" + dataId + "' not found";
+//		}
+	}
+
+	private String accountConfPath(String accountId) {
+		return accounts + "/" + accountId + "/" + "account.conf";
+	}
+
+	public void createAccount(String accountId, String password, String accountName, String email, Session session)
+			throws AccountManagementException {
+
+		checkAccountExists(accountId);
+
+		Account account = null;
+
+		File accountDir = new File(getAccountPath(accountId));
+		File accountConf = new File(accountConfPath(accountId));
+		if (accountDir.exists() && accountConf.exists()) {
+			// covert user mode file to mode mongo
+			// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
+			// CONFIGURACION
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(accountConf));
+				account = gson.fromJson(br, Account.class);
+				account.addSession(session);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		ioManager.createScaffoldAccountId(accountId);
+
+		if (account == null) {
+			account = new Account(accountId, accountName, password, email);
+			account.setLastActivity(GcsaUtils.getTime());
+		}
+		WriteResult wr = userCollection.insert((DBObject) JSON.parse(gson.toJson(account)));
+		if (wr.getLastError().getErrorMessage() != null) {
+			throw new AccountManagementException(wr.getLastError().getErrorMessage());
+		}
+	}
+
+	public String login(String accountId, String password, Session session) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
-		String id = "";
 		query.put("accountId", accountId);
 		query.put("password", password);
 
-		DBCursor iterator = userCollection.find(query);
+		DBObject obj = userCollection.findOne(query);
 
-		if (iterator.count() == 1) {
-			User user = new Gson().fromJson(iterator.next().toString(), User.class);
-			user.addSession(session);
-			id = session.getId();
-			List<Session> sess = user.getSessions();
+		if (obj != null) {
+			Account account = gson.fromJson(obj.toString(), Account.class);
+			account.addSession(session);
+			List<Session> accountSessionList = account.getSessions();
+			List<Session> accountOldSessionList = account.getOldSessions();
+			List<Session> oldSessionsFound = new ArrayList<Session>();
+			Date now = GcsaUtils.toDate(GcsaUtils.getTime());
 
-			BasicDBObject filter = new BasicDBObject("accountId", accountId);
-			updateMongo("set", filter, "sessions", sess);
-			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
-			// mover a oldSessions todas las sesiones con mas de 24 horas.
-			Calendar cal;
-			List<Session> s = user.getSessions();
-			Date fechaActual = GcsaUtils.toDate(GcsaUtils.getTime());
-			List<Session> oldSes = user.getOldSessions();
-			boolean changed = false;
-
-			for (int i = 0; i < s.size(); i++) {
-
-				Date loginDate = GcsaUtils.toDate(s.get(i).getLogin());
-				cal = new GregorianCalendar();
-				cal.setTime(loginDate);
-				cal.setTimeInMillis(loginDate.getTime());
-				// sumamos 24h a la fecha del login
-				cal.add(Calendar.DATE, 1);
-
-				Date fechaCaducidad = new Date(cal.getTimeInMillis());
-
-				if (fechaCaducidad.compareTo(fechaActual) < 0) {
-					// caducada -> movemos a oldSessions
-					s.get(i).setLogout(GcsaUtils.getTime());
-					oldSes.add(s.get(i));
-					s.remove(i);
-					changed = true;
+			// get oldSessions
+			for (Session s : accountSessionList) {
+				Date loginDate = GcsaUtils.toDate(s.getLogin());
+				Date fechaCaducidad = GcsaUtils.add24HtoDate(loginDate);
+				if (fechaCaducidad.compareTo(now) < 0) {
+					oldSessionsFound.add(s);
 				}
 			}
-
-			if (changed) {
-				updateMongo("set", new BasicDBObject("accountId", user.getAccountId()), "sessions", s);
-				updateMongo("set", new BasicDBObject("accountId", user.getAccountId()), "oldSessions", oldSes);
-				updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
+			// update arrays
+			for (Session s : oldSessionsFound) {
+				accountSessionList.remove(s);
+				accountOldSessionList.add(s);
 			}
 
-		}
+			BasicDBObject fields = new BasicDBObject("sessions", JSON.parse(gson.toJson(accountSessionList)));
+			fields.put("oldSessions", JSON.parse(gson.toJson(accountOldSessionList)));
+			fields.put("lastActivity", GcsaUtils.getTime());
+			BasicDBObject action = new BasicDBObject("$set", fields);
+			WriteResult wr = userCollection.update(query, action);
 
-		return id;
+			if (wr.getLastError().getErrorMessage() == null) {
+				if (wr.getN() != 1) {
+					throw new AccountManagementException("could not update sessions");
+				}
+			} else {
+				throw new AccountManagementException(wr.getLastError().getErrorMessage());
+			}
+
+			return session.getId();
+
+		} else {
+			throw new AccountManagementException("account not found");
+		}
+	}
+
+	@Override
+	public Session getSession(String accountId, String sessionId) {
+		// db.users.find({"accountId":"imedina","sessions.id":"8l665MB3Q7MdKzfGJBJd"},
+		// { "sessions.$":1 ,"_id":0})
+		// ESTO DEVOLVERA SOLO UN OBJETO SESION, EL QUE CORRESPONDA CON LA ID
+		// DEL FIND
+
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		BasicDBObject fields = new BasicDBObject();
+		fields.put("_id", 0);
+		fields.put("sessions.$", 1);
+
+		DBObject obj = userCollection.findOne(query, fields);
+
+		Session session = null;
+		if (obj != null) {
+			Session[] sessions = gson.fromJson(obj.get("sessions").toString(), Session[].class);
+			session = sessions[0];
+		}
+		return session;
 	}
 
 	public void logout(String accountId, String sessionId) throws AccountManagementException {
-		if (checkSessionId(accountId, sessionId)) {
+		Session session = getSession(accountId, sessionId);
+		if (session != null) {
 			// INSERT DATA OBJECT IN MONGO
-			Session session = getSessionId(accountId, sessionId);
 			session.setLogout(GcsaUtils.getTime());
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(session));
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(session));
 			BasicDBObject query = new BasicDBObject();
 			query.put("accountId", accountId);
 			query.put("sessions.id", sessionId);
@@ -206,97 +269,85 @@ public class AccountMongoDBManager implements AccountManager {
 			updateMongo("pull", query, "sessions", value);
 			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 		} else {
-			throw new AccountManagementException("ERROR: logout");
+			throw new AccountManagementException("logout");
 		}
 	}
 
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
 			throws AccountManagementException {
-		if (nPassword1.equals(nPassword2)) {
-			BasicDBObject query = new BasicDBObject("accountId", accountId);
-			query.put("sessions.id", sessionId);
-			query.put("password", password);
-			BasicDBObject fields = new BasicDBObject("password", nPassword1);
-			fields.put("lastActivity", GcsaUtils.getTime());
-			BasicDBObject action = new BasicDBObject("$set", fields);
-			WriteResult result = userCollection.update(query, action);
 
-			if (result.getError() == null) {
-				if (result.getN() != 1) {
-					throw new AccountManagementException("could not change password with this parameters");
-				}
-				logger.info("password changed");
-			} else {
-				throw new AccountManagementException("could not change password :" + result.getError());
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		query.put("password", password);
+		BasicDBObject fields = new BasicDBObject("password", nPassword1);
+		fields.put("lastActivity", GcsaUtils.getTime());
+		BasicDBObject action = new BasicDBObject("$set", fields);
+		WriteResult wr = userCollection.update(query, action);
+
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("could not change password with this parameters");
 			}
+			logger.info("password changed");
 		} else {
-			throw new AccountManagementException("the new pass is not the same in both fields");
+			throw new AccountManagementException("could not change password :" + wr.getError());
 		}
+
 	}
 
 	public void changeEmail(String accountId, String sessionId, String nEmail) throws AccountManagementException {
-		if (validate(nEmail)) {
-			BasicDBObject query = new BasicDBObject("accountId", accountId);
-			query.put("sessions.id", sessionId);
-			BasicDBObject fields = new BasicDBObject("email", nEmail);
-			fields.put("lastActivity", GcsaUtils.getTime());
-			BasicDBObject action = new BasicDBObject("$set", fields);
-			WriteResult result = userCollection.update(query, action);
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		BasicDBObject fields = new BasicDBObject("email", nEmail);
+		fields.put("lastActivity", GcsaUtils.getTime());
+		BasicDBObject action = new BasicDBObject("$set", fields);
+		WriteResult wr = userCollection.update(query, action);
 
-			if (result.getError() == null) {
-				if (result.getN() != 1) {
-					throw new AccountManagementException("could not change email with this parameters");
-				}
-				logger.info("email changed");
-			} else {
-				throw new AccountManagementException("could not change email :" + result.getError());
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("could not change email with this parameters");
 			}
+			logger.info("email changed");
 		} else {
-			throw new AccountManagementException("invalid email");
+			throw new AccountManagementException("could not change email :" + wr.getError());
 		}
 	}
 
 	@Override
 	public void resetPassword(String accountId, String email) throws AccountManagementException {
-		if (validate(email)) {
-
-			String newPassword = StringUtils.randomString(6);
-			String sha1Password = null;
-			try {
-				sha1Password = StringUtils.sha1(newPassword);
-			} catch (NoSuchAlgorithmException e) {
-				throw new AccountManagementException("could not encode password");
-			}
-
-			BasicDBObject query = new BasicDBObject();
-			query.put("accountId", accountId);
-			query.put("email", email);
-			BasicDBObject item = new BasicDBObject("password", sha1Password);
-			BasicDBObject action = new BasicDBObject("$set", item);
-			WriteResult result = userCollection.update(query, action);
-
-			if (result.getError() == null) {
-				if (result.getN() != 1) {
-					throw new AccountManagementException("could not reset password with this parameters");
-				}
-				logger.info("password reset");
-			} else {
-				throw new AccountManagementException("could not reset the password");
-			}
-
-			StringBuilder message = new StringBuilder();
-			message.append("Hello,").append("\n");
-			message.append("You can now login using this new password:").append("\n\n");
-			message.append(newPassword).append("\n\n\n");
-			message.append("Please change it when you first login.").append("\n\n");
-			message.append("Best regards,").append("\n\n");
-			message.append("Computational Biology Unit at Computational Medicine Institute").append("\n");
-
-			GcsaUtils.sendResetPasswordMail(email, message.toString());
-
-		} else {
-			throw new AccountManagementException("invalid email");
+		String newPassword = StringUtils.randomString(6);
+		String sha1Password = null;
+		try {
+			sha1Password = StringUtils.sha1(newPassword);
+		} catch (NoSuchAlgorithmException e) {
+			throw new AccountManagementException("could not encode password");
 		}
+
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("email", email);
+		BasicDBObject item = new BasicDBObject("password", sha1Password);
+		BasicDBObject action = new BasicDBObject("$set", item);
+		WriteResult wr = userCollection.update(query, action);
+
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("could not reset password with this parameters");
+			}
+			logger.info("password reset");
+		} else {
+			throw new AccountManagementException("could not reset the password");
+		}
+
+		StringBuilder message = new StringBuilder();
+		message.append("Hello,").append("\n");
+		message.append("You can now login using this new password:").append("\n\n");
+		message.append(newPassword).append("\n\n\n");
+		message.append("Please change it when you first login.").append("\n\n");
+		message.append("Best regards,").append("\n\n");
+		message.append("Computational Biology Unit at Computational Medicine Institute").append("\n");
+
+		GcsaUtils.sendResetPasswordMail(email, message.toString());
 	}
 
 	@Override
@@ -310,7 +361,6 @@ public class AccountMongoDBManager implements AccountManager {
 		fields.put("password", 0);
 		fields.put("sessions", 0);
 		fields.put("oldSessions", 0);
-		fields.put("data", 0);
 
 		DBObject item = userCollection.findOne(query, fields);
 		if (item != null) {
@@ -333,20 +383,18 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	public String getAllProjectsBySessionId(String accountId, String sessionId) throws AccountManagementException {
-		String projectsStr = "";
-		User user = null;
-
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 
 		DBObject item = userCollection.findOne(query);
 		if (item != null) {
-			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
-			user = new Gson().fromJson(item.toString(), User.class);
+			// account = gson.fromJson(item.toString(), Account.class);
+			String projectsStr = item.get("projects").toString();
+			// getJSON.parse(gson.toJson(account.getProjects())).toString();
 			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 			return projectsStr;
 		} else {
-			throw new AccountManagementException("ERROR: account not found");
+			throw new AccountManagementException("invalid sessionId");
 		}
 	}
 
@@ -354,21 +402,22 @@ public class AccountMongoDBManager implements AccountManager {
 
 	}
 
-	public String getUserByAccountId(String accountId, String sessionId) {
-		String userStr = "";
-
-		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		query.put("sessions.id", sessionId);
-
-		DBCursor iterator = userCollection.find(query);
-
-		if (iterator.count() == 1) {
-			userStr = iterator.next().toString();
-			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
-		}
-
-		return userStr;
-	}
+	// public String getUserByAccountId(String accountId, String sessionId) {
+	// String userStr = "";
+	//
+	// BasicDBObject query = new BasicDBObject("accountId", accountId);
+	// query.put("sessions.id", sessionId);
+	//
+	// DBCursor iterator = userCollection.find(query);
+	//
+	// if (iterator.count() == 1) {
+	// userStr = iterator.next().toString();
+	// updateMongo("set", new BasicDBObject("accountId", accountId),
+	// "lastActivity", GcsaUtils.getTime());
+	// }
+	//
+	// return userStr;
+	// }
 
 	public String getUserByEmail(String email, String sessionId) {
 		String userStr = "";
@@ -423,83 +472,71 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public Session getSessionId(String accountId, String sessionId) {
-		// db.users.find({"accountId":"imedina","sessions.id":"8l665MB3Q7MdKzfGJBJd"},
-		// { "sessions.$":1 ,"_id":0})
-		// ESTO DEVOLVERA SOLO UN OBJETO SESION, EL QUE CORRESPONDA CON LA ID
-		// DEL FIND
+	public void createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData)
+			throws AccountManagementException {
 
-		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		BasicDBObject fields = new BasicDBObject();
-		query.put("sessions.id", sessionId);
-		fields.put("_id", 0);
-		fields.put("sessions.$", 1);
-
-		DBCursor iterator = userCollection.find(query, fields);
-		DBObject dbo = iterator.next();
-
-		Session[] sessions = new Gson().fromJson(dbo.get("sessions").toString(), Session[].class);
-
-		return sessions[0];
-	}
-
-	@Override
-	public String createDataToProject(String project, String accountId, String sessionId, Data data,
-			InputStream fileData) {
-		String fileName = data.getFileName();
+		File rndFolder = null;
 		// CREATING A RANDOM TEMP FOLDER
 		String randomFolder = tmp + "/" + StringUtils.randomString(20);
 		try {
 			FileUtils.createDirectory(randomFolder);
+			rndFolder = new File(randomFolder);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Could not create the upload temp directory";
+			throw new AccountManagementException("Could not create the upload temp directory");
 		}
 		// COPYING TO DISK
-		File tmpFile = new File(randomFolder + "/" + fileName);
+		File tmpFile = new File(randomFolder + "/" + data.getFileName());
+		logger.info(tmpFile.getAbsolutePath());
 		try {
 			IOUtils.write(tmpFile, fileData);
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "Could not write the file on disk";
+			throw new AccountManagementException("Could not write the file on disk");
 		}
 		// COPYING FROM TEMP TO ACCOUNT DIR
-		File userFile = new File(accounts + "/" + getAccountIdBySessionId(sessionId) + "/" + project + "/" + fileName);
+		File userFile = new File(getProjectPath(accountId, project) + "/" + data.getId());
 		try {
+			logger.info(userFile.getAbsolutePath());
 			FileUtils.touch(userFile);
 			FileUtils.copy(tmpFile, userFile);
 
 			// INSERT DATA OBJECT ON MONGO
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
-			BasicDBObject query = new BasicDBObject();
-			BasicDBObject item = new BasicDBObject();
-			BasicDBObject action = new BasicDBObject();
+			BasicDBObject query = new BasicDBObject("accountId", accountId);
 			query.put("sessions.id", sessionId);
 			query.put("projects.id", project.toLowerCase());
-			item.put("projects.$.data", dataDBObject);
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
+			BasicDBObject item = new BasicDBObject("projects.$.data", dataDBObject);
+			BasicDBObject action = new BasicDBObject();
 			action.put("$push", item);
-			System.out.println(action);
-			WriteResult result = userCollection.update(query, action);
+			WriteResult wr = userCollection.update(query, action);
 
 			// db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
 
-			if (result.getError() != null) {
+			if (wr.getLastError().getErrorMessage() == null) {
+				if (wr.getN() != 1) {
+					FileUtils.deleteDirectory(userFile);
+					FileUtils.deleteDirectory(rndFolder);
+					throw new AccountManagementException("could not update database, with this parameters");
+				}
+				logger.info("data object created");
+			} else {
 				FileUtils.deleteDirectory(userFile);
-				FileUtils.deleteDirectory(tmpFile);
-				return "MongoDB error, " + result.getError() + " files will be deleted";
+				FileUtils.deleteDirectory(rndFolder);
+				throw new AccountManagementException("could not update database, files will be deleted");
 			}
-			FileUtils.deleteDirectory(tmpFile);
+
+			FileUtils.deleteDirectory(rndFolder);
 
 			// BasicDBObject actitvityQuery = new BasicDBObject("accountId",
 			// accountId);
 			// query.put("sessions.id", sessionId);
 			// updateMongo("set", actitvityQuery,"lastActivity",
 			// GcsaUtils.getTime());
-			return null;
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "Copying from tmp folder to account folder";
+			throw new AccountManagementException("Copying from tmp folder to account folder");
 		}
 
 	}
@@ -564,26 +601,6 @@ public class AccountMongoDBManager implements AccountManager {
 	 */
 	// ////////////////////
 
-	private boolean validate(String email) {
-		String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-				+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-		Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-		return pattern.matcher(email).matches();
-	}
-
-	private boolean userExist(String accountId) throws AccountManagementException {
-		boolean userExist = true;
-
-		BasicDBObject query = new BasicDBObject();
-		query.put("accountId", accountId);
-		DBCursor iterator = userCollection.find(query);
-
-		if (iterator.count() < 1)
-			userExist = false;
-
-		return userExist;
-	}
-
 	private void updateMongo(String operator, DBObject filter, String field, Object value) {
 		BasicDBObject set = null;
 		if (String.class.isInstance(value)) {
@@ -629,31 +646,6 @@ public class AccountMongoDBManager implements AccountManager {
 			return jobFolder;
 		} else {
 			return "ERROR: Invalid jobId";
-		}
-	}
-
-	@Override
-	public String getDataPath(String dataId, String sessionId) {
-		// projects:default:jobs:ae8Bhh8Y:test.txt
-		// projects:default:virtualdir:test.txt
-		String path = null;
-		if (dataId.contains(":jobs:")) {
-			path = "/" + dataId.replaceAll(":", "/");
-		} else {
-			String[] fields = dataId.split(":", 3);
-			if (fields.length > 3) {
-				return "ERROR: unexpected format on '" + dataId + "'";
-			} else {
-				path = "/" + fields[0] + "/" + fields[1] + "/" + fields[2];
-			}
-		}
-
-		String dataPath = accounts + "/" + getAccountIdBySessionId(sessionId) + path;
-
-		if (new File(dataPath).exists()) {
-			return dataPath;
-		} else {
-			return "ERROR: data '" + dataId + "' not found";
 		}
 	}
 

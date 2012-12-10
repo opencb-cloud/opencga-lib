@@ -1,30 +1,105 @@
 package org.bioinfo.gcsa.lib.users.beans;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Account {
-	private String service;
+	private String accountId;
+	private String accountName;
+	private String email;
+	private String password;
 	private String status;
-	private String user;
-	private String pass;
-	
-	public Account(){
-		this.status = "";
-		this.service = "";
-		this.user = "";
-		this.pass = "";
+	private String mailingList;
+	private String diskQuota;
+	private String diskUsage;
+	private String lastActivity;
+	private List<Acl> acls = new ArrayList<Acl>();
+	private List<Session> sessions = new ArrayList<Session>();
+	private List<Session> oldSessions = new ArrayList<Session>();
+	private List<Project> projects = new ArrayList<Project>();
+	private List<Credential> credentials = new ArrayList<Credential>();
+	private List<Plugin> plugins = new ArrayList<Plugin>();
+	private List<Config> configs = new ArrayList<Config>();
+
+	public Account() {
+		this.status = "1";
+		this.password = "";
+		this.email = "";
+		this.lastActivity = "";
+		this.mailingList = "";
+		this.accountId = "";
+		this.accountName = "";
+		this.diskQuota = "";
+		this.diskUsage = "";
+		this.sessions.add(new Session());
+		this.projects.add(new Project());
 	}
 
-	public Account(String service, String user, String pass) {
-		this.service = service;
-		this.user = user;
-		this.pass = pass;
+	public Account(String accountId, String accountName, String password, String email) {
+		this.accountId = accountId;
+		this.accountName = accountName;
+		this.email = email;
+		this.password = password;
+		this.status = "1";
+		this.mailingList = "";
+		this.lastActivity = "";
+		this.diskQuota = "";
+		this.diskUsage = "";
+		this.projects.add(new Project());
 	}
 
-	public String getService() {
-		return service;
+	public Account(String accountId, String accountName, String email,
+			String password, String status, String mailingList,
+			String diskQuota, String diskUsage, Session session,
+			List<Session> oldSessions, List<Project> projects,String lastActivity,
+			List<Credential> accounts, List<Plugin> plugins, List<Config> configs) {
+		this.accountId = accountId;
+		this.accountName = accountName;
+		this.email = email;
+		this.password = password;
+		this.status = status;
+		this.mailingList = mailingList;
+		this.diskQuota = diskQuota;
+		this.diskUsage = diskUsage;
+		this.sessions.add(session);
+		this.lastActivity = lastActivity;
+		this.oldSessions = oldSessions;
+		this.projects = projects;
+		this.credentials = accounts;
+		this.plugins = plugins;
+		this.configs = configs;
 	}
 
-	public void setService(String service) {
-		this.service = service;
+	public String getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(String accountId) {
+		this.accountId = accountId;
+	}
+
+	public String getAccountName() {
+		return accountName;
+	}
+
+	public void setAccountName(String accountName) {
+		this.accountName = accountName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public String getStatus() {
@@ -35,22 +110,88 @@ public class Account {
 		this.status = status;
 	}
 
-	public String getUser() {
-		return user;
+	public String getMailingList() {
+		return mailingList;
 	}
 
-	public void setUser(String user) {
-		this.user = user;
+	public void setMailingList(String mailingList) {
+		this.mailingList = mailingList;
 	}
 
-	public String getPass() {
-		return pass;
+	public String getDiskQuota() {
+		return diskQuota;
 	}
 
-	public void setPass(String pass) {
-		this.pass = pass;
+	public void setDiskQuota(String diskQuota) {
+		this.diskQuota = diskQuota;
+	}
+
+	public String getDiskUsage() {
+		return diskUsage;
+	}
+
+	public String getLastActivity() {
+		return lastActivity;
+	}
+
+	public void setLastActivity(String lastActivity) {
+		this.lastActivity = lastActivity;
+	}
+
+	public void setDiskUsage(String diskUsage) {
+		this.diskUsage = diskUsage;
+	}
+
+	public List<Session> getSessions() {
+		return sessions;
+	}
+
+	public void setSessions(List<Session> sessions) {
+		this.sessions = sessions;
 	}
 	
-	
-	
+	public void addSession(Session session){
+		this.sessions.add(session);
+	}
+
+	public List<Session> getOldSessions() {
+		return oldSessions;
+	}
+
+	public void setOldSessions(List<Session> oldSessions) {
+		this.oldSessions = oldSessions;
+	}
+
+	public List<Project> getProjects() {
+		return projects;
+	}
+
+	public void setProjects(List<Project> projects) {
+		this.projects = projects;
+	}
+
+	public List<Credential> getAccounts() {
+		return credentials;
+	}
+
+	public void setAccounts(List<Credential> accounts) {
+		this.credentials = accounts;
+	}
+
+	public List<Plugin> getPlugins() {
+		return plugins;
+	}
+
+	public void setPlugins(List<Plugin> plugins) {
+		this.plugins = plugins;
+	}
+
+	public List<Config> getConfigs() {
+		return configs;
+	}
+
+	public void setConfigs(List<Config> configs) {
+		this.configs = configs;
+	}
+
 }

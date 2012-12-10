@@ -29,7 +29,7 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public void createUser(String accountId, String password, String accountName, String email, Session session)
+	public void createAccount(String accountId, String password, String accountName, String email, Session session)
 			throws AccountManagementException {
 
 	}
@@ -46,13 +46,13 @@ public class AccountFileManager implements AccountManager {
 
 	@Override
 	public void logout(String accountId, String sessionId) {
-		
+
 	}
 
-	@Override
-	public String getUserByAccountId(String accountId, String sessionId) {
-		return null;
-	}
+	// @Override
+	// public String getUserByAccountId(String accountId, String sessionId) {
+	// return null;
+	// }
 
 	@Override
 	public String getUserByEmail(String email, String sessionId) {
@@ -60,13 +60,12 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public void changePassword(String accountId, String sessionId, String password, String nPassword1,
-			String nPassword2) {
+	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2) {
 	}
 
 	@Override
 	public void changeEmail(String accountId, String sessionId, String nEmail) {
-		
+
 	}
 
 	@Override
@@ -75,7 +74,7 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public Session getSessionId(String accountId, String sessionId) {
+	public Session getSession(String accountId, String sessionId) {
 		return null;
 	}
 
@@ -90,9 +89,8 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public String createDataToProject(String project, String accountId, String sessionId, Data data,
-			InputStream fileData) {
-		return null;
+	public void createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData)
+			throws AccountManagementException {
 	}
 
 	@Override
@@ -113,14 +111,9 @@ public class AccountFileManager implements AccountManager {
 
 	@Override
 	public void resetPassword(String acccountId, String email) {
-		
+
 	}
 
-	@Override
-	public String getDataPath(String dataId, String sessionId) {
-		return null;
-	}
-	
 	@Override
 	public String getAccountBySessionId(String accountId, String sessionId, String lastActivity) {
 		return null;
@@ -128,6 +121,12 @@ public class AccountFileManager implements AccountManager {
 
 	@Override
 	public List<Plugin> getUserAnalysis(String sessionId) {
+		return null;
+	}
+
+	@Override
+	public String getDataPath(String projectId, String dataId, String sessionId) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
