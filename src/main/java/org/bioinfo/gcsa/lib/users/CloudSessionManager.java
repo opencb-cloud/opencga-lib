@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.bioinfo.commons.log.Logger;
+import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Plugin;
 import org.bioinfo.gcsa.lib.users.beans.Session;
@@ -118,6 +120,19 @@ public class CloudSessionManager {
 		accountManager.createProject(project, accountId, sessionId);
 	}
 
+	public void createDataToProject(String project, String accountId, String sessionId, Data data,
+			InputStream fileData, String objectname) throws AccountManagementException {
+		checkStr(project, "project");
+		checkStr(accountId, "accountId");
+		checkStr(sessionId, "sessionId");
+		checkStr(objectname, "objectname");
+
+		data.setId(objectname.replace(":", "/"));
+		data.setFileName(getDataName(objectname));
+
+		accountManager.createDataToProject(project, accountId, sessionId, data, fileData);
+	}
+
 	public String getAccountProjects(String accountId, String sessionId) throws AccountManagementException {
 		return accountManager.getAllProjectsBySessionId(accountId, sessionId);
 	}
@@ -149,5 +164,10 @@ public class CloudSessionManager {
 		if (str == null || str.equals("")) {
 			throw new AccountManagementException("parameter '" + name + "' is null or empty: " + str + ".");
 		}
+	}
+
+	private String getDataName(String objectname){
+		String[] tokens = objectname.split(":");
+		return tokens[(tokens.length-1)];
 	}
 }

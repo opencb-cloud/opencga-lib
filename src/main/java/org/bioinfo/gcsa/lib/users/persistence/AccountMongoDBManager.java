@@ -104,8 +104,41 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
-	private String accountPath(String accountId) {
+	private String getAccountPath(String accountId) {
 		return accounts + "/" + accountId;
+	}
+
+	private String getProjectPath(String accountId, String projectId) {
+		return getAccountPath(accountId) + "/" + projectId;
+	}
+
+	@Override
+	public String getDataPath(String projectId, String dataId, String sessionId) {
+		String accountId = getAccountIdBySessionId(sessionId);
+		dataId = dataId.replaceAll(":", "/");
+		return getProjectPath(accountId, projectId) + "/" + dataId;
+
+//		// projects:default:jobs:ae8Bhh8Y:test.txt
+//		// projects:default:virtualdir:test.txt
+//		String path = null;
+//		if (dataId.contains(":jobs:")) {
+//			path = "/" + dataId.replaceAll(":", "/");
+//		} else {
+//			String[] fields = dataId.split(":", 3);
+//			if (fields.length > 3) {
+//				return "ERROR: unexpected format on '" + dataId + "'";
+//			} else {
+//				path = "/" + fields[0] + "/" + fields[1] + "/" + fields[2];
+//			}
+//		}
+//
+//		String dataPath = accounts + "/" + getAccountIdBySessionId(sessionId) + path;
+//
+//		if (new File(dataPath).exists()) {
+//			return dataPath;
+//		} else {
+//			return "ERROR: data '" + dataId + "' not found";
+//		}
 	}
 
 	private String accountConfPath(String accountId) {
@@ -119,7 +152,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 		Account account = null;
 
-		File accountDir = new File(accountPath(accountId));
+		File accountDir = new File(getAccountPath(accountId));
 		File accountConf = new File(accountConfPath(accountId));
 		if (accountDir.exists() && accountConf.exists()) {
 			// covert user mode file to mode mongo
@@ -439,62 +472,71 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public String createDataToProject(String project, String accountId, String sessionId, Data data,
-			InputStream fileData) {
-		String fileName = data.getFileName();
+	public void createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData)
+			throws AccountManagementException {
+
+		File rndFolder = null;
 		// CREATING A RANDOM TEMP FOLDER
 		String randomFolder = tmp + "/" + StringUtils.randomString(20);
 		try {
 			FileUtils.createDirectory(randomFolder);
+			rndFolder = new File(randomFolder);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Could not create the upload temp directory";
+			throw new AccountManagementException("Could not create the upload temp directory");
 		}
 		// COPYING TO DISK
-		File tmpFile = new File(randomFolder + "/" + fileName);
+		File tmpFile = new File(randomFolder + "/" + data.getFileName());
+		logger.info(tmpFile.getAbsolutePath());
 		try {
 			IOUtils.write(tmpFile, fileData);
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "Could not write the file on disk";
+			throw new AccountManagementException("Could not write the file on disk");
 		}
 		// COPYING FROM TEMP TO ACCOUNT DIR
-		File userFile = new File(accounts + "/" + getAccountIdBySessionId(sessionId) + "/" + project + "/" + fileName);
+		File userFile = new File(getProjectPath(accountId, project) + "/" + data.getId());
 		try {
+			logger.info(userFile.getAbsolutePath());
 			FileUtils.touch(userFile);
 			FileUtils.copy(tmpFile, userFile);
 
 			// INSERT DATA OBJECT ON MONGO
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
-			BasicDBObject query = new BasicDBObject();
-			BasicDBObject item = new BasicDBObject();
-			BasicDBObject action = new BasicDBObject();
+			BasicDBObject query = new BasicDBObject("accountId", accountId);
 			query.put("sessions.id", sessionId);
 			query.put("projects.id", project.toLowerCase());
-			item.put("projects.$.data", dataDBObject);
+			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
+			BasicDBObject item = new BasicDBObject("projects.$.data", dataDBObject);
+			BasicDBObject action = new BasicDBObject();
 			action.put("$push", item);
-			System.out.println(action);
-			WriteResult result = userCollection.update(query, action);
+			WriteResult wr = userCollection.update(query, action);
 
 			// db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
 
-			if (result.getError() != null) {
+			if (wr.getLastError().getErrorMessage() == null) {
+				if (wr.getN() != 1) {
+					FileUtils.deleteDirectory(userFile);
+					FileUtils.deleteDirectory(rndFolder);
+					throw new AccountManagementException("could not update database, with this parameters");
+				}
+				logger.info("data object created");
+			} else {
 				FileUtils.deleteDirectory(userFile);
-				FileUtils.deleteDirectory(tmpFile);
-				return "MongoDB error, " + result.getError() + " files will be deleted";
+				FileUtils.deleteDirectory(rndFolder);
+				throw new AccountManagementException("could not update database, files will be deleted");
 			}
-			FileUtils.deleteDirectory(tmpFile);
+
+			FileUtils.deleteDirectory(rndFolder);
 
 			// BasicDBObject actitvityQuery = new BasicDBObject("accountId",
 			// accountId);
 			// query.put("sessions.id", sessionId);
 			// updateMongo("set", actitvityQuery,"lastActivity",
 			// GcsaUtils.getTime());
-			return null;
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			return "Copying from tmp folder to account folder";
+			throw new AccountManagementException("Copying from tmp folder to account folder");
 		}
 
 	}
@@ -604,31 +646,6 @@ public class AccountMongoDBManager implements AccountManager {
 			return jobFolder;
 		} else {
 			return "ERROR: Invalid jobId";
-		}
-	}
-
-	@Override
-	public String getDataPath(String dataId, String sessionId) {
-		// projects:default:jobs:ae8Bhh8Y:test.txt
-		// projects:default:virtualdir:test.txt
-		String path = null;
-		if (dataId.contains(":jobs:")) {
-			path = "/" + dataId.replaceAll(":", "/");
-		} else {
-			String[] fields = dataId.split(":", 3);
-			if (fields.length > 3) {
-				return "ERROR: unexpected format on '" + dataId + "'";
-			} else {
-				path = "/" + fields[0] + "/" + fields[1] + "/" + fields[2];
-			}
-		}
-
-		String dataPath = accounts + "/" + getAccountIdBySessionId(sessionId) + path;
-
-		if (new File(dataPath).exists()) {
-			return dataPath;
-		} else {
-			return "ERROR: data '" + dataId + "' not found";
 		}
 	}
 
