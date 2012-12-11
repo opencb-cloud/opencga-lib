@@ -1,5 +1,6 @@
 package org.bioinfo.gcsa.lib;
 
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -41,23 +42,23 @@ public class GcsaUtils {
 		return now;
 	}
 
-//	public static String getSessionId() {
-//		return StringUtils.randomString(20);
-//		// int longitud = 20;
-//		// String cadenaAleatoria = "";
-//		// long milis = new java.util.GregorianCalendar().getTimeInMillis();
-//		// Random r = new Random(milis);
-//		// int i = 0;
-//		// while (i < longitud) {
-//		// char c = (char) r.nextInt(255);
-//		// if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
-//		// || (c >= 'a' && c <= 'z')) {
-//		// cadenaAleatoria += c;
-//		// i++;
-//		// }
-//		// }
-//		// return cadenaAleatoria;
-//	}
+	// public static String getSessionId() {
+	// return StringUtils.randomString(20);
+	// // int longitud = 20;
+	// // String cadenaAleatoria = "";
+	// // long milis = new java.util.GregorianCalendar().getTimeInMillis();
+	// // Random r = new Random(milis);
+	// // int i = 0;
+	// // while (i < longitud) {
+	// // char c = (char) r.nextInt(255);
+	// // if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
+	// // || (c >= 'a' && c <= 'z')) {
+	// // cadenaAleatoria += c;
+	// // i++;
+	// // }
+	// // }
+	// // return cadenaAleatoria;
+	// }
 
 	public static void sendResetPasswordMail(String to, String message) {
 		sendMail("correo.cipf.es", to, "babelomics@cipf.es", "Genomic cloud storage analysis password reset",

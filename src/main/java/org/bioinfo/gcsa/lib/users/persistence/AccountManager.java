@@ -21,7 +21,7 @@ public interface AccountManager {
 	
 	public void logout(String accountId, String sessionId) throws AccountManagementException;
 	
-	public String getUserByAccountId(String accountId, String sessionId);
+//	public String getUserByAccountId(String accountId, String sessionId);
 	
 	public String getUserByEmail(String email, String sessionId);
 	
@@ -47,7 +47,7 @@ public interface AccountManager {
 	public String createProject(Project project, String accountId, String sessionId) throws AccountManagementException;
 	
 	//add file to project
-	public String createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData);
+	public void createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData) throws AccountManagementException;
 	
 	
 	/*
@@ -63,11 +63,12 @@ public interface AccountManager {
 	/*
 	 * Data methods
 	 */
-	public String getDataPath(String dataId, String sessionId);
+	public String getDataPath(String projectId, String dataId, String sessionId);
 	
 	/*
 	 * Utils
 	 */
 	public List<Project> jsonToProjectList(String json);
+
 
 }
