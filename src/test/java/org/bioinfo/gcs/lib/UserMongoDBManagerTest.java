@@ -165,15 +165,6 @@ public class UserMongoDBManagerTest {
 		// String sessionId = "zACSnUM25lVxdgbcUTTb";
 		// String email = "pakosala@gmail.com";
 		// cloudSessionManager.changeEmail(accountId, sessionId, email);
-
-		File tmpFile = new File("/tmp/hola/como/estas/fichero.bam");
-		File parent = tmpFile.getParentFile();
-		parent.mkdirs();
-
-		File f = new File("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
-		InputStream fileData = new FileInputStream(f);
-
-		IOUtils.write(tmpFile, fileData);
 	}
 
 	// @Test

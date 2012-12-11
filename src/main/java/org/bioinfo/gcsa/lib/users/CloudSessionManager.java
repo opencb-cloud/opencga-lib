@@ -110,7 +110,7 @@ public class CloudSessionManager {
 	}
 
 	public String getDataPath(String dataId, String sessionId) {
-		return accountManager.getDataPath(dataId, sessionId);
+		return accountManager.getDataPath("projectId", dataId, sessionId);//TODO cambiar
 	}
 
 	public void createProject(Project project, String accountId, String sessionId) throws AccountManagementException {

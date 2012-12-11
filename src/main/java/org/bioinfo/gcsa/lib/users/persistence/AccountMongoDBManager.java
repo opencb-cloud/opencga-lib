@@ -532,8 +532,7 @@ public class AccountMongoDBManager implements AccountManager {
 			query.put("projects.id", project.toLowerCase());
 			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
 			BasicDBObject item = new BasicDBObject("projects.$.data", dataDBObject);
-			BasicDBObject action = new BasicDBObject();
-			action.put("$push", item);
+			BasicDBObject action = new BasicDBObject("$push", item);
 			WriteResult wr = userCollection.update(query, action);
 
 			// db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
