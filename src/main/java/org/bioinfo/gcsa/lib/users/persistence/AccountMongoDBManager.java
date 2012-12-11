@@ -10,35 +10,29 @@ import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
-
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.IOManager;
+import org.bioinfo.gcsa.lib.users.beans.Account;
 import org.bioinfo.gcsa.lib.users.beans.Acl;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Job;
 import org.bioinfo.gcsa.lib.users.beans.Plugin;
 import org.bioinfo.gcsa.lib.users.beans.Project;
 import org.bioinfo.gcsa.lib.users.beans.Session;
-import org.bioinfo.gcsa.lib.users.beans.Account;
-
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
-import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 
@@ -362,8 +356,8 @@ public class AccountMongoDBManager implements AccountManager {
 
 		DBObject item = userCollection.findOne(query);
 		if (item != null) {
-			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
 			user = new Gson().fromJson(item.toString(), Account.class);
+			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
 			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 			return projectsStr;
 		} else {
