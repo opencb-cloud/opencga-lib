@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
@@ -21,6 +20,7 @@ import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.users.IOManager;
 import org.bioinfo.gcsa.lib.users.beans.Account;
+import org.bioinfo.gcsa.lib.users.beans.Acl;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.beans.Job;
 import org.bioinfo.gcsa.lib.users.beans.Plugin;
@@ -388,6 +388,8 @@ public class AccountMongoDBManager implements AccountManager {
 
 		DBObject item = userCollection.findOne(query);
 		if (item != null) {
+//			user = new Gson().fromJson(item.toString(), Account.class);
+//			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
 			// account = gson.fromJson(item.toString(), Account.class);
 			String projectsStr = item.get("projects").toString();
 			// getJSON.parse(gson.toJson(account.getProjects())).toString();
@@ -402,6 +404,29 @@ public class AccountMongoDBManager implements AccountManager {
 
 	}
 
+	public void createData(String dataName, String project, String sessionId) {
+		
+		String dataId = StringUtils.randomString(8);
+		
+		///
+		dataName = StringUtils.randomString(10);
+		///
+		String accountId = getAccountIdBySessionId(sessionId);
+
+		Data data = new Data(dataId, "", dataName, "", "", "", "", GcsaUtils.getTime(), "", "1", "", new ArrayList<Acl>());			
+		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject item = new BasicDBObject();
+		BasicDBObject action = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("projects.id", project);
+		item.put("projects.$.data", dataDBObject);
+		action.put("$push", item);
+		userCollection.update(query, action);
+		
+//		return dataId;
+	}
+	
 	// public String getUserByAccountId(String accountId, String sessionId) {
 	// String userStr = "";
 	//
@@ -507,8 +532,7 @@ public class AccountMongoDBManager implements AccountManager {
 			query.put("projects.id", project.toLowerCase());
 			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
 			BasicDBObject item = new BasicDBObject("projects.$.data", dataDBObject);
-			BasicDBObject action = new BasicDBObject();
-			action.put("$push", item);
+			BasicDBObject action = new BasicDBObject("$push", item);
 			WriteResult wr = userCollection.update(query, action);
 
 			// db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})

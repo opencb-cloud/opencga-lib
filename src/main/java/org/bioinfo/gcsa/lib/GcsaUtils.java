@@ -13,8 +13,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.bioinfo.commons.utils.StringUtils;
-
 public class GcsaUtils {
 	public static String getTime() {
 		String timeStamp;
