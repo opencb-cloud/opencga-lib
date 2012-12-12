@@ -109,8 +109,8 @@ public class CloudSessionManager {
 		return accountManager.getAccountBySessionId(accountId, sessionId, lastActivity);
 	}
 
-	public String getDataPath(String dataId, String sessionId) {
-		return accountManager.getDataPath(dataId, sessionId);
+	public String getDataPath(String projectId, String dataId, String sessionId) {
+		return accountManager.getDataPath(projectId, dataId, sessionId);
 	}
 
 	public void createProject(Project project, String accountId, String sessionId) throws AccountManagementException {
