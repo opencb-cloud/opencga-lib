@@ -1,4 +1,4 @@
-package org.bioinfo.gcsa.lib.users.beans;
+package org.bioinfo.gcsa.lib.account.beans;
 import java.util.ArrayList;
 import java.util.List;
 

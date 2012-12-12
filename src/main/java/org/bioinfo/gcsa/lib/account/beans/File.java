@@ -1,4 +1,4 @@
-package org.bioinfo.gcsa.lib.users.beans;
+package org.bioinfo.gcsa.lib.account.beans;
 public class File {
 	private String virtName;
 	private String realName;

@@ -1,4 +1,4 @@
-package org.bioinfo.gcsa.lib.users.persistence;
+package org.bioinfo.gcsa.lib.account.db;
 
 
 public class AccountManagementException extends Exception {

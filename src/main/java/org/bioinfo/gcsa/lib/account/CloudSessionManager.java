@@ -1,4 +1,4 @@
-package org.bioinfo.gcsa.lib.users;
+package org.bioinfo.gcsa.lib.account;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,19 +10,22 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.bioinfo.commons.log.Logger;
-import org.bioinfo.gcsa.lib.users.beans.Data;
-import org.bioinfo.gcsa.lib.users.beans.Project;
-import org.bioinfo.gcsa.lib.users.beans.Plugin;
-import org.bioinfo.gcsa.lib.users.beans.Session;
-import org.bioinfo.gcsa.lib.users.persistence.AccountFileManager;
-import org.bioinfo.gcsa.lib.users.persistence.AccountManagementException;
-import org.bioinfo.gcsa.lib.users.persistence.AccountManager;
-import org.bioinfo.gcsa.lib.users.persistence.AccountMongoDBManager;
+import org.bioinfo.gcsa.lib.account.beans.Data;
+import org.bioinfo.gcsa.lib.account.beans.Plugin;
+import org.bioinfo.gcsa.lib.account.beans.Project;
+import org.bioinfo.gcsa.lib.account.beans.Session;
+import org.bioinfo.gcsa.lib.account.db.AccountFileManager;
+import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
+import org.bioinfo.gcsa.lib.account.db.AccountManager;
+import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
+import org.bioinfo.gcsa.lib.account.io.IOManagementException;
+import org.bioinfo.gcsa.lib.account.io.IOManager;
 
 public class CloudSessionManager {
 
 	private AccountManager accountManager;
 	private Logger logger;
+	private IOManager ioManager;
 	public static Properties properties;
 
 	public CloudSessionManager() throws FileNotFoundException, IOException, AccountManagementException {
@@ -41,6 +44,7 @@ public class CloudSessionManager {
 			} else {
 				accountManager = new AccountMongoDBManager(properties);
 			}
+			ioManager = new IOManager(properties);
 
 			logger.info(properties.toString());
 		} else {
@@ -121,16 +125,22 @@ public class CloudSessionManager {
 	}
 
 	public void createDataToProject(String project, String accountId, String sessionId, Data data,
-			InputStream fileData, String objectname) throws AccountManagementException {
+			InputStream fileData, String objectname, boolean parents) throws AccountManagementException, IOManagementException {
 		checkStr(project, "project");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
-
-		data.setId(objectname.replace(":", "/"));
-		data.setFileName(getDataName(objectname));
-
-		accountManager.createDataToProject(project, accountId, sessionId, data, fileData);
+		checkObj(data, "data");
+		
+		String dataPath = ioManager.createData(project, accountId, data, fileData, objectname, parents);
+		try {
+			accountManager.createDataToProject(project, accountId, sessionId, data);
+		} catch (AccountManagementException e) {
+			ioManager.deleteData(dataPath, null);
+			throw e;
+		}
+		
+//		db.users.update({"accountId":"pako","projects.id":"default"},{$pull:{"projects.$.data":{"id":"hola/como/estas/app.js"}}})
 	}
 
 	public String getAccountProjects(String accountId, String sessionId) throws AccountManagementException {
@@ -165,9 +175,9 @@ public class CloudSessionManager {
 			throw new AccountManagementException("parameter '" + name + "' is null or empty: " + str + ".");
 		}
 	}
-
-	private String getDataName(String objectname){
-		String[] tokens = objectname.split(":");
-		return tokens[(tokens.length-1)];
+	private void checkObj(Object obj, String name) throws AccountManagementException {
+		if (obj == null) {
+			throw new AccountManagementException("parameter '" + name + "' is null.");
+		}
 	}
 }

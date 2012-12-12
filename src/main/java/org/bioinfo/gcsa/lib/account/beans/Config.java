@@ -1,4 +1,4 @@
-package org.bioinfo.gcsa.lib.users.beans;
+package org.bioinfo.gcsa.lib.account.beans;
 
 public class Config {
 	private String param;
