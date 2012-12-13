@@ -40,7 +40,7 @@ public class CloudSessionManager {
 		if (gcsaHome != null && propertiesFile.exists()) {
 			properties.load(new FileInputStream(propertiesFile));
 			if (properties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
-				accountManager = new AccountFileManager(properties);
+				accountManager = (AccountManager) new AccountFileManager(properties);// TODO
 			} else {
 				accountManager = new AccountMongoDBManager(properties);
 			}
@@ -124,23 +124,37 @@ public class CloudSessionManager {
 		accountManager.createProject(project, accountId, sessionId);
 	}
 
-	public void createDataToProject(String project, String accountId, String sessionId, Data data,
-			InputStream fileData, String objectname, boolean parents) throws AccountManagementException, IOManagementException {
+	public String createDataToProject(String project, String accountId, String sessionId, Data data,
+			InputStream fileData, String objectname, boolean parents) throws AccountManagementException,
+			IOManagementException {
 		checkStr(project, "project");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
 		checkObj(data, "data");
-		
-		String dataPath = ioManager.createData(project, accountId, data, fileData, objectname, parents);
+
+		String dataId = ioManager.createData(project, accountId, data, fileData, objectname, parents);
+		logger.info(dataId);
 		try {
 			accountManager.createDataToProject(project, accountId, sessionId, data);
+			return dataId;
 		} catch (AccountManagementException e) {
-			ioManager.deleteData(dataPath, null);
+			ioManager.deleteData(project, accountId, objectname, null);
 			throw e;
 		}
-		
-//		db.users.update({"accountId":"pako","projects.id":"default"},{$pull:{"projects.$.data":{"id":"hola/como/estas/app.js"}}})
+	}
+
+	public void deleteDataFromProject(String project, String accountId, String sessionId, String objectname)
+			throws AccountManagementException, IOManagementException {
+		checkStr(project, "project");
+		checkStr(accountId, "accountId");
+		checkStr(sessionId, "sessionId");
+		checkStr(objectname, "objectname");
+
+		String dataId = ioManager.deleteData(project, accountId, objectname, null);
+		accountManager.deleteDataFromProject(project, accountId, sessionId, dataId);
+		logger.info(dataId);
+
 	}
 
 	public String getAccountProjects(String accountId, String sessionId) throws AccountManagementException {
@@ -175,6 +189,7 @@ public class CloudSessionManager {
 			throw new AccountManagementException("parameter '" + name + "' is null or empty: " + str + ".");
 		}
 	}
+
 	private void checkObj(Object obj, String name) throws AccountManagementException {
 		if (obj == null) {
 			throw new AccountManagementException("parameter '" + name + "' is null.");

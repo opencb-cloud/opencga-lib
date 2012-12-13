@@ -417,29 +417,32 @@ public class AccountMongoDBManager implements AccountManager {
 
 	}
 
-	public void createData(String dataName, String project, String sessionId) {
-
-		String dataId = StringUtils.randomString(8);
-
-		// /
-		dataName = StringUtils.randomString(10);
-		// /
-		String accountId = getAccountIdBySessionId(sessionId);
-
-		Data data = new Data(dataId, "", dataName, "", "", "", "", GcsaUtils.getTime(), "", "1", "",
-				new ArrayList<Acl>());
-		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
-		BasicDBObject query = new BasicDBObject();
-		BasicDBObject item = new BasicDBObject();
-		BasicDBObject action = new BasicDBObject();
-		query.put("accountId", accountId);
-		query.put("projects.id", project);
-		item.put("projects.$.data", dataDBObject);
-		action.put("$push", item);
-		userCollection.update(query, action);
-
-		// return dataId;
-	}
+	// public void createData(String dataName, String project, String sessionId)
+	// {
+	//
+	// String dataId = StringUtils.randomString(8);
+	//
+	// // /
+	// dataName = StringUtils.randomString(10);
+	// // /
+	// String accountId = getAccountIdBySessionId(sessionId);
+	//
+	// Data data = new Data(dataId, "", dataName, "", "", "", "",
+	// GcsaUtils.getTime(), "", "1", "",
+	// new ArrayList<Acl>());
+	// BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new
+	// Gson().toJson(data));
+	// BasicDBObject query = new BasicDBObject();
+	// BasicDBObject item = new BasicDBObject();
+	// BasicDBObject action = new BasicDBObject();
+	// query.put("accountId", accountId);
+	// query.put("projects.id", project);
+	// item.put("projects.$.data", dataDBObject);
+	// action.put("$push", item);
+	// userCollection.update(query, action);
+	//
+	// // return dataId;
+	// }
 
 	// public String getUserByAccountId(String accountId, String sessionId) {
 	// String userStr = "";
@@ -533,7 +536,31 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void createDataToProject(String project, String accountId, String sessionId, Data data) throws AccountManagementException {
+	public void deleteDataFromProject(String project, String accountId, String sessionId, String dataId)
+			throws AccountManagementException {
+//		db.users.update({"accountId":"pako","projects.id":"default"},{$pull:{"projects.$.data":{"id":"hola/como/estas/app.js"}}})
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		query.put("projects.id", project.toLowerCase());
+		
+		BasicDBObject projectData =  new BasicDBObject("projects.$.data", new BasicDBObject("id", dataId));
+		BasicDBObject action =  new BasicDBObject("$pull", projectData);
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		
+		WriteResult wr = userCollection.update(query, action);
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("deleting data, with this parameters");
+			}
+			logger.info("data object deleted");
+		} else {
+			throw new AccountManagementException("could not delete data item from database");
+		}
+	}
+
+	@Override
+	public void createDataToProject(String project, String accountId, String sessionId, Data data)
+			throws AccountManagementException {
 
 		// INSERT DATA OBJECT ON MONGO
 		BasicDBObject query = new BasicDBObject("accountId", accountId);

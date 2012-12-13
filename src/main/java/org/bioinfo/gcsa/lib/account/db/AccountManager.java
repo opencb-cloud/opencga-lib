@@ -50,6 +50,7 @@ public interface AccountManager {
 
 	// add file to project
 	public void createDataToProject(String project, String accountId, String sessionId, Data data) throws AccountManagementException;
+	public void deleteDataFromProject(String project, String accountId, String sessionId, String dataId) throws AccountManagementException;
 
 	/*
 	 * Job methods
@@ -70,5 +71,6 @@ public interface AccountManager {
 	 * Utils
 	 */
 	public List<Project> jsonToProjectList(String json);
+
 
 }

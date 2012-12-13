@@ -132,14 +132,17 @@ public class IOManager {
 		String userFileStr = getProjectPath(accountId, project) + "/" + idStr;
 		File userFile = new File(userFileStr);
 
-		if (!parents && !userFile.getParentFile().exists()) {//if parents its true, folders will be autocreated
+		if (!parents && !userFile.getParentFile().exists()) {// if parents its
+																// true, folders
+																// will be
+																// autocreated
 			throw new IOManagementException("no such folder");
 		}
 
 		if (userFile.exists()) {
 			userFileStr = renameExistingFile(userFileStr);
 			userFile = new File(userFileStr);
-			idStr = userFileStr.replace(getProjectPath(accountId, project)+ "/","");
+			idStr = userFileStr.replace(getProjectPath(accountId, project) + "/", "");
 			fileName = getDataName(idStr);
 		}
 
@@ -175,11 +178,14 @@ public class IOManager {
 			throw new IOManagementException("Copying from tmp folder to account folder");
 		}
 		FileUtils.deleteDirectory(rndFolder);
-		return userFileStr;
+		return idStr;
 	}
 
-	public void deleteData(String dataPath, String bucket) {
-		FileUtils.deleteDirectory(new File(dataPath));
+	public String deleteData(String project, String accountId, String objectname, String bucket) {
+		String idStr = objectname.replace(":", "/");
+		String userFileStr = getProjectPath(accountId, project) + "/" + idStr;
+		FileUtils.deleteDirectory(new File(userFileStr));
+		return idStr;
 	}
 
 	private String getAccountPath(String accountId) {
