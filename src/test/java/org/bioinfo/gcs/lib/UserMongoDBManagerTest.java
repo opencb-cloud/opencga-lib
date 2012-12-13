@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 
-import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.gcsa.lib.users.beans.Data;
 import org.bioinfo.gcsa.lib.users.persistence.AccountManagementException;
 import org.bioinfo.gcsa.lib.users.persistence.AccountManager;
@@ -205,7 +204,8 @@ public class UserMongoDBManagerTest {
 				data.setDiskUsage(diskUsage);
 				// cloudSessionManager.createDataToProject(projectName,
 				// accountId, sessionId, data, fileData, "");
-
+				
+				fileData.close();
 			} catch (Exception e) {
 				System.out.println(e);
 				e.printStackTrace();
