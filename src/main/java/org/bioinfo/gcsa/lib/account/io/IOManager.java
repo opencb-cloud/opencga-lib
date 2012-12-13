@@ -132,10 +132,13 @@ public class IOManager {
 		String userFileStr = getProjectPath(accountId, project) + "/" + idStr;
 		File userFile = new File(userFileStr);
 
-		if (!parents && !userFile.getParentFile().exists()) {// if parents its
-																// true, folders
-																// will be
-																// autocreated
+		// if parents its
+		// true, folders
+		// will be
+		// autocreated
+		logger.info(parents+"");
+		if (!parents && !userFile.getParentFile().exists()) {
+			logger.info(parents+"");
 			throw new IOManagementException("no such folder");
 		}
 

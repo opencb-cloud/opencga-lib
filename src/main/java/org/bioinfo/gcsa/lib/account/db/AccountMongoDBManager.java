@@ -535,28 +535,6 @@ public class AccountMongoDBManager implements AccountManager {
 		return tokens[(tokens.length - 1)];
 	}
 
-	@Override
-	public void deleteDataFromProject(String project, String accountId, String sessionId, String dataId)
-			throws AccountManagementException {
-//		db.users.update({"accountId":"pako","projects.id":"default"},{$pull:{"projects.$.data":{"id":"hola/como/estas/app.js"}}})
-		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		query.put("sessions.id", sessionId);
-		query.put("projects.id", project.toLowerCase());
-		
-		BasicDBObject projectData =  new BasicDBObject("projects.$.data", new BasicDBObject("id", dataId));
-		BasicDBObject action =  new BasicDBObject("$pull", projectData);
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
-		
-		WriteResult wr = userCollection.update(query, action);
-		if (wr.getLastError().getErrorMessage() == null) {
-			if (wr.getN() != 1) {
-				throw new AccountManagementException("deleting data, with this parameters");
-			}
-			logger.info("data object deleted");
-		} else {
-			throw new AccountManagementException("could not delete data item from database");
-		}
-	}
 
 	@Override
 	public void createDataToProject(String project, String accountId, String sessionId, Data data)
@@ -589,6 +567,28 @@ public class AccountMongoDBManager implements AccountManager {
 		// updateMongo("set", actitvityQuery,"lastActivity",
 		// GcsaUtils.getTime());
 
+	}
+	@Override
+	public void deleteDataFromProject(String project, String accountId, String sessionId, String dataId)
+			throws AccountManagementException {
+//		db.users.update({"accountId":"pako","projects.id":"default"},{$pull:{"projects.$.data":{"id":"hola/como/estas/app.js"}}})
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		query.put("projects.id", project.toLowerCase());
+		
+		BasicDBObject projectData =  new BasicDBObject("projects.$.data", new BasicDBObject("id", dataId));
+		BasicDBObject action =  new BasicDBObject("$pull", projectData);
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		
+		WriteResult wr = userCollection.update(query, action);
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("deleting data, with this parameters");
+			}
+			logger.info("data object deleted");
+		} else {
+			throw new AccountManagementException("could not delete data item from database");
+		}
 	}
 
 	// ///////////////////////
