@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.account.beans.Data;
 import org.bioinfo.gcsa.lib.account.beans.Plugin;
@@ -147,45 +146,55 @@ public class CloudSessionManager {
 			throw e;
 		}
 	}
-	
+
 	public void deleteDataFromBucket(String bucket, String accountId, String sessionId, String objectname)
 			throws AccountManagementException, IOManagementException {
 		checkStr(bucket, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
-		
+
 		String dataId = ioManager.deleteData(bucket, accountId, objectname);
 		accountManager.deleteDataFromBucket(bucket, accountId, sessionId, dataId);
 		logger.info(dataId);
-		
+
 	}
 
-	public void region(String bucket, String accountId, String sessionId, String objectname, String regionStr, Map<String, List<String>> params)
-			throws AccountManagementException, IOManagementException, IOException {
-		
+	public String region(String bucket, String accountId, String sessionId, String objectname, String regionStr,
+			Map<String, List<String>> params) throws AccountManagementException, IOManagementException, IOException {
+
 		checkStr(bucket, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
-		
-//		String dataId = ioManager.parseObjectName(objectname);
-//		Data data = accountManager.getData(bucket, accountId, sessionId, dataId);
-//		checkStr(regionStr, "regionStr");
-//		Region region = Region.parseRegion(regionStr);
-//		checkObj(region,"region");
-//		
-//		
-//		BamManager bamManager = new BamManager();
-//		//SUPUESTO IF
-//		String chr = region.getChromosome();
-//		int start = region.getStart();
-//		int end = region.getEnd();
-//		
-//		
-//		String result = bamManager.getByRegion(dataPath, filename, viewAsPairs, showSoftclipping, chr, start, end);
-		
 
+		String dataPath = ioManager.getDataPath(accountId, bucket, objectname);
+		Data data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataPath);
+		checkStr(regionStr, "regionStr");
+		Region region = Region.parseRegion(regionStr);
+		checkObj(region, "region");
+
+		// //SUPUESTO IF para bam
+		String result = "";
+		switch (data.getType()) {
+		case "bam":
+			Boolean viewAsPairs = false;
+			if (params.get("view_as_pairs") != null) {
+				viewAsPairs = true;
+			}
+			Boolean showSoftclipping = false;
+			if (params.get("show_softclipping") != null) {
+				showSoftclipping = true;
+			}
+
+			BamManager bamManager = new BamManager();
+			result = bamManager.getByRegion(dataPath, region.getChromosome(), region.getStart(), region.getEnd(),
+					viewAsPairs, showSoftclipping);
+
+			break;
+		}
+
+		return result;
 	}
 
 	public String getAccountBuckets(String accountId, String sessionId) throws AccountManagementException {

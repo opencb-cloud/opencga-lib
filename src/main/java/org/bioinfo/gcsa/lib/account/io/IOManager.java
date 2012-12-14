@@ -139,7 +139,6 @@ public class IOManager {
 		if (!parents && !userFile.getParentFile().exists()) {
 			throw new IOManagementException("no such folder");
 		}
-		
 
 		if (userFile.exists()) {
 			userFileStr = renameExistingFile(userFileStr);
@@ -198,8 +197,13 @@ public class IOManager {
 	private String getBucketPath(String accountId, String bucketId) {
 		return getAccountPath(accountId) + "/" + bucketId;
 	}
-	public String parseObjectName(String wsDataId){
-		return wsDataId.replaceAll(":", "/");
+
+	// public String getDataPath(String wsDataId){
+	// wsDataId.replaceAll(":", "/")
+	// }
+	public String getDataPath(String accountId, String bucketId, String dataId) {
+		dataId = dataId.replaceAll(":", "/");
+		return getBucketPath(accountId, bucketId) + "/" + dataId;
 	}
 
 	private String renameExistingFile(String name) {
