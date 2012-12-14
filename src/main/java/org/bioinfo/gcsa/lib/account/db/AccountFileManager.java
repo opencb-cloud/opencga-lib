@@ -7,7 +7,7 @@ import java.util.Properties;
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.account.beans.Data;
 import org.bioinfo.gcsa.lib.account.beans.Plugin;
-import org.bioinfo.gcsa.lib.account.beans.Project;
+import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 
 public class AccountFileManager /*implements AccountManager*/ {

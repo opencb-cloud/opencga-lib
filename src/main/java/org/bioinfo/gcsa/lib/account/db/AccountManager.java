@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.bioinfo.gcsa.lib.account.beans.Data;
 import org.bioinfo.gcsa.lib.account.beans.Plugin;
-import org.bioinfo.gcsa.lib.account.beans.Project;
+import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 
 public interface AccountManager {
@@ -44,13 +44,13 @@ public interface AccountManager {
 
 	public Session getSession(String accountId, String sessionId);
 
-	public String getAllProjectsBySessionId(String accountId, String sessionId) throws AccountManagementException;
+	public String getAllBucketsBySessionId(String accountId, String sessionId) throws AccountManagementException;
 
-	public String createProject(Project project, String accountId, String sessionId) throws AccountManagementException;
+	public String createBucket(Bucket project, String accountId, String sessionId) throws AccountManagementException;
 
 	// add file to project
-	public void createDataToProject(String project, String accountId, String sessionId, Data data) throws AccountManagementException;
-	public void deleteDataFromProject(String project, String accountId, String sessionId, String dataId) throws AccountManagementException;
+	public void createDataToBucket(String project, String accountId, String sessionId, Data data) throws AccountManagementException;
+	public void deleteDataFromBucket(String project, String accountId, String sessionId, String dataId) throws AccountManagementException;
 
 	/*
 	 * Job methods
@@ -70,7 +70,12 @@ public interface AccountManager {
 	/*
 	 * Utils
 	 */
-	public List<Project> jsonToProjectList(String json);
+	public List<Bucket> jsonToBucketList(String json);
+
+	public Data getDataFromBucket(String bucket, String accountId, String sessionId, String dataId)
+			throws AccountManagementException;
+
+
 
 
 }

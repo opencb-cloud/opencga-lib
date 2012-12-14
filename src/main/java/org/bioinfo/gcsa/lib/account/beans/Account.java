@@ -16,7 +16,7 @@ public class Account {
 	private List<Acl> acls = new ArrayList<Acl>();
 	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
-	private List<Project> projects = new ArrayList<Project>();
+	private List<Bucket> buckets = new ArrayList<Bucket>();
 	private List<Credential> credentials = new ArrayList<Credential>();
 	private List<Plugin> plugins = new ArrayList<Plugin>();
 	private List<Config> configs = new ArrayList<Config>();
@@ -32,7 +32,7 @@ public class Account {
 		this.diskQuota = "";
 		this.diskUsage = "";
 		this.sessions.add(new Session());
-		this.projects.add(new Project());
+		this.buckets.add(new Bucket());
 	}
 
 	public Account(String accountId, String accountName, String password, String email) {
@@ -45,13 +45,13 @@ public class Account {
 		this.lastActivity = "";
 		this.diskQuota = "";
 		this.diskUsage = "";
-		this.projects.add(new Project());
+		this.buckets.add(new Bucket());
 	}
 
 	public Account(String accountId, String accountName, String email,
 			String password, String status, String mailingList,
 			String diskQuota, String diskUsage, Session session,
-			List<Session> oldSessions, List<Project> projects,String lastActivity,
+			List<Session> oldSessions, List<Bucket> projects,String lastActivity,
 			List<Credential> accounts, List<Plugin> plugins, List<Config> configs) {
 		this.accountId = accountId;
 		this.accountName = accountName;
@@ -64,7 +64,7 @@ public class Account {
 		this.sessions.add(session);
 		this.lastActivity = lastActivity;
 		this.oldSessions = oldSessions;
-		this.projects = projects;
+		this.buckets = projects;
 		this.credentials = accounts;
 		this.plugins = plugins;
 		this.configs = configs;
@@ -162,12 +162,12 @@ public class Account {
 		this.oldSessions = oldSessions;
 	}
 
-	public List<Project> getProjects() {
-		return projects;
+	public List<Bucket> getBuckets() {
+		return buckets;
 	}
 
-	public void setProjects(List<Project> projects) {
-		this.projects = projects;
+	public void setBuckets(List<Bucket> projects) {
+		this.buckets = projects;
 	}
 
 	public List<Credential> getAccounts() {
