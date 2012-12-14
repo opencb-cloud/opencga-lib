@@ -113,7 +113,7 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	private String getBucketPath(String accountId, String bucketId) {
-		return getAccountPath(accountId) + "/" + bucketId;
+		return getAccountPath(accountId) + "/buckets/" + bucketId;
 	}
 
 	@Override
@@ -558,12 +558,18 @@ public class AccountMongoDBManager implements AccountManager {
 			Bucket[] buckets = gson.fromJson(obj.get("buckets").toString(), Bucket[].class);
 			List<Data> dataList = buckets[0].getData();
 			Data data = null;
+			logger.info("MongoManager: "+obj.get("buckets").toString());
+			logger.info("MongoManager: "+dataList.size());
 			for (int i = 0; i < dataList.size(); i++) {
+				logger.info("MongoManager: "+dataList.get(i));
+				logger.info("MongoManager: "+dataList.get(i).getId());
+				logger.info("MongoManager: "+dataId);
 				if(dataList.get(i).getId().equals(dataId)){
 					data = dataList.get(i);
 					break;
 				}
 			}
+			logger.info("MongoManager: "+data);
 			if(data != null){
 				return data;
 			}else{

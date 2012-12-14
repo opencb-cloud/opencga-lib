@@ -49,12 +49,12 @@ public class BamManager {
 		
 		System.out.println("chr: "+chr+" start: "+start+" end: "+end);
 
-		File inputSamFile = new File(filePath+"/bam/"+fileName+".bam");
+		File inputSamFile = new File(filePath);
 		File indexFile = null;
-		if(!new File(filePath+"/bam/"+fileName+".bam.bai").exists()) {
+		if(!new File(filePath+".bai").exists()) {
 			// crearlo!
 		}
-		indexFile = new File(filePath+"/bam/"+fileName+".bam.bai");
+		indexFile = new File(filePath+".bai");
 
 
 		long t = System.currentTimeMillis();

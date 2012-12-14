@@ -136,6 +136,8 @@ public class IOManager {
 		// true, folders
 		// will be
 		// autocreated
+		logger.info("IOManager: "+tmpFile.getAbsolutePath());
+		logger.info("IOManager: "+userFile.getAbsolutePath());
 		if (!parents && !userFile.getParentFile().exists()) {
 			throw new IOManagementException("no such folder");
 		}
@@ -195,7 +197,7 @@ public class IOManager {
 	}
 
 	private String getBucketPath(String accountId, String bucketId) {
-		return getAccountPath(accountId) + "/" + bucketId;
+		return getAccountPath(accountId) + "/buckets/" + bucketId;
 	}
 
 	// public String getDataPath(String wsDataId){
