@@ -15,7 +15,7 @@ public class BamManagerTest {
 				BamManager bu = new BamManager();
 				Boolean viewAsPairs = false;
 				Boolean showSoftclipping = true;
-				String result = bu.getByRegion("/home/examples","HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114",viewAsPairs, showSoftclipping, "20",32875000,32879999);
+				String result = bu.getByRegion("/home/examples/bam/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam","20",32875000,32879999, viewAsPairs, showSoftclipping);
 //			String result = bu.getByRegion("/home/examples","out_sorted", "1", 90604245, 93604245);
 //			System.out.println(result);
 			} catch (IOException e) {

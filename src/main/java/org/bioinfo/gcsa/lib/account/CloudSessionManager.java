@@ -6,13 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.account.beans.Data;
 import org.bioinfo.gcsa.lib.account.beans.Plugin;
-import org.bioinfo.gcsa.lib.account.beans.Project;
+import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.account.db.AccountFileManager;
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
@@ -20,6 +21,8 @@ import org.bioinfo.gcsa.lib.account.db.AccountManager;
 import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.account.io.IOManager;
+import org.bioinfo.gcsa.lib.storage.alignment.BamManager;
+import org.bioinfo.infrared.lib.common.Region;
 
 public class CloudSessionManager {
 
@@ -113,61 +116,98 @@ public class CloudSessionManager {
 		return accountManager.getAccountBySessionId(accountId, sessionId, lastActivity);
 	}
 
-	public String getDataPath(String projectId, String dataId, String sessionId) {
-		return accountManager.getDataPath(projectId, dataId, sessionId);
+	public String getDataPath(String bucketId, String dataId, String sessionId) {
+		return accountManager.getDataPath(bucketId, dataId, sessionId);
 	}
 
-	public void createProject(Project project, String accountId, String sessionId) throws AccountManagementException {
-		checkStr(project.getName(), "projectName");
+	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException {
+		checkStr(bucket.getName(), "bucketName");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		accountManager.createProject(project, accountId, sessionId);
+		accountManager.createBucket(bucket, accountId, sessionId);
 	}
 
-	public String createDataToProject(String project, String accountId, String sessionId, Data data,
+	public String createDataToBucket(String bucket, String accountId, String sessionId, Data data,
 			InputStream fileData, String objectname, boolean parents) throws AccountManagementException,
 			IOManagementException {
-		checkStr(project, "project");
+		checkStr(bucket, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
 		checkObj(data, "data");
 
-		String dataId = ioManager.createData(project, accountId, data, fileData, objectname, parents);
+		String dataId = ioManager.createData(bucket, accountId, data, fileData, objectname, parents);
 		logger.info(dataId);
 		try {
-			accountManager.createDataToProject(project, accountId, sessionId, data);
+			accountManager.createDataToBucket(bucket, accountId, sessionId, data);
 			return dataId;
 		} catch (AccountManagementException e) {
-			ioManager.deleteData(project, accountId, objectname, null);
+			ioManager.deleteData(bucket, accountId, objectname);
 			throw e;
 		}
 	}
 
-	public void deleteDataFromProject(String project, String accountId, String sessionId, String objectname)
+	public void deleteDataFromBucket(String bucket, String accountId, String sessionId, String objectname)
 			throws AccountManagementException, IOManagementException {
-		checkStr(project, "project");
+		checkStr(bucket, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
 
-		String dataId = ioManager.deleteData(project, accountId, objectname, null);
-		accountManager.deleteDataFromProject(project, accountId, sessionId, dataId);
+		String dataId = ioManager.deleteData(bucket, accountId, objectname);
+		accountManager.deleteDataFromBucket(bucket, accountId, sessionId, dataId);
 		logger.info(dataId);
 
 	}
 
-	public String getAccountProjects(String accountId, String sessionId) throws AccountManagementException {
-		return accountManager.getAllProjectsBySessionId(accountId, sessionId);
+	public String region(String bucket, String accountId, String sessionId, String objectname, String regionStr,
+			Map<String, List<String>> params) throws AccountManagementException, IOManagementException, IOException {
+
+		checkStr(bucket, "bucket");
+		checkStr(accountId, "accountId");
+		checkStr(sessionId, "sessionId");
+		checkStr(objectname, "objectname");
+
+		String dataPath = ioManager.getDataPath(accountId, bucket, objectname);
+		Data data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataPath);
+		checkStr(regionStr, "regionStr");
+		Region region = Region.parseRegion(regionStr);
+		checkObj(region, "region");
+
+		// //SUPUESTO IF para bam
+		String result = "";
+		switch (data.getType()) {
+		case "bam":
+			Boolean viewAsPairs = false;
+			if (params.get("view_as_pairs") != null) {
+				viewAsPairs = true;
+			}
+			Boolean showSoftclipping = false;
+			if (params.get("show_softclipping") != null) {
+				showSoftclipping = true;
+			}
+
+			BamManager bamManager = new BamManager();
+			result = bamManager.getByRegion(dataPath, region.getChromosome(), region.getStart(), region.getEnd(),
+					viewAsPairs, showSoftclipping);
+
+			break;
+		}
+
+		return result;
 	}
 
-	public String createJob(String jobName, String jobFolder, String project, String toolName, List<String> dataList,
+	public String getAccountBuckets(String accountId, String sessionId) throws AccountManagementException {
+		return accountManager.getAllBucketsBySessionId(accountId, sessionId);
+	}
+
+	public String createJob(String jobName, String jobFolder, String bucket, String toolName, List<String> dataList,
 			String commandLine, String sessionId) {
-		return accountManager.createJob(jobName, jobFolder, project, toolName, dataList, commandLine, sessionId);
+		return accountManager.createJob(jobName, jobFolder, bucket, toolName, dataList, commandLine, sessionId);
 	}
 
-	public String getJobFolder(String project, String jobId, String sessionId) {
-		return accountManager.getJobFolder(project, jobId, sessionId);
+	public String getJobFolder(String bucket, String jobId, String sessionId) {
+		return accountManager.getJobFolder(bucket, jobId, sessionId);
 	}
 
 	public List<Plugin> getUserAnalysis(String sessionId) throws AccountManagementException {

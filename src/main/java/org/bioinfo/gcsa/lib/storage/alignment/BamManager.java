@@ -44,17 +44,17 @@ public class BamManager {
 	//		}
 	//	}
 
-	public String getByRegion(final String filePath, final String fileName, Boolean viewAsPairs, Boolean showSoftclipping, final String chr, final int start, final int end) throws IOException{
+	public String getByRegion(final String filePath, final String chr, final int start, final int end, Boolean viewAsPairs, Boolean showSoftclipping) throws IOException{
 		long totalTime = System.currentTimeMillis();
 		
 		System.out.println("chr: "+chr+" start: "+start+" end: "+end);
 
-		File inputSamFile = new File(filePath+"/bam/"+fileName+".bam");
+		File inputSamFile = new File(filePath);
 		File indexFile = null;
-		if(!new File(filePath+"/bam/"+fileName+".bam.bai").exists()) {
+		if(!new File(filePath+".bai").exists()) {
 			// crearlo!
 		}
-		indexFile = new File(filePath+"/bam/"+fileName+".bam.bai");
+		indexFile = new File(filePath+".bai");
 
 
 		long t = System.currentTimeMillis();

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
-public class Project {
+public class Bucket {
 	private String id;
 	private String name;
 	private String status;
@@ -18,7 +18,7 @@ public class Project {
 	private List<Data> data;
 	private List<Job> jobs;
 	
-	public Project(){
+	public Bucket(){
 		this.status ="1";
 		this.id = "default";//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
@@ -31,7 +31,7 @@ public class Project {
 		this.jobs = new ArrayList<Job>();
 	}
 	
-	public Project(String nameProject){
+	public Bucket(String nameProject){
 		this.status ="1";
 		this.id = "";//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
@@ -44,7 +44,7 @@ public class Project {
 		this.jobs = new ArrayList<Job>();
 	}
 
-	public Project(String id, String name, String status, String diskUsage
+	public Bucket(String id, String name, String status, String diskUsage
 			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs) {
 		this.id = id;
 		this.name = name;

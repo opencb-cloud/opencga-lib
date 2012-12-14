@@ -62,9 +62,9 @@ public class IOManager {
 			}
 
 			try {
-				FileUtils.createDirectory(accounts + "/" + accountId + "/projects");
+				FileUtils.createDirectory(accounts + "/" + accountId + "/buckets");
 			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/projects"));
+				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/buckets"));
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/analysis"));
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
 				FileUtils.deleteDirectory(new File(accounts));
@@ -72,39 +72,39 @@ public class IOManager {
 			}
 
 			try {
-				FileUtils.createDirectory(accounts + "/" + accountId + "/projects/default");
+				FileUtils.createDirectory(accounts + "/" + accountId + "/buckets/default");
 			} catch (IOException e1) {
 				throw new IOManagementException("IOException" + e1.toString());
 			}
 
 			try {
-				FileUtils.createDirectory(accounts + "/" + accountId + "/projects/default/jobs");
+				FileUtils.createDirectory(accounts + "/" + accountId + "/buckets/default/jobs");
 			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/projects/default/jobs"));
+				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/buckets/default/jobs"));
 				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
 				FileUtils.deleteDirectory(new File(accounts));
 				throw new IOManagementException("IOException" + e1.toString());
 			}
 
 		} else {
-			throw new IOManagementException("ERROR: The project has not been created ");
+			throw new IOManagementException("ERROR: The bucket has not been created ");
 		}
 
 	}
 
-	public void createProjectFolder(String accountId, String project) throws IOManagementException {
+	public void createBucketFolder(String accountId, String bucket) throws IOManagementException {
 		try {
-			System.out.println("--------------->     " + accounts + "/" + accountId + "/projects/" + project + "/jobs");
-			FileUtils.createDirectory(accounts + "/" + accountId + "/projects/" + project);
-			FileUtils.createDirectory(accounts + "/" + accountId + "/projects/" + project + "/jobs");
+			System.out.println("--------------->     " + accounts + "/" + accountId + "/buckets/" + bucket + "/jobs");
+			FileUtils.createDirectory(accounts + "/" + accountId + "/buckets/" + bucket);
+			FileUtils.createDirectory(accounts + "/" + accountId + "/buckets/" + bucket + "/jobs");
 		} catch (IOException e1) {
-			FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/projects/" + project + "/jobs"));
+			FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/buckets/" + bucket + "/jobs"));
 			throw new IOManagementException("IOException" + e1.toString());
 		}
 	}
 
-	public void createJobFolder(String accountId, String project, String jobId) throws IOManagementException {
-		String path = accounts + "/" + accountId + "/projects/" + project + "/jobs";
+	public void createJobFolder(String accountId, String bucket, String jobId) throws IOManagementException {
+		String path = accounts + "/" + accountId + "/buckets/" + bucket + "/jobs";
 		if (new File(path).exists() && new File(path).canWrite()) {
 			try {
 				FileUtils.createDirectory(path + "/" + jobId);
@@ -114,12 +114,12 @@ public class IOManager {
 		}
 	}
 
-	public void removeJobFolder(String accountId, String project, String jobId) throws IOManagementException {
-		File path = new File(accounts + "/" + accountId + "/projects/" + project + "/jobs/" + jobId);
+	public void removeJobFolder(String accountId, String bucket, String jobId) throws IOManagementException {
+		File path = new File(accounts + "/" + accountId + "/buckets/" + bucket + "/jobs/" + jobId);
 		FileUtils.deleteDirectory(path);
 	}
 
-	public String createData(String project, String accountId, Data data, InputStream fileData, String objectname,
+	public String createData(String bucket, String accountId, Data data, InputStream fileData, String objectname,
 			boolean parents) throws IOManagementException {
 		String idStr = objectname.replace(":", "/");
 		String fileName = getDataName(idStr);
@@ -129,20 +129,23 @@ public class IOManager {
 		String randomFolder = tmp + "/" + StringUtils.randomString(20);
 		File tmpFile = new File(randomFolder + "/" + fileName);
 
-		String userFileStr = getProjectPath(accountId, project) + "/" + idStr;
+		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
 		File userFile = new File(userFileStr);
 
-		if (!parents && !userFile.getParentFile().exists()) {// if parents its
-																// true, folders
-																// will be
-																// autocreated
+		// if parents its
+		// true, folders
+		// will be
+		// autocreated
+		logger.info("IOManager: "+tmpFile.getAbsolutePath());
+		logger.info("IOManager: "+userFile.getAbsolutePath());
+		if (!parents && !userFile.getParentFile().exists()) {
 			throw new IOManagementException("no such folder");
 		}
 
 		if (userFile.exists()) {
 			userFileStr = renameExistingFile(userFileStr);
 			userFile = new File(userFileStr);
-			idStr = userFileStr.replace(getProjectPath(accountId, project) + "/", "");
+			idStr = userFileStr.replace(getBucketPath(accountId, bucket) + "/", "");
 			fileName = getDataName(idStr);
 		}
 
@@ -181,9 +184,10 @@ public class IOManager {
 		return idStr;
 	}
 
-	public String deleteData(String project, String accountId, String objectname, String bucket) {
+	public String deleteData(String bucket, String accountId, String objectname) {
 		String idStr = objectname.replace(":", "/");
-		String userFileStr = getProjectPath(accountId, project) + "/" + idStr;
+		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
+		logger.info(userFileStr);
 		FileUtils.deleteDirectory(new File(userFileStr));
 		return idStr;
 	}
@@ -192,8 +196,16 @@ public class IOManager {
 		return accounts + "/" + accountId;
 	}
 
-	private String getProjectPath(String accountId, String projectId) {
-		return getAccountPath(accountId) + "/" + projectId;
+	private String getBucketPath(String accountId, String bucketId) {
+		return getAccountPath(accountId) + "/buckets/" + bucketId;
+	}
+
+	// public String getDataPath(String wsDataId){
+	// wsDataId.replaceAll(":", "/")
+	// }
+	public String getDataPath(String accountId, String bucketId, String dataId) {
+		dataId = dataId.replaceAll(":", "/");
+		return getBucketPath(accountId, bucketId) + "/" + dataId;
 	}
 
 	private String renameExistingFile(String name) {
