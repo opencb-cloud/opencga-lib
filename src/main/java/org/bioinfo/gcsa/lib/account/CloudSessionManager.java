@@ -169,7 +169,8 @@ public class CloudSessionManager {
 		checkStr(objectname, "objectname");
 
 		String dataPath = ioManager.getDataPath(accountId, bucket, objectname);
-		Data data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataPath);
+		String dataId = objectname.replaceAll(":","/");
+		Data data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataId);
 		checkStr(regionStr, "regionStr");
 		Region region = Region.parseRegion(regionStr);
 		checkObj(region, "region");
