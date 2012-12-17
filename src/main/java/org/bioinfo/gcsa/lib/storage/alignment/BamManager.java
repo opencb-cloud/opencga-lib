@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.samtools.BAMIndexer;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.CigarOperator;
 import net.sf.samtools.SAMFileReader;
@@ -50,11 +51,13 @@ public class BamManager {
 		System.out.println("chr: "+chr+" start: "+start+" end: "+end);
 
 		File inputSamFile = new File(filePath);
-		File indexFile = null;
-		if(!new File(filePath+".bai").exists()) {
+		File indexFile = new File(filePath+".bai");
+		if(!indexFile.exists()) {
 			// crearlo!
+			logger.info("BamManager: "+"creando indice...");
+			BAMIndexer.createAndWriteIndex(inputSamFile, indexFile, false);
+//			Runtime.getRuntime().exec("");
 		}
-		indexFile = new File(filePath+".bai");
 
 
 		long t = System.currentTimeMillis();

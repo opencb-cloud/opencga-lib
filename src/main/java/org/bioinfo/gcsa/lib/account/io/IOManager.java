@@ -187,6 +187,7 @@ public class IOManager {
 	public String deleteData(String bucket, String accountId, String objectname) {
 		String idStr = objectname.replace(":", "/");
 		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
+		logger.info("IOManager: "+userFileStr);
 		logger.info(userFileStr);
 		FileUtils.deleteDirectory(new File(userFileStr));
 		return idStr;
@@ -197,7 +198,7 @@ public class IOManager {
 	}
 
 	private String getBucketPath(String accountId, String bucketId) {
-		return getAccountPath(accountId) + "/buckets/" + bucketId;
+		return getAccountPath(accountId) + "/buckets/" + bucketId.toLowerCase();
 	}
 
 	// public String getDataPath(String wsDataId){
