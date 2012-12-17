@@ -5,16 +5,18 @@ import java.util.List;
 public class Execution {
 	private String id, name, executable, outputParam, testCmd;
 	private List<InputParam> inputParams;
+	private List<InputParam> inputParamsFromTxt;
 	private List<Option> validParams;
 	private List<ConfigAttr> configAttr;
 	
 	public Execution(String id, String name, String executable,
-			List<InputParam> inputParams, String outputParam,
+			List<InputParam> inputParams, List<InputParam> inputParamsFromTxt, String outputParam,
 			List<Option> validParams, List<ConfigAttr> configAttr, String testCmd) {
 		this.id = id;
 		this.name = name;
 		this.executable = executable;
 		this.inputParams = inputParams;
+		this.inputParamsFromTxt = inputParamsFromTxt;
 		this.outputParam = outputParam;
 		this.validParams = validParams;
 		this.configAttr = configAttr;
@@ -83,5 +85,13 @@ public class Execution {
 	
 	public void setTestCmd(String testCmd) {
 		this.testCmd = testCmd;
+	}
+
+	public List<InputParam> getInputParamsFromTxt() {
+		return inputParamsFromTxt;
+	}
+
+	public void setInputParamsFromTxt(List<InputParam> inputParamsFromTxt) {
+		this.inputParamsFromTxt = inputParamsFromTxt;
 	}
 }
