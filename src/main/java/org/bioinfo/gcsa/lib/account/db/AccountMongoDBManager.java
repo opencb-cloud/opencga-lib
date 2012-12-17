@@ -601,7 +601,6 @@ public class AccountMongoDBManager implements AccountManager {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		}
 
 		// INSERT JOB OBJECT ON MONGO
