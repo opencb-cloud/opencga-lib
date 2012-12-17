@@ -16,6 +16,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.bioinfo.commons.Config;
+import org.bioinfo.commons.exec.Command;
+import org.bioinfo.commons.exec.SingleProcess;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
@@ -178,9 +180,9 @@ public class AnalysisJobExecuter {
 		if (jobExecutor == null || jobExecutor.trim().equalsIgnoreCase("LOCAL")) {
 			logger.debug("AnalysisJobExecuter: execute, running by SingleProcess");
 
-			// Command com = new Command(commandLine);
-			// SingleProcess sp = new SingleProcess(com);
-			// sp.getRunnableProcess().run();
+			 Command com = new Command(commandLine);
+			 SingleProcess sp = new SingleProcess(com);
+			 sp.getRunnableProcess().run();
 		}
 		// sge execution
 		else {
