@@ -29,6 +29,7 @@
 	            	 name: "Variant Effect",
 	            	 executable: "bin/hpg-var-effect",
 	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}],
+	            	 inputParamsFromTxt: [{name:"vcf-file-txt", dataType:"vcf"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
 	            	           {name:"vcf-file", description:"VCF file used as input.", required:"true"},
@@ -53,6 +54,7 @@
 	            	 name: "Variant VCF",
 	            	 executable: "bin/hpg-var-vcf filter",
 	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}],
+	            	 inputParamsFromTxt: [{name:"vcf-file-txt", dataType:"vcf"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
@@ -76,6 +78,7 @@
 	            	 name: "Variant VCF",
 	            	 executable: "bin/hpg-var-vcf merge",
 	            	 inputParams: [{name:"vcf-list", dataType:"vcf"}],
+	            	 inputParamsFromTxt: [{name:"vcf-file-content", dataType:"vcf"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-list", description:"VCF file used as input.", required:"true"},
@@ -95,6 +98,7 @@
 	            	 name: "Variant VCF",
 	            	 executable: "bin/hpg-var-vcf split",
 	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}, {name:"ped-file", dataType:"ped"}],
+	            	 inputParamsFromTxt: [{name:"vcf-file-txt", dataType:"vcf"}, {name:"ped-file-txt", dataType:"ped"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
@@ -108,6 +112,7 @@
 	            	 name: "Variant VCF",
 	            	 executable: "bin/hpg-var-vcf stats",
 	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}],
+	            	 inputParamsFromTxt: [{name:"vcf-file-txt", dataType:"vcf"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
@@ -122,6 +127,7 @@
 	            	 name: "Variant GWAS",
 	            	 executable: "bin/hpg-var-gwas assoc",
 	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}, {name:"ped-file", dataType:"ped"}],
+	            	 inputParamsFromTxt: [{name:"vcf-file-txt", dataType:"vcf"}, {name:"ped-file-txt", dataType:"ped"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
@@ -147,6 +153,7 @@
 	            	 name: "Variant GWAS",
 	            	 executable: "bin/hpg-var-gwas tdt",
 	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}, {name:"ped-file", dataType:"ped"}],
+	            	 inputParamsFromTxt: [{name:"vcf-file-txt", dataType:"vcf"}, {name:"ped-file-txt", dataType:"ped"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},

@@ -19,6 +19,7 @@ import org.bioinfo.commons.Config;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
+import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
 import org.bioinfo.gcsa.lib.analysis.beans.Option;
@@ -46,11 +47,11 @@ public class AnalysisJobExecuter {
 	protected Analysis analysis;
 	protected Execution execution;
 
-	public AnalysisJobExecuter(String analysisStr) throws IOException {
+	public AnalysisJobExecuter(String analysisStr) throws IOException, JsonSyntaxException, AnalysisExecutionException {
 		this(analysisStr, "");
 	}
 	
-	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException {
+	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException, JsonSyntaxException, AnalysisExecutionException {
 		home = System.getenv("GCSA_HOME");
 		config = new Config(home + "/conf/analysis.properties");
 		gson = new Gson();
@@ -74,23 +75,20 @@ public class AnalysisJobExecuter {
 		execution = getExecution();
 	}
 
-	public String execute(String jobId, String jobFolder, Map<String, List<String>> params) {
+	public String execute(String jobId, String jobFolder, Map<String, List<String>> params) throws AccountManagementException {
 		System.out.println("params received in execute: " + params);
-
-		if (analysisName == null || analysisName.equals("")) {
-			return "ERROR: Analysis name not provided.";
-		}
-
-		try {
-			FileUtils.checkFile(manifestFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "ERROR: Manifest for " + analysisName + " not found.";
-		}
-
-		if (execution == null) {
-			return "ERROR: Executable not found.";
-		}
+		
+		//TODO DELETE 
+//		if (analysisName == null || analysisName.equals("")) {
+//			return "ERROR: Analysis name not provided.";
+//		}
+//
+//		try {
+//			FileUtils.checkFile(manifestFile);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			return "ERROR: Manifest for " + analysisName + " not found.";
+//		}
 
 		// Check required params
 		List<Option> validParams = execution.getValidParams();
@@ -98,7 +96,7 @@ public class AnalysisJobExecuter {
 		if (checkRequiredParams(params, validParams)) {
 			params = new HashMap<String, List<String>>(removeUnknownParams(params, validParams));
 		} else {
-			return "ERROR: missing some required params.";
+			throw new AccountManagementException("ERROR: missing some required params.");
 		}
 
 		// Set output param
@@ -204,14 +202,14 @@ public class AnalysisJobExecuter {
 	// Analysis.class);
 	// }
 
-	public Analysis getAnalysis() throws JsonSyntaxException, IOException {
+	public Analysis getAnalysis() throws JsonSyntaxException, IOException, AnalysisExecutionException {
 		if (analysis == null) {
 			analysis = gson.fromJson(IOUtils.toString(new File(manifestFile)), Analysis.class);
 		}
 		return analysis;
 	}
 
-	public Execution getExecution() {
+	public Execution getExecution() throws AnalysisExecutionException {
 		if (execution == null) {
 			if (executionName != null) {
 				for (Execution exe : analysis.getExecutions()) {
@@ -280,9 +278,7 @@ public class AnalysisJobExecuter {
 		return sb.toString();
 	}
 
-	public String test(String jobId, String jobFolder) { // TODO probar cuando
-															// funcione lo de
-															// usuarios
+	public String test(String jobId, String jobFolder) { // TODO probar cuando funcione lo de usuarios
 		try {
 			FileUtils.checkFile(manifestFile);
 		} catch (IOException e) {
