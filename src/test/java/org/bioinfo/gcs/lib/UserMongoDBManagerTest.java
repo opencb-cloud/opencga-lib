@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 
-import org.bioinfo.gcsa.lib.users.beans.Data;
-import org.bioinfo.gcsa.lib.users.persistence.AccountManagementException;
-import org.bioinfo.gcsa.lib.users.persistence.AccountManager;
+import org.bioinfo.gcsa.lib.account.beans.Data;
+import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
+import org.bioinfo.gcsa.lib.account.db.AccountManager;
 import org.junit.Test;
 
 public class UserMongoDBManagerTest {
@@ -284,5 +284,15 @@ public class UserMongoDBManagerTest {
 	// e.printStackTrace();
 	// }
 	// }
+
+
+
+//	@Test
+//	public void test1() throws IOException {
+//		String filename = "/tmp/hola.txt";
+////		filename = renameExistingFile(filename);
+//		System.out.println(filename);
+//		FileUtils.touch(new File(filename));
+//	}
 
 }

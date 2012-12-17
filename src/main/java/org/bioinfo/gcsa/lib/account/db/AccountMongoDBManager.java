@@ -1,11 +1,9 @@
-package org.bioinfo.gcsa.lib.users.persistence;
+package org.bioinfo.gcsa.lib.account.db;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -14,19 +12,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
-import org.bioinfo.gcsa.lib.users.IOManager;
-import org.bioinfo.gcsa.lib.users.beans.Account;
-import org.bioinfo.gcsa.lib.users.beans.Acl;
-import org.bioinfo.gcsa.lib.users.beans.Data;
-import org.bioinfo.gcsa.lib.users.beans.Job;
-import org.bioinfo.gcsa.lib.users.beans.Plugin;
-import org.bioinfo.gcsa.lib.users.beans.Project;
-import org.bioinfo.gcsa.lib.users.beans.Session;
-
+import org.bioinfo.gcsa.lib.account.beans.Account;
+import org.bioinfo.gcsa.lib.account.beans.Acl;
+import org.bioinfo.gcsa.lib.account.beans.Data;
+import org.bioinfo.gcsa.lib.account.beans.Job;
+import org.bioinfo.gcsa.lib.account.beans.Plugin;
+import org.bioinfo.gcsa.lib.account.beans.Project;
+import org.bioinfo.gcsa.lib.account.beans.Session;
+import org.bioinfo.gcsa.lib.account.io.IOManagementException;
+import org.bioinfo.gcsa.lib.account.io.IOManager;
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -118,27 +115,28 @@ public class AccountMongoDBManager implements AccountManager {
 		dataId = dataId.replaceAll(":", "/");
 		return getProjectPath(accountId, projectId) + "/" + dataId;
 
-//		// projects:default:jobs:ae8Bhh8Y:test.txt
-//		// projects:default:virtualdir:test.txt
-//		String path = null;
-//		if (dataId.contains(":jobs:")) {
-//			path = "/" + dataId.replaceAll(":", "/");
-//		} else {
-//			String[] fields = dataId.split(":", 3);
-//			if (fields.length > 3) {
-//				return "ERROR: unexpected format on '" + dataId + "'";
-//			} else {
-//				path = "/" + fields[0] + "/" + fields[1] + "/" + fields[2];
-//			}
-//		}
-//
-//		String dataPath = accounts + "/" + getAccountIdBySessionId(sessionId) + path;
-//
-//		if (new File(dataPath).exists()) {
-//			return dataPath;
-//		} else {
-//			return "ERROR: data '" + dataId + "' not found";
-//		}
+		// // projects:default:jobs:ae8Bhh8Y:test.txt
+		// // projects:default:virtualdir:test.txt
+		// String path = null;
+		// if (dataId.contains(":jobs:")) {
+		// path = "/" + dataId.replaceAll(":", "/");
+		// } else {
+		// String[] fields = dataId.split(":", 3);
+		// if (fields.length > 3) {
+		// return "ERROR: unexpected format on '" + dataId + "'";
+		// } else {
+		// path = "/" + fields[0] + "/" + fields[1] + "/" + fields[2];
+		// }
+		// }
+		//
+		// String dataPath = accounts + "/" + getAccountIdBySessionId(sessionId)
+		// + path;
+		//
+		// if (new File(dataPath).exists()) {
+		// return dataPath;
+		// } else {
+		// return "ERROR: data '" + dataId + "' not found";
+		// }
 	}
 
 	private String accountConfPath(String accountId) {
@@ -168,7 +166,11 @@ public class AccountMongoDBManager implements AccountManager {
 
 		}
 
-		ioManager.createScaffoldAccountId(accountId);
+		try {
+			ioManager.createScaffoldAccountId(accountId);
+		} catch (IOManagementException e) {
+			e.printStackTrace();
+		}
 
 		if (account == null) {
 			account = new Account(accountId, accountName, password, email);
@@ -180,6 +182,51 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
+	public void createAnonymousAccount(Session session) throws AccountManagementException {
+		
+		//*****create new account*****/
+		
+		String anonymousAccountId = "anonymous_" + session.getId();
+		checkAccountExists(anonymousAccountId);
+		
+		Account account = null;
+
+		File accountDir = new File(getAccountPath(anonymousAccountId));
+		File accountConf = new File(accountConfPath(anonymousAccountId));
+		if (accountDir.exists() && accountConf.exists()) {
+			// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
+			// CONFIGURACION
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(accountConf));
+				account = gson.fromJson(br, Account.class);
+				account.addSession(session);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		try {
+			ioManager.createScaffoldAccountId(anonymousAccountId);
+		} catch (IOManagementException e) {
+			e.printStackTrace();
+		}
+
+		if (account == null) {
+			account = new Account(anonymousAccountId, "", "", "");
+			account.setLastActivity(GcsaUtils.getTime());
+		}
+		WriteResult wr = userCollection.insert((DBObject) JSON.parse(gson.toJson(account)));
+		if (wr.getLastError().getErrorMessage() != null) {
+			throw new AccountManagementException(wr.getLastError().getErrorMessage());
+		}
+		
+		//*** login anonymous ****/
+		login (anonymousAccountId, "", session);
+		
+	}
+
+	
 	public String login(String accountId, String password, Session session) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
@@ -271,6 +318,19 @@ public class AccountMongoDBManager implements AccountManager {
 		} else {
 			throw new AccountManagementException("logout");
 		}
+	}
+	
+	public void logoutAnonymous (String accountId, String sessionId){
+		
+		//***** borrar en mongo ****/
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		userCollection.remove(query);
+		
+		//***** borrar carpetas asociadas ****/
+		FileUtils.deleteDirectory(new File(getAccountPath(accountId)));
+		
 	}
 
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
@@ -376,7 +436,11 @@ public class AccountMongoDBManager implements AccountManager {
 
 	public String createProject(Project project, String accountId, String sessionId) throws AccountManagementException {
 		BasicDBObject filter = new BasicDBObject("accountId", accountId);
-		ioManager.createProjectFolder(accountId, project.getName());
+		try {
+			ioManager.createProjectFolder(accountId, project.getName());
+		} catch (IOManagementException e) {
+			e.printStackTrace();
+		}
 		updateMongo("push", filter, "projects", project);
 		updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
 		return "";
@@ -388,8 +452,9 @@ public class AccountMongoDBManager implements AccountManager {
 
 		DBObject item = userCollection.findOne(query);
 		if (item != null) {
-//			user = new Gson().fromJson(item.toString(), Account.class);
-//			projectsStr = JSON.parse(new Gson().toJson(user.getProjects())).toString();
+			// user = new Gson().fromJson(item.toString(), Account.class);
+			// projectsStr = JSON.parse(new
+			// Gson().toJson(user.getProjects())).toString();
 			// account = gson.fromJson(item.toString(), Account.class);
 			String projectsStr = item.get("projects").toString();
 			// getJSON.parse(gson.toJson(account.getProjects())).toString();
@@ -400,20 +465,17 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
-	public void createAnonymousUser(String accountId, String password, String email) {
-
-	}
-
 	public void createData(String dataName, String project, String sessionId) {
-		
+
 		String dataId = StringUtils.randomString(8);
-		
-		///
+
+		// /
 		dataName = StringUtils.randomString(10);
-		///
+		// /
 		String accountId = getAccountIdBySessionId(sessionId);
 
-		Data data = new Data(dataId, "", dataName, "", "", "", "", GcsaUtils.getTime(), "", "1", "", new ArrayList<Acl>());			
+		Data data = new Data(dataId, "", dataName, "", "", "", "", GcsaUtils.getTime(), "", "1", "",
+				new ArrayList<Acl>());
 		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(data));
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject item = new BasicDBObject();
@@ -423,10 +485,10 @@ public class AccountMongoDBManager implements AccountManager {
 		item.put("projects.$.data", dataDBObject);
 		action.put("$push", item);
 		userCollection.update(query, action);
-		
-//		return dataId;
+
+		// return dataId;
 	}
-	
+
 	// public String getUserByAccountId(String accountId, String sessionId) {
 	// String userStr = "";
 	//
@@ -496,72 +558,57 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
-	@Override
-	public void createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData)
-			throws AccountManagementException {
-
-		File rndFolder = null;
-		// CREATING A RANDOM TEMP FOLDER
-		String randomFolder = tmp + "/" + StringUtils.randomString(20);
-		try {
-			FileUtils.createDirectory(randomFolder);
-			rndFolder = new File(randomFolder);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new AccountManagementException("Could not create the upload temp directory");
-		}
-		// COPYING TO DISK
-		File tmpFile = new File(randomFolder + "/" + data.getFileName());
-		logger.info(tmpFile.getAbsolutePath());
-		try {
-			IOUtils.write(tmpFile, fileData);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new AccountManagementException("Could not write the file on disk");
-		}
-		// COPYING FROM TEMP TO ACCOUNT DIR
-		File userFile = new File(getProjectPath(accountId, project) + "/" + data.getId());
-		try {
-			logger.info(userFile.getAbsolutePath());
-			FileUtils.touch(userFile);
-			FileUtils.copy(tmpFile, userFile);
-
-			// INSERT DATA OBJECT ON MONGO
-			BasicDBObject query = new BasicDBObject("accountId", accountId);
-			query.put("sessions.id", sessionId);
-			query.put("projects.id", project.toLowerCase());
-			BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
-			BasicDBObject item = new BasicDBObject("projects.$.data", dataDBObject);
-			BasicDBObject action = new BasicDBObject("$push", item);
-			WriteResult wr = userCollection.update(query, action);
-
-			// db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
-
-			if (wr.getLastError().getErrorMessage() == null) {
-				if (wr.getN() != 1) {
-					FileUtils.deleteDirectory(userFile);
-					FileUtils.deleteDirectory(rndFolder);
-					throw new AccountManagementException("could not update database, with this parameters");
-				}
-				logger.info("data object created");
+	private String renameExistingFile(String name) {
+		File file = new File(name);
+		if (file.exists()) {
+			String fileName = FileUtils.removeExtension(name);
+			String fileExt = FileUtils.getExtension(name);
+			String newname = null;
+			if (fileName != null && fileExt != null) {
+				newname = fileName + "-copy" + fileExt;
 			} else {
-				FileUtils.deleteDirectory(userFile);
-				FileUtils.deleteDirectory(rndFolder);
-				throw new AccountManagementException("could not update database, files will be deleted");
+				newname = name + "-copy";
 			}
-
-			FileUtils.deleteDirectory(rndFolder);
-
-			// BasicDBObject actitvityQuery = new BasicDBObject("accountId",
-			// accountId);
-			// query.put("sessions.id", sessionId);
-			// updateMongo("set", actitvityQuery,"lastActivity",
-			// GcsaUtils.getTime());
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new AccountManagementException("Copying from tmp folder to account folder");
+			return renameExistingFile(newname);
+		} else {
+			return name;
 		}
+	}
+
+	private String getDataName(String objectname) {
+		String[] tokens = objectname.split("/");
+		return tokens[(tokens.length - 1)];
+	}
+
+	@Override
+	public void createDataToProject(String project, String accountId, String sessionId, Data data) throws AccountManagementException {
+
+		// INSERT DATA OBJECT ON MONGO
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		query.put("projects.id", project.toLowerCase());
+		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
+		BasicDBObject item = new BasicDBObject("projects.$.data", dataDBObject);
+		BasicDBObject action = new BasicDBObject("$push", item);
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		WriteResult wr = userCollection.update(query, action);
+
+		// db.users.update({"accountId":"fsalavert","projects.name":"Default"},{$push:{"projects.$.data":{"a":"a"}}})
+
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("could not update database, with this parameters");
+			}
+			logger.info("data object created");
+		} else {
+			throw new AccountManagementException("could not update database, files will be deleted");
+		}
+
+		// BasicDBObject actitvityQuery = new BasicDBObject("accountId",
+		// accountId);
+		// query.put("sessions.id", sessionId);
+		// updateMongo("set", actitvityQuery,"lastActivity",
+		// GcsaUtils.getTime());
 
 	}
 
@@ -577,34 +624,37 @@ public class AccountMongoDBManager implements AccountManager {
 		String jobId = StringUtils.randomString(8);
 		String accountId = getAccountIdBySessionId(sessionId);
 
-		try {
-			if (jobFolder == null) {
-				// CREATE JOB FOLDER
+		if (jobFolder == null) {
+			// CREATE JOB FOLDER
+			try {
 				ioManager.createJobFolder(accountId, project, jobId);
-
+			} catch (IOManagementException e) {
+				e.printStackTrace();
 			}
 
-			// INSERT JOB OBJECT ON MONGO
-			Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
-			BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
-			BasicDBObject query = new BasicDBObject();
-			BasicDBObject item = new BasicDBObject();
-			BasicDBObject action = new BasicDBObject();
-			query.put("accountId", accountId);
-			query.put("projects.id", project);
-			item.put("projects.$.jobs", jobDBObject);
-			action.put("$push", item);
-			WriteResult result = userCollection.update(query, action);
-
-			if (result.getError() != null) {
-				ioManager.removeJobFolder(accountId, project, jobId);
-				return "MongoDB error, " + result.getError() + " files will be deleted";
-			}
-			return jobId;
-		} catch (AccountManagementException e) {
-			e.printStackTrace();
-			return null;
 		}
+
+		// INSERT JOB OBJECT ON MONGO
+		Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
+		BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject item = new BasicDBObject();
+		BasicDBObject action = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("projects.id", project);
+		item.put("projects.$.jobs", jobDBObject);
+		action.put("$push", item);
+		WriteResult result = userCollection.update(query, action);
+
+		if (result.getError() != null) {
+			try {
+				ioManager.removeJobFolder(accountId, project, jobId);
+			} catch (IOManagementException e) {
+				e.printStackTrace();
+			}
+			return "MongoDB error, " + result.getError() + " files will be deleted";
+		}
+		return jobId;
 	}
 
 	// //////////////////////

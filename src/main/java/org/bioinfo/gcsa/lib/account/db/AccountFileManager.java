@@ -1,14 +1,13 @@
-package org.bioinfo.gcsa.lib.users.persistence;
+package org.bioinfo.gcsa.lib.account.db;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
 import org.bioinfo.commons.log.Logger;
-import org.bioinfo.gcsa.lib.users.beans.Data;
-import org.bioinfo.gcsa.lib.users.beans.Plugin;
-import org.bioinfo.gcsa.lib.users.beans.Project;
-import org.bioinfo.gcsa.lib.users.beans.Session;
+import org.bioinfo.gcsa.lib.account.beans.Data;
+import org.bioinfo.gcsa.lib.account.beans.Plugin;
+import org.bioinfo.gcsa.lib.account.beans.Project;
+import org.bioinfo.gcsa.lib.account.beans.Session;
 
 public class AccountFileManager implements AccountManager {
 
@@ -35,7 +34,7 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public void createAnonymousUser(String accountId, String password, String email) {
+	public void createAnonymousAccount(Session session) throws AccountManagementException {
 
 	}
 
@@ -89,8 +88,7 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public void createDataToProject(String project, String accountId, String sessionId, Data data, InputStream fileData)
-			throws AccountManagementException {
+	public void createDataToProject(String project, String accountId, String sessionId, Data data) throws AccountManagementException {
 	}
 
 	@Override
@@ -126,8 +124,12 @@ public class AccountFileManager implements AccountManager {
 
 	@Override
 	public String getDataPath(String projectId, String dataId, String sessionId) {
-		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void logoutAnonymous(String accountId, String sessionId) {
+		
 	}
 
 }

@@ -53,11 +53,13 @@ public class AnalysisJobExecuter {
 	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException {
 		home = System.getenv("GCSA_HOME");
 		config = new Config(home + "/conf/analysis.properties");
-		analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
 		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
 
+		if(analysisOwner.equals("system")) analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
+		else analysisRootPath = home + "/accounts/" + analysisOwner;
+		
 		analysisName = analysisStr;
 		executionName = null;
 		if (analysisName.contains(".")) {
