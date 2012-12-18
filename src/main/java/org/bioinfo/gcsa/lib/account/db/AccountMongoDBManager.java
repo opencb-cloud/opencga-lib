@@ -489,7 +489,6 @@ public class AccountMongoDBManager implements AccountManager {
 		return tokens[(tokens.length - 1)];
 	}
 
-
 	@Override
 	public void createDataToBucket(String bucket, String accountId, String sessionId, Data data)
 			throws AccountManagementException {
@@ -522,18 +521,19 @@ public class AccountMongoDBManager implements AccountManager {
 		// GcsaUtils.getTime());
 
 	}
+
 	@Override
 	public void deleteDataFromBucket(String bucket, String accountId, String sessionId, String dataId)
 			throws AccountManagementException {
-//		db.users.update({"accountId":"pako","buckets.id":"default"},{$pull:{"buckets.$.data":{"id":"hola/como/estas/app.js"}}})
+		// db.users.update({"accountId":"pako","buckets.id":"default"},{$pull:{"buckets.$.data":{"id":"hola/como/estas/app.js"}}})
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 		query.put("buckets.id", bucket.toLowerCase());
-		
-		BasicDBObject bucketData =  new BasicDBObject("buckets.$.data", new BasicDBObject("id", dataId));
-		BasicDBObject action =  new BasicDBObject("$pull", bucketData);
+
+		BasicDBObject bucketData = new BasicDBObject("buckets.$.data", new BasicDBObject("id", dataId));
+		BasicDBObject action = new BasicDBObject("$pull", bucketData);
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
-		
+
 		WriteResult wr = userCollection.update(query, action);
 		if (wr.getLastError().getErrorMessage() == null) {
 			if (wr.getN() != 1) {
@@ -544,43 +544,43 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException("could not delete data item from database");
 		}
 	}
-	
+
 	@Override
 	public Data getDataFromBucket(String bucket, String accountId, String sessionId, String dataId)
 			throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 		query.put("buckets.id", bucket.toLowerCase());
-		
-		BasicDBObject bucketData =  new BasicDBObject("buckets.$.data", "1");
+
+		BasicDBObject bucketData = new BasicDBObject("buckets.$.data", "1");
 		DBObject obj = userCollection.findOne(query, bucketData);
-		if(obj != null){
+		if (obj != null) {
 			Bucket[] buckets = gson.fromJson(obj.get("buckets").toString(), Bucket[].class);
 			List<Data> dataList = buckets[0].getData();
 			Data data = null;
-			logger.info("MongoManager: "+obj.get("buckets").toString());
-			logger.info("MongoManager: "+dataList.size());
+			logger.info("MongoManager: " + obj.get("buckets").toString());
+			logger.info("MongoManager: " + dataList.size());
 			for (int i = 0; i < dataList.size(); i++) {
-				logger.info("MongoManager: "+dataList.get(i));
-				logger.info("MongoManager: "+dataList.get(i).getId());
-				logger.info("MongoManager: "+dataId);
-				if(dataList.get(i).getId().equals(dataId)){
+				logger.info("MongoManager: " + dataList.get(i));
+				logger.info("MongoManager: " + dataList.get(i).getId());
+				logger.info("MongoManager: " + dataId);
+				if (dataList.get(i).getId().equals(dataId)) {
 					data = dataList.get(i);
 					break;
 				}
 			}
-			logger.info("MongoManager: "+data);
-			if(data != null){
+			logger.info("MongoManager: " + data);
+			if (data != null) {
 				return data;
-			}else{
+			} else {
 				throw new AccountManagementException("data not found");
 			}
-		}else{
+		} else {
 			throw new AccountManagementException("could not find data with this parameters");
 		}
 	}
-	
 
+	
 	// ///////////////////////
 	/*
 	 * Job methods
