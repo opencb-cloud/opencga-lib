@@ -16,7 +16,7 @@ public interface AccountManager {
 	public void createAccount(String accountId, String password, String accountName, String email, Session session)
 			throws AccountManagementException;
 
-	public void createAnonymousAccount(Session session) throws AccountManagementException;
+	public String createAnonymousAccount(Session session) throws AccountManagementException;
 
 	public String login(String accountId, String password, Session session) throws AccountManagementException;
 

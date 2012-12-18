@@ -182,7 +182,7 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
-	public void createAnonymousAccount(Session session) throws AccountManagementException {
+	public String createAnonymousAccount(Session session) throws AccountManagementException {
 		
 		//*****create new account*****/
 		
@@ -223,7 +223,8 @@ public class AccountMongoDBManager implements AccountManager {
 		
 		//*** login anonymous ****/
 		login (anonymousAccountId, "", session);
-		
+		System.out.println("SESESESESESESESES:" + session.getId());
+		return session.getId();
 	}
 
 	

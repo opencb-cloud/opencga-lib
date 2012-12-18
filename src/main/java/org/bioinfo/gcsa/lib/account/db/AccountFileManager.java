@@ -34,8 +34,8 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public void createAnonymousAccount(Session session) throws AccountManagementException {
-
+	public String createAnonymousAccount(Session session) throws AccountManagementException {
+		return null;
 	}
 
 	@Override
