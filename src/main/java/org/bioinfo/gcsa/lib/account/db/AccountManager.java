@@ -49,8 +49,11 @@ public interface AccountManager {
 	public String createBucket(Bucket project, String accountId, String sessionId) throws AccountManagementException;
 
 	// add file to project
-	public void createDataToBucket(String project, String accountId, String sessionId, Data data) throws AccountManagementException;
-	public void deleteDataFromBucket(String project, String accountId, String sessionId, String dataId) throws AccountManagementException;
+	public void createDataToBucket(String project, String accountId, String sessionId, Data data)
+			throws AccountManagementException;
+
+	public void deleteDataFromBucket(String project, String accountId, String sessionId, String dataId)
+			throws AccountManagementException;
 
 	/*
 	 * Job methods
@@ -74,8 +77,5 @@ public interface AccountManager {
 
 	public Data getDataFromBucket(String bucket, String accountId, String sessionId, String dataId)
 			throws AccountManagementException;
-
-
-
 
 }

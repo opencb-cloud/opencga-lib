@@ -1,5 +1,6 @@
 package org.bioinfo.gcsa.lib.account;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,6 +24,7 @@ import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.account.io.IOManager;
 import org.bioinfo.gcsa.lib.storage.alignment.BamManager;
 import org.bioinfo.infrared.lib.common.Region;
+import org.dom4j.DocumentException;
 
 public class CloudSessionManager {
 
@@ -169,13 +171,12 @@ public class CloudSessionManager {
 		checkStr(objectname, "objectname");
 
 		String dataPath = ioManager.getDataPath(accountId, bucket, objectname);
-		String dataId = objectname.replaceAll(":","/");
+		String dataId = objectname.replaceAll(":", "/");
 		Data data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataId);
 		checkStr(regionStr, "regionStr");
 		Region region = Region.parseRegion(regionStr);
 		checkObj(region, "region");
 
-		// //SUPUESTO IF para bam
 		String result = "";
 		switch (data.getType()) {
 		case "bam":
@@ -196,6 +197,42 @@ public class CloudSessionManager {
 		}
 
 		return result;
+	}
+
+	public String getJobResultFromBucket(String bucket, String accountId, String sessionId, String jobId)
+			throws IOException, DocumentException {
+		// TODO check all
+		return ioManager.getJobResultFromBucket(bucket, accountId, sessionId, jobId);
+	}
+
+	public String getFileTableFromJob(String bucket, String accountId, String sessionId, String jobId, String filename,
+			String start, String limit, String colNames, String colVisibility, String callback, String sort)
+			throws IOManagementException, IOException, AccountManagementException {
+		// TODO check all
+		checkStr(bucket, "bucket");
+		checkStr(accountId, "accountId");
+		checkStr(sessionId, "sessionId");
+		checkStr(filename, "filename");
+
+		int first = Integer.parseInt(start);
+		int end = first + Integer.parseInt(limit);
+		String[] colnamesArray = colNames.split(",");
+		String[] colvisibilityArray = colVisibility.split(",");
+
+		return ioManager.getFileTableFromJob(bucket, accountId, sessionId, jobId, filename, first, end, colnamesArray,
+				colvisibilityArray, callback, sort);
+	}
+
+	public DataInputStream getFileFromJob(String bucket, String accountId, String sessionId, String jobId, String filename,
+			String zip) throws IOManagementException, IOException, AccountManagementException {
+		// TODO check all
+		checkStr(bucket, "bucket");
+		checkStr(accountId, "accountId");
+		checkStr(sessionId, "sessionId");
+		checkStr(filename, "filename");
+		checkStr(zip, "zip");
+
+		return ioManager.getFileFromJob(bucket, accountId, sessionId, jobId, filename, zip);
 	}
 
 	public String getAccountBuckets(String accountId, String sessionId) throws AccountManagementException {
