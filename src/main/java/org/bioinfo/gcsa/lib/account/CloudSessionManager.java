@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.bioinfo.commons.log.Logger;
-import org.bioinfo.gcsa.lib.account.beans.Data;
+import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.beans.Plugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
@@ -122,14 +122,21 @@ public class CloudSessionManager {
 		return accountManager.getDataPath(bucketId, dataId, sessionId);
 	}
 
-	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException {
+	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException, IOManagementException {
 		checkStr(bucket.getName(), "bucketName");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		accountManager.createBucket(bucket, accountId, sessionId);
+		
+		ioManager.createBucketFolder(accountId, bucket.getName());
+		try {
+			accountManager.createBucket(bucket, accountId, sessionId);
+		} catch (AccountManagementException e) {
+			ioManager.deleteBucketFolder(accountId, bucket.getName());
+			throw e;
+		}
 	}
 
-	public String createDataToBucket(String bucket, String accountId, String sessionId, Data data,
+	public String createDataToBucket(String bucket, String accountId, String sessionId, ObjectItem data,
 			InputStream fileData, String objectname, boolean parents) throws AccountManagementException,
 			IOManagementException {
 		checkStr(bucket, "bucket");
@@ -172,13 +179,13 @@ public class CloudSessionManager {
 
 		String dataPath = ioManager.getDataPath(accountId, bucket, objectname);
 		String dataId = objectname.replaceAll(":", "/");
-		Data data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataId);
+		ObjectItem data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataId);
 		checkStr(regionStr, "regionStr");
 		Region region = Region.parseRegion(regionStr);
 		checkObj(region, "region");
 
 		String result = "";
-		switch (data.getType()) {
+		switch (data.getFileFormat()) {
 		case "bam":
 			Boolean viewAsPairs = false;
 			if (params.get("view_as_pairs") != null) {

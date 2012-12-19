@@ -13,13 +13,13 @@ public class Account {
 	private String diskQuota;
 	private String diskUsage;
 	private String lastActivity;
-	private List<Acl> acls = new ArrayList<Acl>();
 	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
 	private List<Bucket> buckets = new ArrayList<Bucket>();
 	private List<Credential> credentials = new ArrayList<Credential>();
 	private List<Plugin> plugins = new ArrayList<Plugin>();
 	private List<Config> configs = new ArrayList<Config>();
+	private List<Job> jobs;
 
 	public Account() {
 		this.status = "1";
@@ -33,6 +33,7 @@ public class Account {
 		this.diskUsage = "";
 		this.sessions.add(new Session());
 		this.buckets.add(new Bucket());
+		this.setJobs(new ArrayList<Job>());
 	}
 
 	public Account(String accountId, String accountName, String password, String email) {
@@ -46,12 +47,13 @@ public class Account {
 		this.diskQuota = "";
 		this.diskUsage = "";
 		this.buckets.add(new Bucket());
+		this.setJobs(new ArrayList<Job>());
 	}
 
 	public Account(String accountId, String accountName, String email,
 			String password, String status, String mailingList,
 			String diskQuota, String diskUsage, Session session,
-			List<Session> oldSessions, List<Bucket> projects,String lastActivity,
+			List<Session> oldSessions, List<Bucket> buckets,String lastActivity,
 			List<Credential> accounts, List<Plugin> plugins, List<Config> configs) {
 		this.accountId = accountId;
 		this.accountName = accountName;
@@ -64,10 +66,11 @@ public class Account {
 		this.sessions.add(session);
 		this.lastActivity = lastActivity;
 		this.oldSessions = oldSessions;
-		this.buckets = projects;
+		this.buckets = buckets;
 		this.credentials = accounts;
 		this.plugins = plugins;
 		this.configs = configs;
+		this.setJobs(new ArrayList<Job>());
 	}
 
 	public String getAccountId() {
@@ -192,6 +195,14 @@ public class Account {
 
 	public void setConfigs(List<Config> configs) {
 		this.configs = configs;
+	}
+
+	public List<Job> getJobs() {
+		return jobs;
+	}
+
+	public void setJobs(List<Job> jobs) {
+		this.jobs = jobs;
 	}
 
 }

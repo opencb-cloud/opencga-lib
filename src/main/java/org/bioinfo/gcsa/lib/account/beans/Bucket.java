@@ -15,8 +15,7 @@ public class Bucket {
 	private String type;
 	private String descripcion;
 	private List<Acl> acl;
-	private List<Data> data;
-	private List<Job> jobs;
+	private List<ObjectItem> objects;
 	
 	public Bucket(){
 		this.status ="1";
@@ -27,8 +26,7 @@ public class Bucket {
 		this.creationDate = GcsaUtils.getTime();
 		this.type = "";
 		this.descripcion = "Default Project";
-		this.data = new ArrayList<Data>();
-		this.jobs = new ArrayList<Job>();
+		this.objects = new ArrayList<ObjectItem>();
 	}
 	
 	public Bucket(String nameProject){
@@ -40,8 +38,7 @@ public class Bucket {
 		this.creationDate = GcsaUtils.getTime();
 		this.type = "";
 		this.descripcion = "";
-		this.data = new ArrayList<Data>();
-		this.jobs = new ArrayList<Job>();
+		this.objects = new ArrayList<ObjectItem>();
 	}
 
 	public Bucket(String id, String name, String status, String diskUsage
@@ -55,8 +52,7 @@ public class Bucket {
 		this.type = type;
 		this.descripcion = descripcion;
 		this.acl = acl;
-		this.data = new ArrayList<Data>();
-		this.jobs = jobs;
+		this.objects = new ArrayList<ObjectItem>();
 	}
 
 	public String getId() {
@@ -131,21 +127,13 @@ public class Bucket {
 		this.acl = acl;
 	}
 
-	public List<Data> getData() {
-		return data;
+	public List<ObjectItem> getData() {
+		return objects;
 	}
 
-	public void setData(List<Data> data) {
-		this.data = data;
+	public void setData(List<ObjectItem> objectItemList) {
+		this.objects = objectItemList;
 	}
 	
-
-	public List<Job> getJobs() {
-		return jobs;
-	}
-
-	public void setJobs(List<Job> jobs) {
-		this.jobs = jobs;
-	}
 	
 }
