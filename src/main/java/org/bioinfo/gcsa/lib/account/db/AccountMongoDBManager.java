@@ -22,7 +22,7 @@ import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.account.beans.Account;
 import org.bioinfo.gcsa.lib.account.beans.Acl;
-import org.bioinfo.gcsa.lib.account.beans.Data;
+import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.beans.Job;
 import org.bioinfo.gcsa.lib.account.beans.Plugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
@@ -384,17 +384,24 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
-	public String createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException {
-		BasicDBObject filter = new BasicDBObject("accountId", accountId);
-		try {
-			ioManager.createBucketFolder(accountId, bucket.getName());
-		} catch (IOManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		
+		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(bucket));
+		BasicDBObject action = new BasicDBObject();
+		action.put("$push", new BasicDBObject("buckets", dataDBObject));
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		WriteResult wr = userCollection.update(query, action);
+		
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("could not update database, account not found");
+			}
+			logger.info("bucket created");
+		} else {
+			throw new AccountManagementException("could not push the bucket");
 		}
-		updateMongo("push", filter, "buckets", bucket);
-		updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
-		return "";
 	}
 
 	public String getAllBucketsBySessionId(String accountId, String sessionId) throws AccountManagementException {
@@ -490,7 +497,7 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void createDataToBucket(String bucket, String accountId, String sessionId, Data data)
+	public void createDataToBucket(String bucket, String accountId, String sessionId, ObjectItem data)
 			throws AccountManagementException {
 
 		// INSERT DATA OBJECT ON MONGO
@@ -498,12 +505,12 @@ public class AccountMongoDBManager implements AccountManager {
 		query.put("sessions.id", sessionId);
 		query.put("buckets.id", bucket.toLowerCase());
 		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
-		BasicDBObject item = new BasicDBObject("buckets.$.data", dataDBObject);
+		BasicDBObject item = new BasicDBObject("buckets.$.objects", dataDBObject);
 		BasicDBObject action = new BasicDBObject("$push", item);
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
 		WriteResult wr = userCollection.update(query, action);
 
-		// db.users.update({"accountId":"fsalavert","buckets.name":"Default"},{$push:{"buckets.$.data":{"a":"a"}}})
+		// db.users.update({"accountId":"fsalavert","buckets.name":"Default"},{$push:{"buckets.$.objects":{"a":"a"}}})
 
 		if (wr.getLastError().getErrorMessage() == null) {
 			if (wr.getN() != 1) {
@@ -525,12 +532,12 @@ public class AccountMongoDBManager implements AccountManager {
 	@Override
 	public void deleteDataFromBucket(String bucket, String accountId, String sessionId, String dataId)
 			throws AccountManagementException {
-		// db.users.update({"accountId":"pako","buckets.id":"default"},{$pull:{"buckets.$.data":{"id":"hola/como/estas/app.js"}}})
+		// db.users.update({"accountId":"pako","buckets.id":"default"},{$pull:{"buckets.$.objects":{"id":"hola/como/estas/app.js"}}})
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 		query.put("buckets.id", bucket.toLowerCase());
 
-		BasicDBObject bucketData = new BasicDBObject("buckets.$.data", new BasicDBObject("id", dataId));
+		BasicDBObject bucketData = new BasicDBObject("buckets.$.objects", new BasicDBObject("id", dataId));
 		BasicDBObject action = new BasicDBObject("$pull", bucketData);
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
 
@@ -546,18 +553,18 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public Data getDataFromBucket(String bucket, String accountId, String sessionId, String dataId)
+	public ObjectItem getDataFromBucket(String bucket, String accountId, String sessionId, String dataId)
 			throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 		query.put("buckets.id", bucket.toLowerCase());
 
-		BasicDBObject bucketData = new BasicDBObject("buckets.$.data", "1");
+		BasicDBObject bucketData = new BasicDBObject("buckets.$.objects", "1");
 		DBObject obj = userCollection.findOne(query, bucketData);
 		if (obj != null) {
 			Bucket[] buckets = gson.fromJson(obj.get("buckets").toString(), Bucket[].class);
-			List<Data> dataList = buckets[0].getData();
-			Data data = null;
+			List<ObjectItem> dataList = buckets[0].getData();
+			ObjectItem data = null;
 			logger.info("MongoManager: " + obj.get("buckets").toString());
 			logger.info("MongoManager: " + dataList.size());
 			for (int i = 0; i < dataList.size(); i++) {

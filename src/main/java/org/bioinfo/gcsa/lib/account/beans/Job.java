@@ -7,6 +7,7 @@ import org.bioinfo.gcsa.lib.GcsaUtils;
 
 public class Job {
 	private String id;
+	private String bucketId;
 	private String status;
 	private String percentage;
 	private String message;
@@ -23,6 +24,7 @@ public class Job {
 	
 	public Job(){
 		this.id = "";
+		this.bucketId = "";
 		this.status ="";
 		this.percentage = "";
 		this.message = "";
@@ -167,5 +169,13 @@ public class Job {
 
 	public void setInputData(List<String> inputData) {
 		this.inputData = inputData;
+	}
+
+	public String getBucketId() {
+		return bucketId;
+	}
+
+	public void setBucketId(String bucketId) {
+		this.bucketId = bucketId;
 	}
 }

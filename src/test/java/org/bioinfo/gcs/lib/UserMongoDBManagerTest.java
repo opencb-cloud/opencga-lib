@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
-import org.bioinfo.gcsa.lib.account.beans.Data;
+import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.account.db.AccountManager;
 import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
@@ -181,7 +181,7 @@ public class UserMongoDBManagerTest {
 				InputStream fileData = new FileInputStream(f);
 				// String projectName = null;
 				String projectName = "Default";
-				Data data = new Data();
+				ObjectItem data = new ObjectItem();
 				// "id" : "",
 				// "type" : "",
 				String type = "bam";

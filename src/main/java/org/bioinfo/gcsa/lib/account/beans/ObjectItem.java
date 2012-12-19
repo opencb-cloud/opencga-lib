@@ -1,13 +1,15 @@
 package org.bioinfo.gcsa.lib.account.beans;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
-
-public class Data {
+public class ObjectItem {
 	private String id;
-	private String type;
+	private String fileBioType;
+	private String fileType;
+	private String fileFormat;
 	private String fileName;
 	private String multiple;
 	private String diskUsage;
@@ -18,11 +20,13 @@ public class Data {
 	private String description;
 	private String status;
 	private String statusMessage;
-	private List<Acl> members;
-	
-	public Data(){
+	private List<Acl> acl;
+
+	public ObjectItem() {
 		this.id = "";
-		this.type = "";
+		this.fileBioType = "";
+		this.fileType = "";
+		this.fileFormat = "";
 		this.fileName = "";
 		this.multiple = "";
 		this.diskUsage = "";
@@ -33,14 +37,16 @@ public class Data {
 		this.description = "";
 		this.status = "";
 		this.statusMessage = "";
-		this.members = new ArrayList<Acl>();
+		this.acl = new ArrayList<Acl>();
 	}
 
-	public Data(String id, String type, String fileName, String multiple, String diskUsage,
-			String responsible, String organization, String date, String description,
-			String status, String statusMessage, List<Acl> members) {
+	public ObjectItem(String id, String fileBioType, String fileType, String fileFormat, String fileName,
+			String multiple, String diskUsage, String responsible, String organization, String date,
+			String description, String status, String statusMessage, List<Acl> members) {
 		this.id = id;
-		this.type = type;
+		this.fileBioType = fileBioType;
+		this.fileType = fileType;
+		this.fileFormat = fileFormat;
 		this.fileName = fileName;
 		this.multiple = multiple;
 		this.diskUsage = diskUsage;
@@ -51,7 +57,7 @@ public class Data {
 		this.description = description;
 		this.status = status;
 		this.statusMessage = statusMessage;
-		this.members = members;
+		this.acl = members;
 	}
 
 	public String getId() {
@@ -143,18 +149,34 @@ public class Data {
 	}
 
 	public List<Acl> getMembers() {
-		return members;
+		return acl;
 	}
 
 	public void setMembers(List<Acl> members) {
-		this.members = members;
+		this.acl = members;
 	}
 
-	public String getType() {
-		return type;
+	public String getFileBioType() {
+		return fileBioType;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setFileBioType(String fileBioType) {
+		this.fileBioType = fileBioType;
+	}
+
+	public String getFileType() {
+		return fileType;
+	}
+
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
+	}
+
+	public String getFileFormat() {
+		return fileFormat;
+	}
+
+	public void setFileFormat(String fileFormat) {
+		this.fileFormat = fileFormat;
 	}
 }
