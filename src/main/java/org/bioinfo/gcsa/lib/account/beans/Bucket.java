@@ -31,7 +31,7 @@ public class Bucket {
 	
 	public Bucket(String nameProject){
 		this.status ="1";
-		this.id = "";//Esto hay que ver como lo numeramos
+		this.id = nameProject.toLowerCase();//Esto hay que ver como lo numeramos
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
 		this.name = nameProject;
 		this.diskUsage = "";
