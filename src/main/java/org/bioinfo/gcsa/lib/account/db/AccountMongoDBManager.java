@@ -616,7 +616,7 @@ public class AccountMongoDBManager implements AccountManager {
 		query.put("accountId", accountId);
 		query.put("buckets.id", bucket);
 		BasicDBObject item = new BasicDBObject();
-		item.put("buckets.$.jobs", jobDBObject);
+		item.put("jobs", jobDBObject);
 		BasicDBObject action = new BasicDBObject("$push", item);
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
 		WriteResult result = userCollection.update(query, action);
