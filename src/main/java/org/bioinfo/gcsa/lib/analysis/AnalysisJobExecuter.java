@@ -92,15 +92,6 @@ public class AnalysisJobExecuter {
 //			return "ERROR: Manifest for " + analysisName + " not found.";
 //		}
 
-		// Check required params
-		List<Option> validParams = execution.getValidParams();
-		validParams.addAll(analysis.getGlobalParams());
-		if (checkRequiredParams(params, validParams)) {
-			params = new HashMap<String, List<String>>(removeUnknownParams(params, validParams));
-		} else {
-			throw new AccountManagementException("ERROR: missing some required params.");
-		}
-
 		// Set output param
 		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 
@@ -141,9 +132,18 @@ public class AnalysisJobExecuter {
 		return paramsCopy;
 	}
 
-	public String createCommandLine(String executable, Map<String, List<String>> params) {
+	public String createCommandLine(String executable, Map<String, List<String>> params) throws AccountManagementException {
 		System.out.println("params received in createCommandLine: " + params);
 		String binaryPath = analysisPath + executable;
+		
+		// Check required params
+		List<Option> validParams = execution.getValidParams();
+		validParams.addAll(analysis.getGlobalParams());
+		if (checkRequiredParams(params, validParams)) {
+			params = new HashMap<String, List<String>>(removeUnknownParams(params, validParams));
+		} else {
+			throw new AccountManagementException("ERROR: missing some required params.");
+		}
 
 		StringBuilder cmdLine = new StringBuilder();
 		cmdLine.append(binaryPath);

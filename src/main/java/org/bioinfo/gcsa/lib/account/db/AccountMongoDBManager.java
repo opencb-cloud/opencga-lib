@@ -605,7 +605,6 @@ public class AccountMongoDBManager implements AccountManager {
 			try {
 				ioManager.createJobFolder(accountId, bucket, jobId);
 			} catch (IOManagementException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -614,19 +613,18 @@ public class AccountMongoDBManager implements AccountManager {
 		Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
 		BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
 		BasicDBObject query = new BasicDBObject();
-		BasicDBObject item = new BasicDBObject();
-		BasicDBObject action = new BasicDBObject();
 		query.put("accountId", accountId);
 		query.put("buckets.id", bucket);
-		item.put("buckets.$.jobs", jobDBObject);
-		action.put("$push", item);
+		BasicDBObject item = new BasicDBObject();
+		item.put("jobs", jobDBObject);
+		BasicDBObject action = new BasicDBObject("$push", item);
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
 		WriteResult result = userCollection.update(query, action);
 
 		if (result.getError() != null) {
 			try {
 				ioManager.removeJobFolder(accountId, bucket, jobId);
 			} catch (IOManagementException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return "MongoDB error, " + result.getError() + " files will be deleted";
