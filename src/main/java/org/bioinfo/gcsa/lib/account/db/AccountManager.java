@@ -49,7 +49,7 @@ public interface AccountManager {
 	public void createBucket(Bucket project, String accountId, String sessionId) throws AccountManagementException;
 
 	// add file to project
-	public void createDataToBucket(String project, String accountId, String sessionId, ObjectItem data)
+	public void createObjectToBucket(String project, String accountId, String sessionId, ObjectItem data)
 			throws AccountManagementException;
 
 	public void deleteDataFromBucket(String project, String accountId, String sessionId, String dataId)

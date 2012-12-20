@@ -19,7 +19,7 @@ public class Bucket {
 	
 	public Bucket(){
 		this.status ="1";
-		this.id = "default";//Esto hay que ver como lo numeramos
+		this.id = "";
 		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
 		this.name = "Default";
 		this.diskUsage = "";
