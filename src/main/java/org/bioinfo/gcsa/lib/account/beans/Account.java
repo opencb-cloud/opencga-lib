@@ -46,7 +46,7 @@ public class Account {
 		this.lastActivity = "";
 		this.diskQuota = "";
 		this.diskUsage = "";
-		this.buckets.add(new Bucket());
+		this.buckets.add(new Bucket("default"));
 		this.setJobs(new ArrayList<Job>());
 	}
 
