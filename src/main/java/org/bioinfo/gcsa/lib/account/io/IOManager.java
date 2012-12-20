@@ -93,7 +93,7 @@ public class IOManager {
 			} catch (IOException e1) {
 				throw new IOManagementException("IOException" + e1.toString());
 			}
-			
+
 			try {
 				FileUtils.createDirectory(getAccountPath(accountId) + "/jobs");
 			} catch (IOException e) {
@@ -110,7 +110,7 @@ public class IOManager {
 		String path = getBucketPath(accountId, bucket);
 		try {
 			Boolean created = FileUtils.createDirectory(path);
-			if (!created){
+			if (!created) {
 				throw new IOManagementException("could not create the directory, already exists");
 			}
 		} catch (IOException e1) {
@@ -118,17 +118,18 @@ public class IOManager {
 			throw new IOManagementException("could not create the directory: " + e1.toString());
 		}
 	}
+
 	public void deleteBucketFolder(String accountId, String bucket) throws IOManagementException {
 		String path = getBucketPath(accountId, bucket);
 		Boolean deleted = FileUtils.deleteDirectory(new File(path));
-		if(!deleted){
+		if (!deleted) {
 			throw new IOManagementException("could not delete the bucket directory.");
 		}
 	}
 
 	public void createJobFolder(String accountId, String bucket, String jobId) throws IOManagementException {
 		String path = getAccountPath(accountId) + "/jobs";
-		
+
 		if (new File(path).exists() && new File(path).canWrite()) {
 			try {
 				FileUtils.createDirectory(path + "/" + jobId);
@@ -143,10 +144,39 @@ public class IOManager {
 		FileUtils.deleteDirectory(path);
 	}
 
-	public String createData(String bucket, String accountId, ObjectItem data, InputStream fileData, String objectname,
-			boolean parents) throws IOManagementException {
+	public String createFolder(String bucket, String accountId, ObjectItem object, String objectname, boolean parents)
+			throws IOManagementException {
 		String idStr = objectname.replace(":", "/");
-		String fileName = getDataName(idStr);
+		String fileName = getObjectName(idStr);
+
+		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
+		File userFile = new File(userFileStr);
+
+		logger.info("IOManager: " + userFile.getAbsolutePath());
+		if (!parents && !userFile.getParentFile().exists()) {
+			throw new IOManagementException("no such folder");
+		}
+
+		if (userFile.exists()) {
+			throw new IOManagementException("folder already exists");
+		}
+
+		try {
+			FileUtils.createDirectory(userFileStr);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new IOManagementException("could not create the directory "+e.toString());
+		}
+		object.setId(idStr);
+		object.setFileName(fileName);
+		
+		return idStr;
+	}
+
+	public String createData(String bucket, String accountId, ObjectItem object, InputStream fileData,
+			String objectname, boolean parents) throws IOManagementException {
+		String idStr = objectname.replace(":", "/");
+		String fileName = getObjectName(idStr);
 
 		// CREATING A RANDOM TEMP FOLDER
 		File rndFolder = null;
@@ -170,11 +200,11 @@ public class IOManager {
 			userFileStr = renameExistingFile(userFileStr);
 			userFile = new File(userFileStr);
 			idStr = userFileStr.replace(getBucketPath(accountId, bucket) + "/", "");
-			fileName = getDataName(idStr);
+			fileName = getObjectName(idStr);
 		}
 
-		data.setId(idStr);
-		data.setFileName(fileName);
+		object.setId(idStr);
+		object.setFileName(fileName);
 
 		logger.info(tmpFile.getAbsolutePath());
 
@@ -198,7 +228,7 @@ public class IOManager {
 			logger.info(userFile.getAbsolutePath());
 			FileUtils.touch(userFile);
 			FileUtils.copy(tmpFile, userFile);
-			data.setDiskUsage(Long.toString(userFile.length()));
+			object.setDiskUsage(Long.toString(userFile.length()));
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -461,7 +491,7 @@ public class IOManager {
 		}
 	}
 
-	private String getDataName(String objectname) {
+	private String getObjectName(String objectname) {
 		String[] tokens = objectname.split("/");
 		return tokens[(tokens.length - 1)];
 	}
@@ -511,5 +541,4 @@ public class IOManager {
 		}
 
 	}
-
 }

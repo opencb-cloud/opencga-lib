@@ -497,7 +497,7 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void createDataToBucket(String bucket, String accountId, String sessionId, ObjectItem data)
+	public void createObjectToBucket(String bucket, String accountId, String sessionId, ObjectItem data)
 			throws AccountManagementException {
 
 		// INSERT DATA OBJECT ON MONGO
