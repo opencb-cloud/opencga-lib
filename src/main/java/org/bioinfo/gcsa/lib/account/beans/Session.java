@@ -1,9 +1,5 @@
 package org.bioinfo.gcsa.lib.account.beans;
 
-import java.util.Map;
-
-import javax.persistence.Version;
-
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
