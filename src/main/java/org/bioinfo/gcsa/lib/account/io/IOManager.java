@@ -459,7 +459,10 @@ public class IOManager {
 	}
 
 	private String getBucketPath(String accountId, String bucketId) {
-		return getAccountPath(accountId) + "/buckets/" + bucketId.toLowerCase();
+		if(bucketId != null) {
+			return getAccountPath(accountId) + "/buckets/" + bucketId.toLowerCase();
+		}
+		return getAccountPath(accountId) + "/buckets";
 	}
 
 	// public String getDataPath(String wsDataId){

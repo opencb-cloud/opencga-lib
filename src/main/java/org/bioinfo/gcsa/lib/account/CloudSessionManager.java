@@ -118,8 +118,8 @@ public class CloudSessionManager {
 		return accountManager.getAccountBySessionId(accountId, sessionId, lastActivity);
 	}
 
-	public String getDataPath(String bucketId, String dataId, String sessionId) {
-		return accountManager.getDataPath(bucketId, dataId, sessionId);
+	public String getDataPath(String accountId, String bucketId, String dataId) {
+		return ioManager.getDataPath(accountId, bucketId, dataId);
 	}
 
 	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException,
