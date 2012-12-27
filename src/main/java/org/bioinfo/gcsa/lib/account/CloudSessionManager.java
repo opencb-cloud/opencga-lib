@@ -69,6 +69,13 @@ public class CloudSessionManager {
 
 		accountManager.createAccount(accountId, password, accountName, email, session);
 	}
+	
+	public String createAnonymousAccount(String sessionIp) throws AccountManagementException {
+		checkStr(sessionIp, "sessionIp");
+		Session session = new Session(sessionIp);
+
+		return accountManager.createAnonymousAccount(session);
+	}
 
 	public String login(String accountId, String password, String sessionIp) throws AccountManagementException {
 		checkStr(accountId, "accountId");

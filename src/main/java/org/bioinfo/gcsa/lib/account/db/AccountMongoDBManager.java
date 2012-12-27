@@ -183,6 +183,18 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException(wr.getLastError().getErrorMessage());
 		}
 	}
+	
+	@Override
+	public String createAnonymousAccount(Session session) throws AccountManagementException {
+		String password = StringUtils.randomString(10);
+		String accountId = "anonymous_"+password;
+		createAccount(accountId, password, "anonymous", "anonymous", session);
+		
+		// Everything is ok, so we login account
+//		session = new Session();
+		return login(accountId, password, session);
+	}
+
 
 	public String login(String accountId, String password, Session session) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
@@ -410,10 +422,6 @@ public class AccountMongoDBManager implements AccountManager {
 		} else {
 			throw new AccountManagementException("invalid sessionId");
 		}
-	}
-
-	public void createAnonymousUser(String accountId, String password, String email) {
-
 	}
 
 	public String getUserByEmail(String email, String sessionId) {
