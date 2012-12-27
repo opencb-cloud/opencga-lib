@@ -51,7 +51,7 @@ public class AnalysisJobExecuter {
 	protected Execution execution;
 
 	public AnalysisJobExecuter(String analysisStr) throws IOException, JsonSyntaxException, AnalysisExecutionException {
-		this(analysisStr, "");
+		this(analysisStr, "system");
 	}
 	
 	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException, JsonSyntaxException, AnalysisExecutionException {
