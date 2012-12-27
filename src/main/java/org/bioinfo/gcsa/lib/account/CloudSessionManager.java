@@ -297,7 +297,7 @@ public class CloudSessionManager {
 	}
 
 	private void checkStr(String str, String name) throws AccountManagementException {
-		if (str == null || str.equals("")) {
+		if (str == null || str.equals("") || str.equals("null")) {
 			throw new AccountManagementException("parameter '" + name + "' is null or empty: " + str + ".");
 		}
 	}
