@@ -238,13 +238,18 @@ public class IOManager {
 		return idStr;
 	}
 
-	public String deleteData(String bucket, String accountId, String objectname) {
+	public String deleteData(String bucket, String accountId, String objectname) throws IOManagementException {
 		String idStr = objectname.replace(":", "/");
 		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
 		logger.info("IOManager: " + userFileStr);
 		logger.info(userFileStr);
-		FileUtils.deleteDirectory(new File(userFileStr));
-		return idStr;
+		File dir = new File(userFileStr);
+		if(dir.delete()){
+			return idStr;
+		}else{
+			throw new IOManagementException("could not delete the data");
+		}
+//		FileUtils.deleteDirectory(new File(userFileStr));
 	}
 
 	public String getJobResultFromBucket(String bucket, String accountId, String sessionId, String jobId)
@@ -540,5 +545,35 @@ public class IOManager {
 			this.direction = direction;
 		}
 
+	}
+	
+	
+	/*******/
+	
+	public StringBuilder listRecursiveJson(File file) {
+		return listRecursiveJson(file, false);
+	}
+	private StringBuilder listRecursiveJson(File file, boolean coma) {
+		String c = "\"";
+		StringBuilder sb = new StringBuilder();
+		if(coma){
+			sb.append(",");
+		}
+		sb.append("{");
+		sb.append(c+"text"+c+":"+c+file.getName()+c);
+	    if(file.isDirectory()){
+	    	sb.append(",");
+	    	sb.append(c+"children"+c+":[");
+	    	File[] files = file.listFiles();
+	    	for (int i = 0; i < files.length; i++) {
+	    		 if(i==0){
+	    			 sb.append(listRecursiveJson(files[i],false));
+	    		 }else{
+	    			 sb.append(listRecursiveJson(files[i],true));
+	    		 }
+			}
+	    	return sb.append("]}");
+	    }
+	    return sb.append("}");
 	}
 }

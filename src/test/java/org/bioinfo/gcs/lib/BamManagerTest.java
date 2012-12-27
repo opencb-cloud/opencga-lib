@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class BamManagerTest {
 
-	@Test
+//	@Test
 	public void test() {
 		if(new File("/home/examples").exists()){
 			try {
