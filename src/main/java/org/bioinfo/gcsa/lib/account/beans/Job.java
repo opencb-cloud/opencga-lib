@@ -17,7 +17,7 @@ public class Job {
 	private String toolName;
 	private String name;
 	private String commandLine;
-	private String visites;
+	private int visites;
 	private String diskUsage;
 	private String creationTime;
 	private List<String> inputData;
@@ -34,7 +34,7 @@ public class Job {
 		this.toolName = "";
 		this.name = "";
 		this.commandLine = "";
-		this.visites = "";
+		this.visites = -1;
 		this.diskUsage = "";
 		this.creationTime = GcsaUtils.getTime();
 		this.inputData = new ArrayList<String>();
@@ -42,7 +42,7 @@ public class Job {
 
 	public Job(String id, String percentage, String message, String dateTime,
 			String finishTime, String toolName, String name, String status,
-			String commandLine, String visites, String diskUsage, String description, List<String> inputData) {
+			String commandLine, int visites, String diskUsage, String description, List<String> inputData) {
 		this.id = id;
 		this.name = name;
 		this.percentage = percentage;
@@ -131,11 +131,11 @@ public class Job {
 		this.commandLine = commandLine;
 	}
 
-	public String getVisites() {
+	public int getVisites() {
 		return visites;
 	}
 
-	public void setVisites(String visites) {
+	public void setVisites(int visites) {
 		this.visites = visites;
 	}
 

@@ -617,7 +617,7 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 
 		// INSERT JOB OBJECT ON MONGO
-		Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
+		Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, -1, "", "", dataList);
 		BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
@@ -745,6 +745,26 @@ public class AccountMongoDBManager implements AccountManager {
 			return Arrays.asList(userAnalysis);
 		} else {
 			throw new AccountManagementException("invalid session id");
+		}
+	}
+	
+	public void incJobVisites(String accountId, String jobId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("jobs.id", jobId);
+		
+		BasicDBObject item = new BasicDBObject("jobs.$.visites", 1);
+		
+		BasicDBObject action = new BasicDBObject("$inc", item);
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		
+		WriteResult result = userCollection.update(query, action);
+		if (result.getLastError().getErrorMessage() == null) {
+			if (result.getN() != 1) {
+				throw new AccountManagementException("could not update database, with this parameters");
+			}
+			logger.info("data object created");
+		} else {
+			throw new AccountManagementException("could not update database, files will be deleted");
 		}
 	}
 

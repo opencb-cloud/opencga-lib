@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -194,6 +196,15 @@ public class CloudSessionManager {
 		accountManager.deleteDataFromBucket(bucket, accountId, sessionId, dataId);
 		logger.info(dataId);
 
+	}
+	
+	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
+		String jobPath = ioManager.getJobPath(accountId, "", jobId);
+		if(Files.exists(Paths.get(jobPath, "result.xml"))) {
+			accountManager.incJobVisites(accountId, jobId);
+			return "DONE";
+		}
+		return "RUNNING";
 	}
 
 	public String region(String bucket, String accountId, String sessionId, String objectname, String regionStr,

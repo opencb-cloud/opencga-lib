@@ -64,6 +64,8 @@ public interface AccountManager {
 	public String getJobFolder(String project, String jobId, String sessionId);
 
 	public List<Plugin> getUserAnalysis(String sessionId) throws AccountManagementException;
+	
+	public void incJobVisites(String accountId, String jobId) throws AccountManagementException;
 
 	/*
 	 * Data methods
