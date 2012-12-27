@@ -239,8 +239,13 @@ public class AccountMongoDBManager implements AccountManager {
 				throw new AccountManagementException(wr.getLastError().getErrorMessage());
 			}
 
-			return session.getId();
-
+			// Now login() returns a JSON object with: sessionId, accountId and bucketId
+			BasicDBObject result = new BasicDBObject("sessionId", session.getId());
+			result.append("accountId", accountId);
+			result.append("bucketId", "default");
+			
+//			return session.getId();
+			return result.toString();
 		} else {
 			throw new AccountManagementException("account not found");
 		}
