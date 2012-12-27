@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
-import org.bioinfo.gcsa.lib.account.beans.Plugin;
+import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 

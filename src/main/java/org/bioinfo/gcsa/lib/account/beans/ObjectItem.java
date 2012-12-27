@@ -6,59 +6,52 @@ import java.util.List;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
 public class ObjectItem {
+	
 	private String id;
-	private String fileBioType;
+	private String fileName;
 	private String fileType;
 	private String fileFormat;
-	private String fileName;
-	private String multiple;
-	private String diskUsage;
+	private String fileBioType;
+	private long diskUsage;
+	private String status;
+	private String date;
 	private String creationTime;
 	private String responsible;
 	private String organization;
-	private String date;
 	private String description;
-	private String status;
-	private String statusMessage;
 	private List<Acl> acl;
 
-	public ObjectItem() {
-		this.id = "";
-		this.fileBioType = "";
-		this.fileType = "";
-		this.fileFormat = "";
-		this.fileName = "";
-		this.multiple = "";
-		this.diskUsage = "";
-		this.creationTime = GcsaUtils.getTime();
-		this.responsible = "";
-		this.organization = "";
-		this.date = "";
-		this.description = "";
-		this.status = "";
-		this.statusMessage = "";
-		this.acl = new ArrayList<Acl>();
+	public static String UPLOADING = "uploading";
+	public static String UPLOADED = "uploaded";
+	
+
+	public ObjectItem(String id, String fileName, String fileType) {
+		this(id, fileName, fileType, "", "", 0, ObjectItem.UPLOADING, "", GcsaUtils.getTime(), "", "", "", new ArrayList<Acl>());
+	}
+	
+	public ObjectItem(String id, String fileName, String fileType, String fileFormat, String fileBioType,
+			long diskUsage, String date, String responsible, String organization, String description, List<Acl> acl) {
+		this(id, fileName, fileType, fileFormat, fileBioType, diskUsage, ObjectItem.UPLOADING, date, GcsaUtils.getTime(), responsible, organization, description, acl);
 	}
 
-	public ObjectItem(String id, String fileBioType, String fileType, String fileFormat, String fileName,
-			String multiple, String diskUsage, String responsible, String organization, String date,
-			String description, String status, String statusMessage, List<Acl> members) {
+
+	public ObjectItem(String id, String fileName, String fileType, String fileFormat, String fileBioType, long diskUsage,
+			String status, String date, String creationTime, String responsible, String organization, String description, List<Acl> acl) {
 		this.id = id;
-		this.fileBioType = fileBioType;
+		this.fileName = fileName;
 		this.fileType = fileType;
 		this.fileFormat = fileFormat;
-		this.fileName = fileName;
-		this.multiple = multiple;
+		this.fileBioType = fileBioType;
 		this.diskUsage = diskUsage;
-		this.creationTime = GcsaUtils.getTime();
+		this.status = status;
+		this.date = date;
+		this.creationTime = creationTime;
 		this.responsible = responsible;
 		this.organization = organization;
-		this.date = date;
 		this.description = description;
-		this.status = status;
-		this.statusMessage = statusMessage;
-		this.acl = members;
+		this.acl = acl;
 	}
+
 
 	public String getId() {
 		return id;
@@ -68,6 +61,7 @@ public class ObjectItem {
 		this.id = id;
 	}
 
+
 	public String getFileName() {
 		return fileName;
 	}
@@ -76,93 +70,6 @@ public class ObjectItem {
 		this.fileName = fileName;
 	}
 
-	public String getMultiple() {
-		return multiple;
-	}
-
-	public void setMultiple(String multiple) {
-		this.multiple = multiple;
-	}
-
-	public String getDiskUsage() {
-		return diskUsage;
-	}
-
-	public void setDiskUsage(String diskUsage) {
-		this.diskUsage = diskUsage;
-	}
-
-	public String getCreationTime() {
-		return creationTime;
-	}
-
-	public void setCreationTime(String creationTime) {
-		this.creationTime = creationTime;
-	}
-
-	public String getResponsible() {
-		return responsible;
-	}
-
-	public void setResponsible(String responsible) {
-		this.responsible = responsible;
-	}
-
-	public String getOrganization() {
-		return organization;
-	}
-
-	public void setOrganization(String organization) {
-		this.organization = organization;
-	}
-
-	public String getDate() {
-		return date;
-	}
-
-	public void setDate(String date) {
-		this.date = date;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public String getStatusMessage() {
-		return statusMessage;
-	}
-
-	public void setStatusMessage(String statusMessage) {
-		this.statusMessage = statusMessage;
-	}
-
-	public List<Acl> getMembers() {
-		return acl;
-	}
-
-	public void setMembers(List<Acl> members) {
-		this.acl = members;
-	}
-
-	public String getFileBioType() {
-		return fileBioType;
-	}
-
-	public void setFileBioType(String fileBioType) {
-		this.fileBioType = fileBioType;
-	}
 
 	public String getFileType() {
 		return fileType;
@@ -172,6 +79,7 @@ public class ObjectItem {
 		this.fileType = fileType;
 	}
 
+
 	public String getFileFormat() {
 		return fileFormat;
 	}
@@ -179,4 +87,87 @@ public class ObjectItem {
 	public void setFileFormat(String fileFormat) {
 		this.fileFormat = fileFormat;
 	}
+
+
+	public String getFileBioType() {
+		return fileBioType;
+	}
+
+	public void setFileBioType(String fileBioType) {
+		this.fileBioType = fileBioType;
+	}
+
+
+	public long getDiskUsage() {
+		return diskUsage;
+	}
+
+	public void setDiskUsage(long diskUsage) {
+		this.diskUsage = diskUsage;
+	}
+
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+
+	public String getCreationTime() {
+		return creationTime;
+	}
+
+	public void setCreationTime(String creationTime) {
+		this.creationTime = creationTime;
+	}
+
+
+	public String getResponsible() {
+		return responsible;
+	}
+
+	public void setResponsible(String responsible) {
+		this.responsible = responsible;
+	}
+
+
+	public String getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(String organization) {
+		this.organization = organization;
+	}
+
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+
+	public List<Acl> getAcl() {
+		return acl;
+	}
+
+	public void setAcl(List<Acl> acl) {
+		this.acl = acl;
+	}
+
+	
 }

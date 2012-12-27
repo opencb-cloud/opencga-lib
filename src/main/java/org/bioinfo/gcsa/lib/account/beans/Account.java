@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Account {
+	
 	private String accountId;
 	private String accountName;
 	private String email;
@@ -17,24 +18,10 @@ public class Account {
 	private List<Session> oldSessions = new ArrayList<Session>();
 	private List<Bucket> buckets = new ArrayList<Bucket>();
 	private List<Credential> credentials = new ArrayList<Credential>();
-	private List<Plugin> plugins = new ArrayList<Plugin>();
+	private List<AnalysisPlugin> plugins = new ArrayList<AnalysisPlugin>();
 	private List<Config> configs = new ArrayList<Config>();
-	private List<Job> jobs;
+	private List<Job> jobs = new ArrayList<>();
 
-	public Account() {
-		this.status = "1";
-		this.password = "";
-		this.email = "";
-		this.lastActivity = "";
-		this.mailingList = "";
-		this.accountId = "";
-		this.accountName = "";
-		this.diskQuota = "";
-		this.diskUsage = "";
-		this.sessions.add(new Session());
-		this.buckets.add(new Bucket());
-		this.setJobs(new ArrayList<Job>());
-	}
 
 	public Account(String accountId, String accountName, String password, String email) {
 		this.accountId = accountId;
@@ -47,14 +34,13 @@ public class Account {
 		this.diskQuota = "";
 		this.diskUsage = "";
 		this.buckets.add(new Bucket("default"));
-		this.setJobs(new ArrayList<Job>());
 	}
 
 	public Account(String accountId, String accountName, String email,
 			String password, String status, String mailingList,
 			String diskQuota, String diskUsage, Session session,
 			List<Session> oldSessions, List<Bucket> buckets,String lastActivity,
-			List<Credential> accounts, List<Plugin> plugins, List<Config> configs) {
+			List<Credential> accounts, List<AnalysisPlugin> plugins, List<Config> configs, List<Job> jobs) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
@@ -70,7 +56,7 @@ public class Account {
 		this.credentials = accounts;
 		this.plugins = plugins;
 		this.configs = configs;
-		this.setJobs(new ArrayList<Job>());
+		this.jobs = jobs;
 	}
 
 	public String getAccountId() {
@@ -181,11 +167,11 @@ public class Account {
 		this.credentials = accounts;
 	}
 
-	public List<Plugin> getPlugins() {
+	public List<AnalysisPlugin> getPlugins() {
 		return plugins;
 	}
 
-	public void setPlugins(List<Plugin> plugins) {
+	public void setPlugins(List<AnalysisPlugin> plugins) {
 		this.plugins = plugins;
 	}
 

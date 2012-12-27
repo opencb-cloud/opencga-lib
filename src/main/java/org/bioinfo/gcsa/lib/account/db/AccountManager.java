@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
-import org.bioinfo.gcsa.lib.account.beans.Plugin;
+import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 
@@ -63,7 +63,7 @@ public interface AccountManager {
 
 	public String getJobFolder(String project, String jobId, String sessionId);
 
-	public List<Plugin> getUserAnalysis(String sessionId) throws AccountManagementException;
+	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException;
 
 	/*
 	 * Data methods

@@ -8,6 +8,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,144 +37,255 @@ public class IOManager {
 	private Logger logger;
 	private Properties properties;
 
-	private String home;
-	private String accounts;
+	private String appHomePath;
+	private String accountHomePath;
 	private String tmp;
+
+	private static String BUCKETS_FOLDER = "buckets";
+	private static String ANALYSIS_FOLDER = "analysis";
+	private static String JOBS_FOLDER = "jobs";
 
 	public IOManager(Properties properties) {
 		logger = new Logger();
 		logger.setLevel(Logger.INFO_LEVEL);
 		this.properties = properties;
-		home = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
-		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
+		appHomePath = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
+		accountHomePath = appHomePath + properties.getProperty("GCSA.ACCOUNT.PATH");
 		tmp = properties.getProperty("TMP.PATH");
 	}
 
-	public void createScaffoldAccountId(String accountId) throws IOManagementException {
+	public void createAccount(String accountId) throws IOManagementException {
 
-		if (!new File(accounts).exists()) {
-			try {
-				FileUtils.createDirectory(accounts);
-			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(accounts));
-				throw new IOManagementException("IOException" + e1.toString());
-			}
-		}
+		// get Java 7 Path object, concatenate home and account
+		Path accountPath = Paths.get(accountHomePath, accountId);
 
-		System.out.println("---------------->>>>> PATHGCSA: " + accounts);
-		if (new File(accounts).exists() && new File(accounts).canWrite() && new File(accounts).canRead()
-				&& new File(accounts).canExecute()) {
+		// If account folder not exist is created
+		if (!Files.exists(accountPath)) {
 			try {
-				FileUtils.createDirectory(accounts + "/" + accountId);
-				logger.info("account scaffold created");
-			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
-				FileUtils.deleteDirectory(new File(accounts));
-				throw new IOManagementException("IOException" + e1.toString());
-			}
-
-			try {
-				FileUtils.createDirectory(accounts + "/" + accountId + "/analysis");
-			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/analysis"));
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
-				FileUtils.deleteDirectory(new File(accounts));
-				throw new IOManagementException("IOException" + e1.toString());
-			}
-
-			try {
-				FileUtils.createDirectory(accounts + "/" + accountId + "/buckets");
-			} catch (IOException e1) {
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/buckets"));
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId + "/analysis"));
-				FileUtils.deleteDirectory(new File(accounts + "/" + accountId));
-				FileUtils.deleteDirectory(new File(accounts));
-				throw new IOManagementException("IOException" + e1.toString());
-			}
-
-			try {
-				FileUtils.createDirectory(accounts + "/" + accountId + "/buckets/default");
-			} catch (IOException e1) {
-				throw new IOManagementException("IOException" + e1.toString());
-			}
-
-			try {
-				FileUtils.createDirectory(getAccountPath(accountId) + "/jobs");
+				Files.createDirectory(accountPath);
 			} catch (IOException e) {
 				throw new IOManagementException("IOException" + e.toString());
 			}
+		}
+
+		logger.debug("createAccount(): Creating account folder: " + accountHomePath);
+		if (Files.exists(accountPath) && Files.isDirectory(accountPath) && Files.isWritable(accountPath)) {
+
+			try {
+				Files.createDirectory(Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER));
+				Files.createDirectory(Paths.get(accountHomePath, accountId, IOManager.ANALYSIS_FOLDER));
+				Files.createDirectory(Paths.get(accountHomePath, accountId, IOManager.JOBS_FOLDER));
+			} catch (IOException e) {
+				try {
+					IOManagerUtils.deleteDirectory(accountPath);
+				} catch (IOException e1) {
+					throw new IOManagementException("IOException: " + e1.toString());
+				}
+				throw new IOManagementException("IOException: " + e.toString());
+			}
+
+
+			//			try {
+			//				FileUtils.createDirectory(accountHomePath + "/" + accountId);
+			//				logger.info("account scaffold created");
+			//			} catch (IOException e1) {
+			//				FileUtils.deleteDirectory(new File(accountHomePath + "/" + accountId));
+			//				FileUtils.deleteDirectory(new File(accountHomePath));
+			//				throw new IOManagementException("IOException" + e1.toString());
+			//			}
+			//
+			//			try {
+			//				FileUtils.createDirectory(accountHomePath + "/" + accountId + "/analysis");
+			//			} catch (IOException e1) {
+			//				FileUtils.deleteDirectory(new File(accountHomePath + "/" + accountId + "/analysis"));
+			//				FileUtils.deleteDirectory(new File(accountHomePath + "/" + accountId));
+			//				FileUtils.deleteDirectory(new File(accountHomePath));
+			//				throw new IOManagementException("IOException" + e1.toString());
+			//			}
+			//
+			//			try {
+			//				FileUtils.createDirectory(accountHomePath + "/" + accountId + "/buckets");
+			//			} catch (IOException e1) {
+			//				FileUtils.deleteDirectory(new File(accountHomePath + "/" + accountId + "/buckets"));
+			//				FileUtils.deleteDirectory(new File(accountHomePath + "/" + accountId + "/analysis"));
+			//				FileUtils.deleteDirectory(new File(accountHomePath + "/" + accountId));
+			//				FileUtils.deleteDirectory(new File(accountHomePath));
+			//				throw new IOManagementException("IOException" + e1.toString());
+			//			}
+			//
+			//			try {
+			//				FileUtils.createDirectory(accountHomePath + "/" + accountId + "/buckets/default");
+			//			} catch (IOException e1) {
+			//				throw new IOManagementException("IOException" + e1.toString());
+			//			}
+			//
+			//			try {
+			//				FileUtils.createDirectory(getAccountPath(accountId) + "/jobs");
+			//			} catch (IOException e) {
+			//				throw new IOManagementException("IOException" + e.toString());
+			//			}
 
 		} else {
-			throw new IOManagementException("ERROR: The bucket has not been created ");
+			throw new IOManagementException("ERROR: The account folder has not been created ");
 		}
 
 	}
 
-	public void createBucketFolder(String accountId, String bucket) throws IOManagementException {
-		String path = getBucketPath(accountId, bucket);
-		try {
-			Boolean created = FileUtils.createDirectory(path);
-			if (!created) {
-				throw new IOManagementException("could not create the directory, already exists");
-			}
-		} catch (IOException e1) {
-			FileUtils.deleteDirectory(new File(path));
-			throw new IOManagementException("could not create the directory: " + e1.toString());
-		}
-	}
-
-	public void deleteBucketFolder(String accountId, String bucket) throws IOManagementException {
-		String path = getBucketPath(accountId, bucket);
-		Boolean deleted = FileUtils.deleteDirectory(new File(path));
-		if (!deleted) {
-			throw new IOManagementException("could not delete the bucket directory.");
-		}
-	}
-
-	public void createJobFolder(String accountId, String bucket, String jobId) throws IOManagementException {
-		String path = getAccountPath(accountId) + "/jobs";
-
-		if (new File(path).exists() && new File(path).canWrite()) {
+	/********************
+	 * 
+	 * BUCKETS METHODS
+	 *
+	 ********************/
+	public URI createBucket(String accountId, String bucketId) throws IOManagementException {
+		//		String path = getBucketPath(accountId, bucketId);
+		Path bucketFolder = Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER, bucketId);
+		if (Files.exists(bucketFolder.getParent()) && Files.isDirectory(bucketFolder.getParent()) && Files.isWritable(bucketFolder.getParent())) {
 			try {
-				FileUtils.createDirectory(path + "/" + jobId);
+				bucketFolder = Files.createDirectory(bucketFolder);
 			} catch (IOException e) {
-				throw new IOManagementException("IOException" + e.toString());
+				//	FileUtils.deleteDirectory(new File(path));
+				throw new IOManagementException("createBucket(): could not create the bucket folder: " + e.toString());
 			}
 		}
+		return bucketFolder.toUri();
 	}
 
-	public void removeJobFolder(String accountId, String bucket, String jobId) throws IOManagementException {
-		File path = new File(accounts + "/" + accountId + "/buckets/" + bucket + "/jobs/" + jobId);
-		FileUtils.deleteDirectory(path);
+	public void deleteBucket(String accountId, String bucketId) throws IOManagementException {
+		//	String path = getBucketPath(accountId, bucketId);
+		Path bucketFolder = Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER, bucketId);
+		try {
+			IOManagerUtils.deleteDirectory(bucketFolder);
+		} catch (IOException e) {
+			throw new IOManagementException("deleteBucket(): could not delete the bucket folder: " + e.toString());
+		}
 	}
 
-	public String createFolder(String bucket, String accountId, ObjectItem object, String objectname, boolean parents)
-			throws IOManagementException {
-		String idStr = objectname.replace(":", "/");
-		String fileName = getObjectName(idStr);
-
-		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
-		File userFile = new File(userFileStr);
-
-		logger.info("IOManager: " + userFile.getAbsolutePath());
-		if (!parents && !userFile.getParentFile().exists()) {
-			throw new IOManagementException("no such folder");
+	public void renameBucket(String accountId, String oldBucketId, String newBucketId) throws IOManagementException {
+		Path oldBucketFolder = Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER, oldBucketId);
+		Path newBucketFolder = Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER, newBucketId);
+		try {
+			Files.move(oldBucketFolder, newBucketFolder);
+		} catch (IOException e) {
+			throw new IOManagementException("deleteBucket(): could not rename the bucket folder: " + e.toString());
 		}
+	}
 
-		if (userFile.exists()) {
-			throw new IOManagementException("folder already exists");
+	public boolean existBucket(String accountId, String bucketId) throws IOManagementException {
+		return Files.exists(Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER, bucketId));
+	}
+
+	/********************
+	 * 
+	 * JOBS METHODS
+	 *
+	 ********************/
+	public URI createJob(String accountId, String bucketId, String jobId) throws IOManagementException {
+		//	String path = getAccountPath(accountId) + "/jobs";
+		Path jobFolder = getJobPath(accountId, bucketId, jobId);
+
+		if (Files.exists(jobFolder.getParent()) && Files.isDirectory(jobFolder.getParent()) && Files.isWritable(jobFolder.getParent())) {
+			try {
+				Files.createDirectory(jobFolder);
+			} catch (IOException e) {
+				throw new IOManagementException("createJob(): could not create the job folder: " + e.toString());
+			}
+		}else {
+			throw new IOManagementException("createJob(): 'jobs' folder not writable");
 		}
+		return jobFolder.toUri();
+	}
+
+	public void removeJob(String accountId, String bucketId, String jobId) throws IOManagementException {
+		Path jobFolder = getJobPath(accountId, bucketId, jobId);
 
 		try {
-			FileUtils.createDirectory(userFileStr);
+			IOManagerUtils.deleteDirectory(jobFolder);
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new IOManagementException("could not create the directory "+e.toString());
+			throw new IOManagementException("removeJob(): could not delete the job folder: " + e.toString());
 		}
-		object.setId(idStr);
-		object.setFileName(fileName);
-		
-		return idStr;
+	}
+
+	public void removeJobObjects(String accountId, String bucketId, String jobId, List<String> objects) throws IOManagementException {
+		Path jobFolder = getJobPath(accountId, bucketId, jobId);
+
+		try {
+			if(objects != null && objects.size() > 0) {
+				for(String object: objects) {
+					Files.delete(Paths.get(jobFolder.toString(), object));
+				}
+			}
+		} catch (IOException e) {
+			throw new IOManagementException("removeJob(): could not delete the job folder: " + e.toString());
+		}
+	}
+
+	public void moveJob(String accountId, String oldBucketId, String oldJobId, String newBucketId, String newJobId) throws IOManagementException {
+		Path oldBucketFolder = getJobPath(accountId, oldBucketId, oldJobId);
+		Path newBucketFolder = getJobPath(accountId, newBucketId, newJobId);
+
+		try {
+			Files.move(oldBucketFolder, newBucketFolder);
+		} catch (IOException e) {
+			throw new IOManagementException("deleteBucket(): could not rename the bucket folder: " + e.toString());
+		}
+	}
+
+	private Path getJobPath(String accountId, String bucketId, String jobId) {
+		Path jobFolder;
+		// If a bucket is passed then outdir is set
+		if(bucketId != null && !bucketId.equals("")) {
+			jobFolder = Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER, jobId);
+		}else {
+			jobFolder = Paths.get(accountHomePath, accountId, IOManager.JOBS_FOLDER, jobId);	
+		}
+		return jobFolder;
+	}
+
+
+	
+	/********************
+	 * 
+	 * OTHER METHODS
+	 *
+	 ********************/
+	public Path createFolder(String accountId, String bucketId, String objectId, boolean parents) throws IOManagementException {
+//		String idStr = objectId.replace(":", "/");
+//		String fileName = getObjectName(idStr);
+
+//		String userFileStr = getBucketPath(accountId, bucketId) + "/" + idStr;
+		Path folder = Paths.get(accountHomePath, accountId, IOManager.BUCKETS_FOLDER, bucketId, objectId);
+//		File userFile = new File(userFileStr);
+
+//		logger.debug("IOManager: " + userFile.getAbsolutePath());
+//		if (!parents && !userFile.getParentFile().exists()) {
+//			throw new IOManagementException("no such folder");
+//		}
+//
+//		if (userFile.exists()) {
+//			throw new IOManagementException("folder already exists");
+//		}
+
+		try {
+			if(existBucket(accountId, bucketId)) {
+				if(Files.exists(folder.getParent()) && Files.isDirectory(folder.getParent()) && Files.isWritable(folder.getParent())) {
+					Files.createDirectory(folder);
+				}else {
+					if(parents) {
+						Files.createDirectories(folder);					
+					}else {
+						throw new IOManagementException("createFolder(): path do no exist");
+					}
+				}	
+			}else {
+				throw new IOManagementException("createFolder(): bucket '"+bucketId+"' do no exist");
+			}
+		}catch (IOException e) {
+			throw new IOManagementException("createFolder(): could not create the directory "+e.toString());
+		}
+//		object.setId(idStr);
+//		object.setFileName(fileName);
+
+		return folder;
 	}
 
 	public String createData(String bucket, String accountId, ObjectItem object, InputStream fileData,
@@ -219,6 +334,8 @@ public class IOManager {
 
 		try {
 			IOUtils.write(tmpFile, fileData);
+			// Java 7 method
+//			Files.copy(fileData, Paths.get(tmpFile.getAbsolutePath()));
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new IOManagementException("Could not write the file on disk");
@@ -228,7 +345,7 @@ public class IOManager {
 			logger.info(userFile.getAbsolutePath());
 			FileUtils.touch(userFile);
 			FileUtils.copy(tmpFile, userFile);
-			object.setDiskUsage(Long.toString(userFile.length()));
+			object.setDiskUsage(userFile.length());
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -249,7 +366,7 @@ public class IOManager {
 
 	public String getJobResultFromBucket(String bucket, String accountId, String sessionId, String jobId)
 			throws IOException, DocumentException {
-		String resultFileStr = getJobPath(accountId, bucket, jobId);
+		String resultFileStr = getJobPath(accountId, bucket, jobId).toString();
 		File resultFile = new File(resultFileStr + "/result.xml");
 		logger.debug("checking file: " + resultFile);
 		FileUtils.checkFile(resultFile);
@@ -264,9 +381,9 @@ public class IOManager {
 
 	public String getFileTableFromJob(String bucket, String accountId, String sessionId, String jobId, String filename,
 			int first, int end, String[] colnamesArray, String[] colvisibilityArray, String callback, String sort)
-			throws IOManagementException, IOException {
+					throws IOManagementException, IOException {
 
-		String jobFileStr = getJobPath(accountId, bucket, jobId);
+		String jobFileStr = getJobPath(accountId, bucket, jobId).toString();
 		File jobFile = new File(jobFileStr + "/" + filename);
 		try {
 			FileUtils.checkFile(jobFile);
@@ -408,7 +525,7 @@ public class IOManager {
 	public DataInputStream getFileFromJob(String bucket, String accountId, String sessionId, String jobId,
 			String filename, String zip) throws IOManagementException, FileNotFoundException {
 
-		String fileStr = getJobPath(accountId, bucket, jobId);
+		String fileStr = getJobPath(accountId, bucket, jobId).toString();
 		File file = new File(fileStr + "/" + filename);
 		String name = filename.replace("..", "").replace("/", "");
 		List<String> avoidingFiles = getAvoidingFiles();
@@ -433,8 +550,8 @@ public class IOManager {
 			}
 			File zipfile = new File(tmp + "/" + randomFolder + "/" + filename + ".zip");
 			File arr[] = new File[] { file }; // PAKO creo un array con un único
-												// file porq zipFiles recibe un
-												// array de files
+			// file porq zipFiles recibe un
+			// array de files
 			try {
 				FileUtils.zipFiles(arr, zipfile);
 			} catch (IOException e) {
@@ -455,7 +572,7 @@ public class IOManager {
 	/**************/
 
 	private String getAccountPath(String accountId) {
-		return accounts + "/" + accountId;
+		return accountHomePath + "/" + accountId;
 	}
 
 	private String getBucketPath(String accountId, String bucketId) {
@@ -470,9 +587,9 @@ public class IOManager {
 		return getBucketPath(accountId, bucketId) + "/" + dataId;
 	}
 
-	public String getJobPath(String accountId, String bucketId, String jobId) {
-		return getAccountPath(accountId) + "/jobs/" + jobId;
-	}
+//	public String getJobPath(String accountId, String bucketId, String jobId) {
+//		return getAccountPath(accountId) + "/jobs/" + jobId;
+//	}
 
 	private String renameExistingFile(String name) {
 		File file = new File(name);

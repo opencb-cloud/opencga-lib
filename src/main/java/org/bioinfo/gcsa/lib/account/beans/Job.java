@@ -6,113 +6,58 @@ import java.util.List;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
 public class Job {
-	private String id;
-	private String bucketId;
-	private String status;
-	private String percentage;
-	private String message;
-	private String description;
-	private String dateTime;
-	private String finishTime;
-	private String toolName;
-	private String name;
-	private String commandLine;
-	private String visites;
-	private String diskUsage;
-	private String creationTime;
-	private List<String> inputData;
 	
-	public Job(){
-		this.id = "";
-		this.bucketId = "";
-		this.status ="";
-		this.percentage = "";
-		this.message = "";
-		this.description = "";
-		this.dateTime = "";
-		this.finishTime = "";
-		this.toolName = "";
-		this.name = "";
-		this.commandLine = "";
-		this.visites = "";
-		this.diskUsage = "";
-		this.creationTime = GcsaUtils.getTime();
-		this.inputData = new ArrayList<String>();
-	}
+	private String id;
+	private String name;
+	private String bucketId;
+	private String toolName;
+	private long diskUsage;
+	private String status;
+	private String date;
+	private String startTime;
+	private String endTime;
+	private String ouputError;
+	private int visites;
+	private String commandLine;
+	private String description;
+	private List<String> inputData;
+	private List<String> outputData;
+	
+	public static String QUEUED = "queued";
+	public static String RUNNING = "running";
+	public static String DONE = "done";
+	
 
-	public Job(String id, String percentage, String message, String dateTime,
-			String finishTime, String toolName, String name, String status,
-			String commandLine, String visites, String diskUsage, String description, List<String> inputData) {
+	public Job(String id, String name, String bucketId, String toolName, String status, String commandLine, String description, List<String> inputData) {
+		this(id, name, "", toolName, 0, status, GcsaUtils.getTime(), "", "", "", -2, commandLine, description, inputData, new ArrayList<String>());
+	}
+	
+	public Job(String id, String name, String bucketId, String toolName, long diskUsage, String status, String date, String startTime,
+			String endTime, String ouputError, int visites, String commandLine, String description, List<String> inputData, List<String> outputData) {
 		this.id = id;
 		this.name = name;
-		this.percentage = percentage;
-		this.message = message;
-		this.dateTime = dateTime;
-		this.finishTime = finishTime;
+		this.bucketId = bucketId;
 		this.toolName = toolName;
-		this.status = status;
-		this.commandLine = commandLine;
-		this.visites = visites;
 		this.diskUsage = diskUsage;
+		this.status = status;
+		this.date = date;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.ouputError = ouputError;
+		this.visites = visites;
+		this.commandLine = commandLine;
 		this.description = description;
-		this.creationTime = GcsaUtils.getTime();
 		this.inputData = inputData;
+		this.outputData = outputData;
 	}
 
-	public String getJobId() {
+	
+	public String getId() {
 		return id;
 	}
 
-	public void setJobId(String id) {
+	public void setId(String id) {
 		this.id = id;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public String getPercentage() {
-		return percentage;
-	}
-
-	public void setPercentage(String percentage) {
-		this.percentage = percentage;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
-	public String getDateTime() {
-		return dateTime;
-	}
-
-	public void setDateTime(String dateTime) {
-		this.dateTime = dateTime;
-	}
-
-	public String getFinishTime() {
-		return finishTime;
-	}
-
-	public void setFinishTime(String finishTime) {
-		this.finishTime = finishTime;
-	}
-
-	public String getToolName() {
-		return toolName;
-	}
-
-	public void setToolName(String toolName) {
-		this.toolName = toolName;
 	}
 
 	public String getName() {
@@ -123,36 +68,84 @@ public class Job {
 		this.name = name;
 	}
 
+	public String getBucketId() {
+		return bucketId;
+	}
+
+	public void setBucketId(String bucketId) {
+		this.bucketId = bucketId;
+	}
+
+	public String getToolName() {
+		return toolName;
+	}
+
+	public void setToolName(String toolName) {
+		this.toolName = toolName;
+	}
+
+	public long getDiskUsage() {
+		return diskUsage;
+	}
+
+	public void setDiskUsage(long diskUsage) {
+		this.diskUsage = diskUsage;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public String getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+
+	public String getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
+	}
+
+	public String getOuputError() {
+		return ouputError;
+	}
+
+	public void setOuputError(String ouputError) {
+		this.ouputError = ouputError;
+	}
+
+	public int getVisites() {
+		return visites;
+	}
+
+	public void setVisites(int visites) {
+		this.visites = visites;
+	}
+
 	public String getCommandLine() {
 		return commandLine;
 	}
 
 	public void setCommandLine(String commandLine) {
 		this.commandLine = commandLine;
-	}
-
-	public String getVisites() {
-		return visites;
-	}
-
-	public void setVisites(String visites) {
-		this.visites = visites;
-	}
-
-	public String getDiskUsage() {
-		return diskUsage;
-	}
-
-	public void setDiskUsage(String diskUsage) {
-		this.diskUsage = diskUsage;
-	}
-
-	public String getCreationTime() {
-		return creationTime;
-	}
-
-	public void setCreationTime(String creationTime) {
-		this.creationTime = creationTime;
 	}
 
 	public String getDescription() {
@@ -171,11 +164,12 @@ public class Job {
 		this.inputData = inputData;
 	}
 
-	public String getBucketId() {
-		return bucketId;
+	public List<String> getOutputData() {
+		return outputData;
 	}
 
-	public void setBucketId(String bucketId) {
-		this.bucketId = bucketId;
+	public void setOutputData(List<String> outputData) {
+		this.outputData = outputData;
 	}
+
 }

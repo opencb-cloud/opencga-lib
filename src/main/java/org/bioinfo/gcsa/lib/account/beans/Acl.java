@@ -1,27 +1,22 @@
 package org.bioinfo.gcsa.lib.account.beans;
 
 public class Acl {
+	
 	private String accountId;
 	private String status;
-	private boolean write;
 	private boolean read;
+	private boolean write;
 	private boolean execute;
 	
 	public Acl(){
-		this.status ="";
-		this.accountId = "";
-		this.write = false;
-		this.read = false;
-		this.execute = false;
+		this("", "", false, false, false);
 	}
 
-	public Acl(String accountId, String status, boolean write, boolean read,
-			boolean execute) {
-		super();
+	public Acl(String accountId, String status, boolean read, boolean write, boolean execute) {
 		this.accountId = accountId;
 		this.status = status;
-		this.write = write;
 		this.read = read;
+		this.write = write;
 		this.execute = execute;
 	}
 

@@ -6,6 +6,7 @@ import java.util.List;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
 public class Bucket {
+	
 	private String id;
 	private String name;
 	private String status;
@@ -17,42 +18,26 @@ public class Bucket {
 	private List<Acl> acl;
 	private List<ObjectItem> objects;
 	
-	public Bucket(){
-		this.status ="1";
-		this.id = "";
-		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
-		this.name = "Default";
-		this.diskUsage = "";
-		this.creationDate = GcsaUtils.getTime();
-		this.type = "";
-		this.descripcion = "Default Project";
-		this.objects = new ArrayList<ObjectItem>();
-	}
 	
-	public Bucket(String nameProject){
-		this.status ="1";
-		this.id = nameProject.toLowerCase();//Esto hay que ver como lo numeramos
-		this.ownerId = ""; //Este id nos lo otorga mongo cuando hacemos la inserccion
-		this.name = nameProject;
-		this.diskUsage = "";
-		this.creationDate = GcsaUtils.getTime();
-		this.type = "";
-		this.descripcion = "";
-		this.objects = new ArrayList<ObjectItem>();
+	public Bucket(String name){
+		this(name.toLowerCase(), name, "1", "", GcsaUtils.getTime(), "", "", "", new ArrayList<Acl>(), new ArrayList<ObjectItem>());
 	}
 
-	public Bucket(String id, String name, String status, String diskUsage
-			, String ownerId, String type, String descripcion, List<Acl> acl, List<Job> jobs) {
+	public Bucket(String id, String name, String status, String diskUsage, String ownerId, String type, String descripcion, List<Acl> acl) {
+		this(id, name, status, diskUsage, GcsaUtils.getTime(), ownerId, type, descripcion, acl, new ArrayList<ObjectItem>());
+	}
+	
+	public Bucket(String id, String name, String status, String diskUsage, String creationDate, String ownerId, String type, String descripcion, List<Acl> acl, List<ObjectItem> objects) {
 		this.id = id;
 		this.name = name;
 		this.status = status;
 		this.diskUsage = diskUsage;
-		this.creationDate = GcsaUtils.getTime();
+		this.creationDate = (creationDate != null && !creationDate.equals("")) ? creationDate : GcsaUtils.getTime();
 		this.ownerId = ownerId;
 		this.type = type;
 		this.descripcion = descripcion;
 		this.acl = acl;
-		this.objects = new ArrayList<ObjectItem>();
+		this.objects = objects;
 	}
 
 	public String getId() {

@@ -5,6 +5,7 @@ import org.bioinfo.gcsa.lib.GcsaUtils;
 
 
 public class Session {
+	
 	private String id;
 	private String ip;
 	private String login;
@@ -12,25 +13,15 @@ public class Session {
 //	private Map<String, String> attributes;
 
 	public Session() {
-		this.id = StringUtils.randomString(20);
-		this.ip = "";
-		this.login = GcsaUtils.getTime();
-		this.logout = "";
+		this(StringUtils.randomString(20), "", GcsaUtils.getTime(), "");
 	}
 	
 	public Session(String ip){
-
-		this.id = StringUtils.randomString(20);
-		this.ip = ip;
-		this.login = GcsaUtils.getTime();
-		this.logout = "";
+		this(StringUtils.randomString(20), ip, GcsaUtils.getTime(), "");
 	}
 	
 	public Session(String id, String ip, String logout) {
-		this.id = id;
-		this.ip = ip;
-		this.login = GcsaUtils.getTime();
-		this.logout = logout;
+		this(StringUtils.randomString(20), ip, GcsaUtils.getTime(), logout);
 	}
 	
 	public Session(String id, String ip, String login, String logout) {

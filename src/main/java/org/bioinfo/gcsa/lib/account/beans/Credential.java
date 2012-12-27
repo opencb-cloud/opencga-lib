@@ -1,6 +1,7 @@
 package org.bioinfo.gcsa.lib.account.beans;
 
 public class Credential {
+	
 	private String service;
 	private String status;
 	private String user;

@@ -20,7 +20,7 @@ import org.bioinfo.gcsa.lib.account.beans.Account;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Job;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
-import org.bioinfo.gcsa.lib.account.beans.Plugin;
+import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.account.io.IOManager;
@@ -48,6 +48,7 @@ public class AccountMongoDBManager implements AccountManager {
 	private String home;
 	private String accounts;
 	private String tmp;
+	
 	private Gson gson;
 
 	public AccountMongoDBManager(Properties properties) throws NumberFormatException, UnknownHostException {
@@ -168,7 +169,7 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 
 		try {
-			ioManager.createScaffoldAccountId(accountId);
+			ioManager.createAccount(accountId);
 		} catch (IOManagementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -597,14 +598,14 @@ public class AccountMongoDBManager implements AccountManager {
 		if (jobFolder == null) {
 			// CREATE JOB FOLDER
 			try {
-				ioManager.createJobFolder(accountId, bucket, jobId);
+				ioManager.createJob(accountId, bucket, jobId);
 			} catch (IOManagementException e) {
 				e.printStackTrace();
 			}
 		}
 
 		// INSERT JOB OBJECT ON MONGO
-		Job job = new Job(jobId, "0", "", "", "", toolName, jobName, "0", commandLine, "", "", "", dataList);
+		Job job = new Job(jobId, jobName, null, toolName, Job.QUEUED, commandLine, "", dataList);
 		BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
@@ -617,7 +618,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 		if (result.getError() != null) {
 			try {
-				ioManager.removeJobFolder(accountId, bucket, jobId);
+				ioManager.removeJob(accountId, bucket, jobId);
 			} catch (IOManagementException e) {
 				e.printStackTrace();
 			}
@@ -720,7 +721,7 @@ public class AccountMongoDBManager implements AccountManager {
 	// }
 
 	@Override
-	public List<Plugin> getUserAnalysis(String sessionId) throws AccountManagementException {
+	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("sessions.id", sessionId);
 		BasicDBObject fields = new BasicDBObject();
 		fields.put("_id", 0);
@@ -728,7 +729,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 		DBObject item = userCollection.findOne(query, fields);
 		if (item != null) {
-			Plugin[] userAnalysis = new Gson().fromJson(item.get("plugins").toString(), Plugin[].class);
+			AnalysisPlugin[] userAnalysis = new Gson().fromJson(item.get("plugins").toString(), AnalysisPlugin[].class);
 			return Arrays.asList(userAnalysis);
 		} else {
 			throw new AccountManagementException("invalid session id");

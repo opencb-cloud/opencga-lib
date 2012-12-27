@@ -6,15 +6,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.bioinfo.commons.log.Logger;
-import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
-import org.bioinfo.gcsa.lib.account.beans.Plugin;
+import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
+import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.account.db.AccountFileManager;
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
@@ -128,11 +129,11 @@ public class CloudSessionManager {
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 
-		ioManager.createBucketFolder(accountId, bucket.getName());
+		ioManager.createBucket(accountId, bucket.getName());
 		try {
 			accountManager.createBucket(bucket, accountId, sessionId);
 		} catch (AccountManagementException e) {
-			ioManager.deleteBucketFolder(accountId, bucket.getName());
+			ioManager.deleteBucket(accountId, bucket.getName());
 			throw e;
 		}
 	}
@@ -165,11 +166,17 @@ public class CloudSessionManager {
 		checkStr(objectname, "objectname");
 		checkObj(object, "object");
 
-		String objectId = ioManager.createFolder(bucket, accountId, object, objectname, parents);
-		logger.info(objectId);
+		String idStr = objectname.replace(":", "/");
+		String[] tokens = objectname.split("/");
+		String fileName = tokens[(tokens.length - 1)];
+		object.setId(idStr);
+		object.setFileName(fileName);
+
+		Path objectId = ioManager.createFolder(accountId, bucket, objectname, parents);
+		
 		try {
 			accountManager.createObjectToBucket(bucket, accountId, sessionId, object);
-			return objectId;
+			return idStr;
 		} catch (AccountManagementException e) {
 			ioManager.deleteData(bucket, accountId, objectname);
 			throw e;
@@ -275,7 +282,7 @@ public class CloudSessionManager {
 		return accountManager.getJobFolder(bucket, jobId, sessionId);
 	}
 
-	public List<Plugin> getUserAnalysis(String sessionId) throws AccountManagementException {
+	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException {
 		return accountManager.getUserAnalysis(sessionId);
 	}
 

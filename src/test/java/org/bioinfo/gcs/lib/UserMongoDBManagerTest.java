@@ -181,33 +181,33 @@ public class UserMongoDBManagerTest {
 				InputStream fileData = new FileInputStream(f);
 				// String projectName = null;
 				String projectName = "Default";
-				ObjectItem data = new ObjectItem();
-				// "id" : "",
-				// "type" : "",
-				String type = "bam";
-				// "fileName" : "",
-				String fileName = f.getName();
-				// "multiple" : "",
-				// "diskUsage" : "",
-				String diskUsage = "1234321";
-				// "creationTime" : "20121128153118",
-				// "responsible" : "",
-				String responsible = "Paco";
-				// "organization" : "",
-				String organization = "CIPF";
-				// "date" : "",
-				// "description" : "",
-				String description = "ILLUMINA CHR 20 BAM";
-				// "status" : "",
-				// "statusMessage" : "",
-				// "members" : [ ]
-
-				data.setFileName(type);
-				data.setFileName(fileName);
-				data.setDiskUsage(diskUsage);
+//				ObjectItem data = new ObjectItem();
+//				// "id" : "",
+//				// "type" : "",
+//				String type = "bam";
+//				// "fileName" : "",
+//				String fileName = f.getName();
+//				// "multiple" : "",
+//				// "diskUsage" : "",
+//				String diskUsage = "1234321";
+//				// "creationTime" : "20121128153118",
+//				// "responsible" : "",
+//				String responsible = "Paco";
+//				// "organization" : "",
+//				String organization = "CIPF";
+//				// "date" : "",
+//				// "description" : "",
+//				String description = "ILLUMINA CHR 20 BAM";
+//				// "status" : "",
+//				// "statusMessage" : "",
+//				// "members" : [ ]
+//
+//				data.setFileName(type);
+//				data.setFileName(fileName);
+//				data.setDiskUsage(diskUsage);
 				// cloudSessionManager.createDataToProject(projectName,
 				// accountId, sessionId, data, fileData, "");
-
+				fileData.close();
 			} catch (Exception e) {
 				System.out.println(e);
 				e.printStackTrace();
