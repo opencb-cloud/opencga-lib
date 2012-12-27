@@ -683,7 +683,7 @@ public class AccountMongoDBManager implements AccountManager {
 		// Bucket[] p = new Gson().fromJson(item.get("buckets").toString(),
 		// Bucket[].class);
 
-		String jobFolder = accounts + "/" + getAccountIdBySessionId(sessionId) + "/buckets/" + bucket + "/jobs/"
+		String jobFolder = accounts + "/" + getAccountIdBySessionId(sessionId) + "/jobs/"
 				+ jobId + "/";
 		if (new File(jobFolder).exists()) {
 			return jobFolder;
