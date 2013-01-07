@@ -194,52 +194,6 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 
-	public String createAnonymousAccount(Session session) throws AccountManagementException {
-		
-		//*****create new account*****/
-		
-		String anonymousAccountId = "anonymous_" + session.getId();
-		checkAccountExists(anonymousAccountId);
-		
-		Account account = null;
-
-		File accountDir = new File(getAccountPath(anonymousAccountId));
-		File accountConf = new File(accountConfPath(anonymousAccountId));
-		if (accountDir.exists() && accountConf.exists()) {
-			// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
-			// CONFIGURACION
-			try {
-				BufferedReader br = new BufferedReader(new FileReader(accountConf));
-				account = gson.fromJson(br, Account.class);
-				account.addSession(session);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-
-		}
-
-		try {
-			ioManager.createScaffoldAccountId(anonymousAccountId);
-		} catch (IOManagementException e) {
-			e.printStackTrace();
-		}
-
-		if (account == null) {
-			account = new Account(anonymousAccountId, "", "", "");
-			account.setLastActivity(GcsaUtils.getTime());
-		}
-		WriteResult wr = userCollection.insert((DBObject) JSON.parse(gson.toJson(account)));
-		if (wr.getLastError().getErrorMessage() != null) {
-			throw new AccountManagementException(wr.getLastError().getErrorMessage());
-		}
-		
-		//*** login anonymous ****/
-		login (anonymousAccountId, "", session);
-		System.out.println("SESESESESESESESES:" + session.getId());
-		return session.getId();
-	}
-
-	
 	public String login(String accountId, String password, Session session) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
