@@ -6,7 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -70,6 +72,14 @@ public class CloudSessionManager {
 
 		accountManager.createAccount(accountId, password, accountName, email, session);
 	}
+	
+	public String createAnonymousAccount(String sessionIp) throws AccountManagementException {
+		checkStr(sessionIp, "sessionIp");
+		Session session = new Session(sessionIp);
+
+		return accountManager.createAnonymousAccount(session);
+
+	}
 
 	public String login(String accountId, String password, String sessionIp) throws AccountManagementException {
 		checkStr(accountId, "accountId");
@@ -85,6 +95,17 @@ public class CloudSessionManager {
 		accountManager.logout(accountId, sessionId);
 	}
 
+	public void logoutAnonymous(String sessionId) throws AccountManagementException {
+		String accountId = "anonymous_" + sessionId;
+		System.out.println("-----> el accountId del anonimo es: " + accountId + " y la sesionId: " + sessionId);
+		
+		checkStr(accountId, "accountId");
+		checkStr(sessionId, "sessionId");
+		
+		accountManager.logoutAnonymous(accountId, sessionId);
+	}
+
+	
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
 			throws AccountManagementException {
 		checkStr(accountId, "accountId");
@@ -119,8 +140,8 @@ public class CloudSessionManager {
 		return accountManager.getAccountBySessionId(accountId, sessionId, lastActivity);
 	}
 
-	public String getDataPath(String bucketId, String dataId, String sessionId) {
-		return accountManager.getDataPath(bucketId, dataId, sessionId);
+	public String getDataPath(String accountId, String bucketId, String dataId) {
+		return ioManager.getDataPath(accountId, bucketId, dataId);
 	}
 
 	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException,
@@ -194,6 +215,15 @@ public class CloudSessionManager {
 		accountManager.deleteDataFromBucket(bucket, accountId, sessionId, dataId);
 		logger.info(dataId);
 
+	}
+	
+	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
+		String jobPath = ioManager.getJobPath(accountId, "", jobId);
+		if(Files.exists(Paths.get(jobPath, "result.xml"))) {
+			accountManager.incJobVisites(accountId, jobId);
+			return "DONE";
+		}
+		return "RUNNING";
 	}
 
 	public String region(String bucket, String accountId, String sessionId, String objectname, String regionStr,
@@ -297,7 +327,7 @@ public class CloudSessionManager {
 	}
 
 	private void checkStr(String str, String name) throws AccountManagementException {
-		if (str == null || str.equals("")) {
+		if (str == null || str.equals("") || str.equals("null")) {
 			throw new AccountManagementException("parameter '" + name + "' is null or empty: " + str + ".");
 		}
 	}

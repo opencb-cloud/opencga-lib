@@ -24,6 +24,7 @@ import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
+import org.bioinfo.gcsa.lib.analysis.beans.InputParam;
 import org.bioinfo.gcsa.lib.analysis.beans.Option;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,7 +51,7 @@ public class AnalysisJobExecuter {
 	protected Execution execution;
 
 	public AnalysisJobExecuter(String analysisStr) throws IOException, JsonSyntaxException, AnalysisExecutionException {
-		this(analysisStr, "");
+		this(analysisStr, "system");
 	}
 	
 	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException, JsonSyntaxException, AnalysisExecutionException {
@@ -93,6 +94,7 @@ public class AnalysisJobExecuter {
 //		}
 
 		// Set output param
+		System.out.println("***JOB FOLDER: "+jobFolder);
 		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 
 		// Set command line
@@ -139,6 +141,7 @@ public class AnalysisJobExecuter {
 		// Check required params
 		List<Option> validParams = execution.getValidParams();
 		validParams.addAll(analysis.getGlobalParams());
+		validParams.add(new Option(execution.getOutputParam(), "Outdir", false));
 		if (checkRequiredParams(params, validParams)) {
 			params = new HashMap<String, List<String>>(removeUnknownParams(params, validParams));
 		} else {
@@ -225,6 +228,10 @@ public class AnalysisJobExecuter {
 			}
 		}
 		return execution;
+	}
+	
+	public String getExamplePath(String fileName) {
+		return analysisPath + "examples/" + fileName;
 	}
 
 	public String help(String baseUrl) {

@@ -1,12 +1,12 @@
 package org.bioinfo.gcsa.lib.account.db;
 
-import java.io.InputStream;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
+import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 
 public interface AccountManager {
 
@@ -16,12 +16,14 @@ public interface AccountManager {
 	public void createAccount(String accountId, String password, String accountName, String email, Session session)
 			throws AccountManagementException;
 
-	public void createAnonymousUser(String accountId, String password, String email);
+	public String createAnonymousAccount(Session session) throws AccountManagementException;
 
 	public String login(String accountId, String password, Session session) throws AccountManagementException;
 
 	public void logout(String accountId, String sessionId) throws AccountManagementException;
 
+	public void logoutAnonymous (String accountId, String sessionId);
+	
 	// public String getUserByAccountId(String accountId, String sessionId);
 
 	public String getUserByEmail(String email, String sessionId);
@@ -64,6 +66,8 @@ public interface AccountManager {
 	public String getJobFolder(String project, String jobId, String sessionId);
 
 	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException;
+	
+	public void incJobVisites(String accountId, String jobId) throws AccountManagementException;
 
 	/*
 	 * Data methods

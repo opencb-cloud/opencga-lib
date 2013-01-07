@@ -24,7 +24,6 @@ import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.account.io.IOManager;
-
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -171,7 +170,6 @@ public class AccountMongoDBManager implements AccountManager {
 		try {
 			ioManager.createAccount(accountId);
 		} catch (IOManagementException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -184,6 +182,18 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException(wr.getLastError().getErrorMessage());
 		}
 	}
+	
+	@Override
+	public String createAnonymousAccount(Session session) throws AccountManagementException {
+		String password = StringUtils.randomString(10);
+		String accountId = "anonymous_"+password;
+		createAccount(accountId, password, "anonymous", "anonymous", session);
+		
+		// Everything is ok, so we login account
+//		session = new Session();
+		return login(accountId, password, session);
+	}
+
 
 	public String login(String accountId, String password, Session session) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
@@ -228,8 +238,13 @@ public class AccountMongoDBManager implements AccountManager {
 				throw new AccountManagementException(wr.getLastError().getErrorMessage());
 			}
 
-			return session.getId();
-
+			// Now login() returns a JSON object with: sessionId, accountId and bucketId
+			BasicDBObject result = new BasicDBObject("sessionId", session.getId());
+			result.append("accountId", accountId);
+			result.append("bucketId", "default");
+			
+//			return session.getId();
+			return result.toString();
 		} else {
 			throw new AccountManagementException("account not found");
 		}
@@ -276,6 +291,19 @@ public class AccountMongoDBManager implements AccountManager {
 		} else {
 			throw new AccountManagementException("logout");
 		}
+	}
+	
+	public void logoutAnonymous (String accountId, String sessionId){
+		
+		//***** borrar en mongo ****/
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		userCollection.remove(query);
+		
+		//***** borrar carpetas asociadas ****/
+		FileUtils.deleteDirectory(new File(getAccountPath(accountId)));
+		
 	}
 
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
@@ -413,9 +441,6 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
-	public void createAnonymousUser(String accountId, String password, String email) {
-
-	}
 
 	public String getUserByEmail(String email, String sessionId) {
 		String userStr = "";
@@ -606,6 +631,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 		// INSERT JOB OBJECT ON MONGO
 		Job job = new Job(jobId, jobName, null, toolName, Job.QUEUED, commandLine, "", dataList);
+		
 		BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(new Gson().toJson(job));
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
@@ -684,7 +710,7 @@ public class AccountMongoDBManager implements AccountManager {
 		// Bucket[] p = new Gson().fromJson(item.get("buckets").toString(),
 		// Bucket[].class);
 
-		String jobFolder = accounts + "/" + getAccountIdBySessionId(sessionId) + "/buckets/" + bucket + "/jobs/"
+		String jobFolder = accounts + "/" + getAccountIdBySessionId(sessionId) + "/jobs/"
 				+ jobId + "/";
 		if (new File(jobFolder).exists()) {
 			return jobFolder;
@@ -733,6 +759,26 @@ public class AccountMongoDBManager implements AccountManager {
 			return Arrays.asList(userAnalysis);
 		} else {
 			throw new AccountManagementException("invalid session id");
+		}
+	}
+	
+	public void incJobVisites(String accountId, String jobId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("jobs.id", jobId);
+		
+		BasicDBObject item = new BasicDBObject("jobs.$.visites", 1);
+		
+		BasicDBObject action = new BasicDBObject("$inc", item);
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		
+		WriteResult result = userCollection.update(query, action);
+		if (result.getLastError().getErrorMessage() == null) {
+			if (result.getN() != 1) {
+				throw new AccountManagementException("could not update database, with this parameters");
+			}
+			logger.info("data object created");
+		} else {
+			throw new AccountManagementException("could not update database, files will be deleted");
 		}
 	}
 

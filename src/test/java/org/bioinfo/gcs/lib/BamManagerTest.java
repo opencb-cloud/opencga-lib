@@ -3,13 +3,14 @@ package org.bioinfo.gcs.lib;
 import java.io.File;
 import java.io.IOException;
 
+import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.storage.alignment.BamManager;
 import org.junit.Test;
 
 public class BamManagerTest {
 
-	@Test
-	public void test() {
+//	@Test
+	public void test() throws IOManagementException {
 		if(new File("/home/examples").exists()){
 			try {
 				BamManager bu = new BamManager();

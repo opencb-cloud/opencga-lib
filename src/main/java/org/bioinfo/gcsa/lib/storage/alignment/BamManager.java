@@ -350,7 +350,7 @@ public class BamManager {
 	}
 
 	private String getSequence(final String chr, final int start, final int end) {
-		String urlString = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/region/"+chr+":"+(start-500)+"-"+(end+500)+"/sequence";
+		String urlString = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/region/"+chr+":"+(start-500)+"-"+(end+500)+"/sequence";
 		System.out.println(urlString);
 		StringBuilder sb = new StringBuilder();
 		try {

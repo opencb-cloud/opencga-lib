@@ -10,9 +10,9 @@ import java.security.NoSuchAlgorithmException;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
+
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.account.db.AccountManager;
-import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
 import org.junit.Test;
 
 public class UserMongoDBManagerTest {
@@ -207,6 +207,7 @@ public class UserMongoDBManagerTest {
 //				data.setDiskUsage(diskUsage);
 				// cloudSessionManager.createDataToProject(projectName,
 				// accountId, sessionId, data, fileData, "");
+
 				fileData.close();
 			} catch (Exception e) {
 				System.out.println(e);

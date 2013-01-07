@@ -23,9 +23,9 @@ public class Job {
 	private List<String> inputData;
 	private List<String> outputData;
 	
-	public static String QUEUED = "queued";
-	public static String RUNNING = "running";
-	public static String DONE = "done";
+	public static final String QUEUED = "queued";
+	public static final String RUNNING = "running";
+	public static final String DONE = "done";
 	
 
 	public Job(String id, String name, String bucketId, String toolName, String status, String commandLine, String description, List<String> inputData) {
