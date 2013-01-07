@@ -24,7 +24,6 @@ import org.bioinfo.gcsa.lib.account.beans.Plugin;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.account.io.IOManager;
-
 import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -170,7 +169,6 @@ public class AccountMongoDBManager implements AccountManager {
 		try {
 			ioManager.createScaffoldAccountId(accountId);
 		} catch (IOManagementException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -196,6 +194,52 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 
+	public String createAnonymousAccount(Session session) throws AccountManagementException {
+		
+		//*****create new account*****/
+		
+		String anonymousAccountId = "anonymous_" + session.getId();
+		checkAccountExists(anonymousAccountId);
+		
+		Account account = null;
+
+		File accountDir = new File(getAccountPath(anonymousAccountId));
+		File accountConf = new File(accountConfPath(anonymousAccountId));
+		if (accountDir.exists() && accountConf.exists()) {
+			// EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
+			// CONFIGURACION
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(accountConf));
+				account = gson.fromJson(br, Account.class);
+				account.addSession(session);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		try {
+			ioManager.createScaffoldAccountId(anonymousAccountId);
+		} catch (IOManagementException e) {
+			e.printStackTrace();
+		}
+
+		if (account == null) {
+			account = new Account(anonymousAccountId, "", "", "");
+			account.setLastActivity(GcsaUtils.getTime());
+		}
+		WriteResult wr = userCollection.insert((DBObject) JSON.parse(gson.toJson(account)));
+		if (wr.getLastError().getErrorMessage() != null) {
+			throw new AccountManagementException(wr.getLastError().getErrorMessage());
+		}
+		
+		//*** login anonymous ****/
+		login (anonymousAccountId, "", session);
+		System.out.println("SESESESESESESESES:" + session.getId());
+		return session.getId();
+	}
+
+	
 	public String login(String accountId, String password, Session session) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
 		query.put("accountId", accountId);
@@ -292,6 +336,19 @@ public class AccountMongoDBManager implements AccountManager {
 		} else {
 			throw new AccountManagementException("logout");
 		}
+	}
+	
+	public void logoutAnonymous (String accountId, String sessionId){
+		
+		//***** borrar en mongo ****/
+		BasicDBObject query = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		userCollection.remove(query);
+		
+		//***** borrar carpetas asociadas ****/
+		FileUtils.deleteDirectory(new File(getAccountPath(accountId)));
+		
 	}
 
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
@@ -428,6 +485,7 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException("invalid sessionId");
 		}
 	}
+
 
 	public String getUserByEmail(String email, String sessionId) {
 		String userStr = "";

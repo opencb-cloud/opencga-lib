@@ -1,12 +1,12 @@
 package org.bioinfo.gcsa.lib.account.db;
 
-import java.io.InputStream;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.beans.Plugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Session;
+import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 
 public interface AccountManager {
 
@@ -22,6 +22,8 @@ public interface AccountManager {
 
 	public void logout(String accountId, String sessionId) throws AccountManagementException;
 
+	public void logoutAnonymous (String accountId, String sessionId);
+	
 	// public String getUserByAccountId(String accountId, String sessionId);
 
 	public String getUserByEmail(String email, String sessionId);

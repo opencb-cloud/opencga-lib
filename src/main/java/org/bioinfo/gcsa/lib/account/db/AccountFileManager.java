@@ -1,6 +1,5 @@
 package org.bioinfo.gcsa.lib.account.db;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -27,4 +26,5 @@ public class AccountFileManager /*implements AccountManager*/ {
 		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
 		tmp = properties.getProperty("TMP.PATH");
 	}
+
 }

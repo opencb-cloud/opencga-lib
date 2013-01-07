@@ -77,6 +77,7 @@ public class CloudSessionManager {
 		Session session = new Session(sessionIp);
 
 		return accountManager.createAnonymousAccount(session);
+
 	}
 
 	public String login(String accountId, String password, String sessionIp) throws AccountManagementException {
@@ -93,6 +94,17 @@ public class CloudSessionManager {
 		accountManager.logout(accountId, sessionId);
 	}
 
+	public void logoutAnonymous(String sessionId) throws AccountManagementException {
+		String accountId = "anonymous_" + sessionId;
+		System.out.println("-----> el accountId del anonimo es: " + accountId + " y la sesionId: " + sessionId);
+		
+		checkStr(accountId, "accountId");
+		checkStr(sessionId, "sessionId");
+		
+		accountManager.logoutAnonymous(accountId, sessionId);
+	}
+
+	
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
 			throws AccountManagementException {
 		checkStr(accountId, "accountId");
