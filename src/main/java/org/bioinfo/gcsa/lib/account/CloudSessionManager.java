@@ -14,9 +14,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.log.Logger;
+import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
+import org.bioinfo.gcsa.lib.account.beans.Job;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.account.db.AccountFileManager;
@@ -24,7 +27,7 @@ import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.account.db.AccountManager;
 import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
-import org.bioinfo.gcsa.lib.account.io.IOManager;
+import org.bioinfo.gcsa.lib.account.io.FileIOManager;
 import org.bioinfo.gcsa.lib.storage.alignment.BamManager;
 import org.bioinfo.infrared.lib.common.Region;
 import org.dom4j.DocumentException;
@@ -33,7 +36,7 @@ public class CloudSessionManager {
 
 	private AccountManager accountManager;
 	private Logger logger;
-	private IOManager ioManager;
+	private FileIOManager ioManager;
 	public static Properties properties;
 
 	public CloudSessionManager() throws FileNotFoundException, IOException, AccountManagementException {
@@ -52,7 +55,7 @@ public class CloudSessionManager {
 			} else {
 				accountManager = new AccountMongoDBManager(properties);
 			}
-			ioManager = new IOManager(properties);
+			ioManager = new FileIOManager(properties);
 
 			logger.info(properties.toString());
 		} else {
@@ -60,9 +63,10 @@ public class CloudSessionManager {
 		}
 	}
 
-	/*******************************/
+	/**
+	 * @throws IOManagementException *****************************/
 	public void createAccount(String accountId, String password, String accountName, String email, String sessionIp)
-			throws AccountManagementException {
+			throws AccountManagementException, IOManagementException {
 		checkStr(accountId, "accountId");
 		checkStr(password, "password");
 		checkStr(accountName, "accountName");
@@ -70,14 +74,30 @@ public class CloudSessionManager {
 		checkStr(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 
-		accountManager.createAccount(accountId, password, accountName, email, session);
+		ioManager.createAccount(accountId);
+		try {
+			accountManager.createAccount(accountId, password, accountName, email, session);
+		} catch (AccountManagementException e) {
+			ioManager.deleteAccount(accountId);
+			throw e;
+		}
+		
 	}
 	
-	public String createAnonymousAccount(String sessionIp) throws AccountManagementException {
+	public String createAnonymousAccount(String sessionIp) throws AccountManagementException, IOManagementException {
 		checkStr(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 
-		return accountManager.createAnonymousAccount(session);
+		String password = StringUtils.randomString(10);
+		String accountId = "anonymous_" + password;
+		
+		ioManager.createAccount(accountId);
+		try {
+			return accountManager.createAnonymousAccount(accountId, password, session);
+		} catch (AccountManagementException e) {
+			ioManager.deleteAccount(accountId);
+			throw e;
+		}
 
 	}
 
@@ -95,13 +115,15 @@ public class CloudSessionManager {
 		accountManager.logout(accountId, sessionId);
 	}
 
-	public void logoutAnonymous(String sessionId) throws AccountManagementException {
+	public void logoutAnonymous(String sessionId) throws AccountManagementException, IOManagementException {
 		String accountId = "anonymous_" + sessionId;
 		System.out.println("-----> el accountId del anonimo es: " + accountId + " y la sesionId: " + sessionId);
 		
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		
+		//TODO check inconsistency
+		ioManager.deleteAccount(accountId);
 		accountManager.logoutAnonymous(accountId, sessionId);
 	}
 
@@ -137,11 +159,11 @@ public class CloudSessionManager {
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		// lastActivity can be null
-		return accountManager.getAccountBySessionId(accountId, sessionId, lastActivity);
+		return accountManager.getAccountInfo(accountId, sessionId, lastActivity);
 	}
 
-	public String getDataPath(String accountId, String bucketId, String dataId) {
-		return ioManager.getDataPath(accountId, bucketId, dataId);
+	public String getObjectPath(String accountId, String bucketId, String dataId) {
+		return ioManager.getObjectPath(accountId, bucketId, dataId).toString();
 	}
 
 	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException,
@@ -161,20 +183,20 @@ public class CloudSessionManager {
 
 	public String createObjectToBucket(String bucket, String accountId, String sessionId, ObjectItem object,
 			InputStream fileData, String objectname, boolean parents) throws AccountManagementException,
-			IOManagementException {
+			IOManagementException, IOException {
 		checkStr(bucket, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
 		checkObj(object, "object");
 
-		String dataId = ioManager.createData(bucket, accountId, object, fileData, objectname, parents);
+		String dataId = ioManager.createObject(bucket, accountId, object, fileData, objectname, parents);
 		logger.info(dataId);
 		try {
 			accountManager.createObjectToBucket(bucket, accountId, sessionId, object);
 			return dataId;
 		} catch (AccountManagementException e) {
-			ioManager.deleteData(bucket, accountId, objectname);
+			ioManager.deleteObject(bucket, accountId, objectname);
 			throw e;
 		}
 	}
@@ -199,7 +221,7 @@ public class CloudSessionManager {
 			accountManager.createObjectToBucket(bucket, accountId, sessionId, object);
 			return idStr;
 		} catch (AccountManagementException e) {
-			ioManager.deleteData(bucket, accountId, objectname);
+			ioManager.deleteObject(bucket, accountId, objectname);
 			throw e;
 		}
 	}
@@ -211,15 +233,15 @@ public class CloudSessionManager {
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
 
-		String dataId = ioManager.deleteData(bucket, accountId, objectname);
-		accountManager.deleteDataFromBucket(bucket, accountId, sessionId, dataId);
+		String dataId = ioManager.deleteObject(bucket, accountId, objectname);
+		accountManager.deleteObjectFromBucket(bucket, accountId, sessionId, dataId);
 		logger.info(dataId);
 
 	}
 	
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
-		String jobPath = ioManager.getJobPath(accountId, "", jobId);
-		if(Files.exists(Paths.get(jobPath, "result.xml"))) {
+		Path jobPath = ioManager.getJobPath(accountId, "", jobId);
+		if(Files.exists(Paths.get(jobPath.toString(), "result.xml"))) {
 			accountManager.incJobVisites(accountId, jobId);
 			return "DONE";
 		}
@@ -234,9 +256,9 @@ public class CloudSessionManager {
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
 
-		String dataPath = ioManager.getDataPath(accountId, bucket, objectname);
+		String dataPath = ioManager.getObjectPath(accountId, bucket, objectname).toString();
 		String dataId = objectname.replaceAll(":", "/");
-		ObjectItem data = accountManager.getDataFromBucket(bucket, accountId, sessionId, dataId);
+		ObjectItem data = accountManager.getObjectFromBucket(bucket, accountId, sessionId, dataId);
 		checkStr(regionStr, "regionStr");
 		Region region = Region.parseRegion(regionStr);
 		checkObj(region, "region");
@@ -304,12 +326,37 @@ public class CloudSessionManager {
 	}
 
 	public String createJob(String jobName, String jobFolder, String bucket, String toolName, List<String> dataList,
-			String commandLine, String sessionId) {
-		return accountManager.createJob(jobName, jobFolder, bucket, toolName, dataList, commandLine, sessionId);
+			String commandLine, String sessionId) throws AccountManagementException, IOManagementException {
+		
+		checkStr(bucket, "bucket");
+		checkStr(jobName, "jobName");
+		checkStr(toolName, "toolName");
+		checkStr(commandLine, "commandLine");
+		checkStr(sessionId, "sessionId");
+		String accountId = accountManager.getAccountIdBySessionId(sessionId);
+		
+		String jobId = StringUtils.randomString(8);
+		Job job = new Job(jobId, jobName, null, toolName, Job.QUEUED, commandLine, "", dataList);
+		if (jobFolder == null) {
+			ioManager.createJob(accountId, bucket, jobId);
+		}else{
+//			jobId = otracosa
+		}
+			
+		try {
+			accountManager.createJob(accountId, job, sessionId);
+		} catch (AccountManagementException e) {
+			ioManager.removeJob(accountId, bucket, jobId);
+			throw e;
+		}
+		
+		return jobId;
+		
 	}
 
 	public String getJobFolder(String bucket, String jobId, String sessionId) {
-		return accountManager.getJobFolder(bucket, jobId, sessionId);
+		String accountId = accountManager.getAccountIdBySessionId(sessionId);
+		return ioManager.getJobPath(accountId, jobId, sessionId).toString();
 	}
 
 	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException {
