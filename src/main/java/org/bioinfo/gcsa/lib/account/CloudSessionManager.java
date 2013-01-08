@@ -163,7 +163,7 @@ public class CloudSessionManager {
 	}
 
 	public String getObjectPath(String accountId, String bucketId, String dataId) {
-		return ioManager.getObjectPath(accountId, bucketId, dataId);
+		return ioManager.getObjectPath(accountId, bucketId, dataId).toString();
 	}
 
 	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException,
@@ -183,7 +183,7 @@ public class CloudSessionManager {
 
 	public String createObjectToBucket(String bucket, String accountId, String sessionId, ObjectItem object,
 			InputStream fileData, String objectname, boolean parents) throws AccountManagementException,
-			IOManagementException {
+			IOManagementException, IOException {
 		checkStr(bucket, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
@@ -256,7 +256,7 @@ public class CloudSessionManager {
 		checkStr(sessionId, "sessionId");
 		checkStr(objectname, "objectname");
 
-		String dataPath = ioManager.getObjectPath(accountId, bucket, objectname);
+		String dataPath = ioManager.getObjectPath(accountId, bucket, objectname).toString();
 		String dataId = objectname.replaceAll(":", "/");
 		ObjectItem data = accountManager.getObjectFromBucket(bucket, accountId, sessionId, dataId);
 		checkStr(regionStr, "regionStr");
