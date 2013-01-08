@@ -2,30 +2,31 @@ package org.bioinfo.gcsa.lib.analysis;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.bioinfo.commons.Config;
-import org.bioinfo.commons.exec.Command;
-import org.bioinfo.commons.exec.SingleProcess;
-import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
+import org.bioinfo.gcsa.lib.account.io.IOManagerUtils;
 import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
-import org.bioinfo.gcsa.lib.analysis.beans.InputParam;
 import org.bioinfo.gcsa.lib.analysis.beans.Option;
+import org.bioinfo.gcsa.lib.analysis.exec.Command;
+import org.bioinfo.gcsa.lib.analysis.exec.SingleProcess;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -38,7 +39,7 @@ import com.google.gson.JsonSyntaxException;
 public class AnalysisJobExecuter {
 
 	protected Gson gson = new Gson();
-	protected Config config;
+	protected Properties config;
 	protected Logger logger;
 	protected String home;
 	protected String analysisName;
@@ -56,7 +57,9 @@ public class AnalysisJobExecuter {
 	
 	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException, JsonSyntaxException, AnalysisExecutionException {
 		home = System.getenv("GCSA_HOME");
-		config = new Config(home + "/conf/analysis.properties");
+		config = new Properties();
+		config.load(new FileInputStream(new File(home + "/conf/analysis.properties")));
+		
 		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
@@ -79,22 +82,10 @@ public class AnalysisJobExecuter {
 	}
 
 	public String execute(String jobId, String jobFolder, Map<String, List<String>> params) throws AccountManagementException {
-		System.out.println("params received in execute: " + params);
+		logger.debug("params received in execute: " + params);
 		
-		//TODO DELETE 
-//		if (analysisName == null || analysisName.equals("")) {
-//			return "ERROR: Analysis name not provided.";
-//		}
-//
-//		try {
-//			FileUtils.checkFile(manifestFile);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			return "ERROR: Manifest for " + analysisName + " not found.";
-//		}
-
 		// Set output param
-		System.out.println("***JOB FOLDER: "+jobFolder);
+		logger.debug("***JOB FOLDER: "+jobFolder);
 		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
 
 		// Set command line
@@ -105,8 +96,7 @@ public class AnalysisJobExecuter {
 
 		executeCommandLine(commandLine, jobId, jobFolder);
 
-		return commandLine;
-		// return jobId;
+		return jobId;
 	}
 
 	private boolean checkRequiredParams(Map<String, List<String>> params, List<Option> validParams) {
@@ -135,7 +125,7 @@ public class AnalysisJobExecuter {
 	}
 
 	public String createCommandLine(String executable, Map<String, List<String>> params) throws AccountManagementException {
-		System.out.println("params received in createCommandLine: " + params);
+		logger.debug("params received in createCommandLine: " + params);
 		String binaryPath = analysisPath + executable;
 		
 		// Check required params
@@ -201,15 +191,9 @@ public class AnalysisJobExecuter {
 		}
 	}
 
-	// private void parseJsonToAnalysis() throws JsonSyntaxException,
-	// IOException {
-	// analysis = gson.fromJson(IOUtils.toString(new File(manifestFile)),
-	// Analysis.class);
-	// }
-
 	public Analysis getAnalysis() throws JsonSyntaxException, IOException, AnalysisExecutionException {
 		if (analysis == null) {
-			analysis = gson.fromJson(IOUtils.toString(new File(manifestFile)), Analysis.class);
+			analysis = gson.fromJson(IOManagerUtils.toString(new File(manifestFile)), Analysis.class);
 		}
 		return analysis;
 	}
@@ -235,16 +219,12 @@ public class AnalysisJobExecuter {
 	}
 
 	public String help(String baseUrl) {
-		try {
-			FileUtils.checkFile(manifestFile);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(!Files.exists(Paths.get(manifestFile))) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
 		String execName = "";
-		if (executionName != null)
-			execName = "." + executionName;
+		if (executionName != null) execName = "." + executionName;
 		StringBuilder sb = new StringBuilder();
 		sb.append("Analysis: " + analysis.getName() + "\n");
 		sb.append("Description: " + analysis.getDescription() + "\n");
@@ -264,10 +244,7 @@ public class AnalysisJobExecuter {
 	}
 
 	public String params() {
-		try {
-			FileUtils.checkFile(manifestFile);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(!Files.exists(Paths.get(manifestFile))) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
@@ -279,8 +256,7 @@ public class AnalysisJobExecuter {
 		sb.append("Valid params for " + analysis.getName() + ":\n\n");
 		for (Option param : execution.getValidParams()) {
 			String required = "";
-			if (param.isRequired())
-				required = "*";
+			if (param.isRequired()) required = "*";
 			sb.append("\t" + param.getName() + ": " + param.getDescription() + " " + required + "\n");
 		}
 		sb.append("\n\t*: required parameters.\n");
@@ -288,10 +264,7 @@ public class AnalysisJobExecuter {
 	}
 
 	public String test(String jobId, String jobFolder) { // TODO probar cuando funcione lo de usuarios
-		try {
-			FileUtils.checkFile(manifestFile);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(!Files.exists(Paths.get(manifestFile))) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
@@ -329,15 +302,11 @@ public class AnalysisJobExecuter {
 
 		if (xml != null) {
 			try {
-				// File file = new File("/tmp/qstat.xml");
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();
 				Document doc = db.parse(new InputSource(new StringReader(xml)));
 				doc.getDocumentElement().normalize();
-				// System.out.println("Root element " +
-				// doc.getDocumentElement().getNodeName());
 				NodeList nodeLst = doc.getElementsByTagName("job_list");
-				// System.out.println("Information of all jobs");
 
 				for (int s = 0; s < nodeLst.getLength(); s++) {
 					Node fstNode = nodeLst.item(s);
@@ -347,15 +316,11 @@ public class AnalysisJobExecuter {
 						NodeList fstNmElmntLst = fstElmnt.getElementsByTagName("JB_name");
 						Element fstNmElmnt = (Element) fstNmElmntLst.item(0);
 						NodeList fstNm = fstNmElmnt.getChildNodes();
-						// System.out.println("Job Name : " + ((Node)
-						// fstNm.item(0)).getNodeValue());
 						String jobName = ((Node) fstNm.item(0)).getNodeValue();
 						if (jobName.contains("j" + jobId + "_")) {
 							NodeList lstNmElmntLst = fstElmnt.getElementsByTagName("state");
 							Element lstNmElmnt = (Element) lstNmElmntLst.item(0);
 							NodeList lstNm = lstNmElmnt.getChildNodes();
-							// System.out.println("State : " + ((Node)
-							// lstNm.item(0)).getNodeValue());
 							status = ((Node) lstNm.item(0)).getNodeValue();
 						}
 					}

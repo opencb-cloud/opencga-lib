@@ -2,9 +2,8 @@ package org.bioinfo.gcsa.lib.analysis;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Properties;
 
-import org.bioinfo.commons.Config;
 import org.bioinfo.commons.exec.Command;
 import org.bioinfo.commons.exec.SingleProcess;
 import org.bioinfo.commons.log.Logger;
@@ -12,10 +11,10 @@ import org.bioinfo.commons.utils.StringUtils;
 
 public class SgeManager {
 
-	private Config config;
+	private Properties config;
 	private Logger logger;
 
-	public SgeManager(Config defaultConfig){
+	public SgeManager(Properties defaultConfig){
 		this.config = defaultConfig;
 
 		// create logger object, level is read from 'wum.properties': WUM.LOG.LEVEL

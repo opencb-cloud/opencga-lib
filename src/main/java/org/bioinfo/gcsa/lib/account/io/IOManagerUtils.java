@@ -1,5 +1,8 @@
 package org.bioinfo.gcsa.lib.account.io;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -38,5 +41,16 @@ public class IOManagerUtils {
 				}
 			}
 		});
+	}
+	
+	public static String toString(File file) throws IOException {
+		BufferedReader bufferedReader = new BufferedReader( new FileReader (file));
+		StringBuilder result = new StringBuilder();
+		String line = "";
+		while ((line=bufferedReader.readLine()) != null) {
+			result.append(line).append(System.getProperty("line.separator"));
+		}
+		bufferedReader.close();
+		return result.toString().trim();
 	}
 }
