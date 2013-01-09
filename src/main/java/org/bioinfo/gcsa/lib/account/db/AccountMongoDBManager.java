@@ -1,6 +1,7 @@
 package org.bioinfo.gcsa.lib.account.db;
 
 import java.net.UnknownHostException;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -340,7 +341,7 @@ public class AccountMongoDBManager implements AccountManager {
 	 ********************/
 
 	@Override
-	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException {
+	public void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 
@@ -376,14 +377,15 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void createObjectToBucket(String bucket, String accountId, String sessionId, ObjectItem data)
+	// accountId, bucketId, objectItem, sessionId
+	public void createObjectToBucket(String accountId, String bucketId, ObjectItem objectItem, String sessionId)
 			throws AccountManagementException {
 
 		// INSERT DATA OBJECT ON MONGO
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
-		query.put("buckets.id", bucket.toLowerCase());
-		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(data));
+		query.put("buckets.id", bucketId.toLowerCase());
+		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(objectItem));
 		BasicDBObject item = new BasicDBObject("buckets.$.objects", dataDBObject);
 		BasicDBObject action = new BasicDBObject("$push", item);
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
@@ -403,55 +405,55 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void deleteObjectFromBucket(String bucket, String accountId, String sessionId, String dataId)
+	public void deleteObjectFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
 			throws AccountManagementException {
 		// db.users.update({"accountId":"pako","buckets.id":"default"},{$pull:{"buckets.$.objects":{"id":"hola/como/estas/app.js"}}})
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
-		query.put("buckets.id", bucket.toLowerCase());
+		query.put("buckets.id", bucketId.toLowerCase());
 
-		BasicDBObject bucketData = new BasicDBObject("buckets.$.objects", new BasicDBObject("id", dataId));
+		BasicDBObject bucketData = new BasicDBObject("buckets.$.objects", new BasicDBObject("id", objectId.toString()));
 		BasicDBObject action = new BasicDBObject("$pull", bucketData);
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
 
 		WriteResult wr = userCollection.update(query, action);
 		if (wr.getLastError().getErrorMessage() == null) {
 			if (wr.getN() != 1) {
-				throw new AccountManagementException("deleting data, with this parameters");
+				throw new AccountManagementException("deleteObjectFromBucket(): deleting data, with this parameters");
 			}
 			logger.info("data object deleted");
 		} else {
-			throw new AccountManagementException("could not delete data item from database");
+			throw new AccountManagementException("deleteObjectFromBucket(): could not delete data item from database");
 		}
 	}
 
 	@Override
-	public ObjectItem getObjectFromBucket(String bucket, String accountId, String sessionId, String dataId)
+	public ObjectItem getObjectFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
 			throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
-		query.put("buckets.id", bucket.toLowerCase());
+		query.put("buckets.id", bucketId.toLowerCase());
 
 		BasicDBObject bucketData = new BasicDBObject("buckets.$.objects", "1");
 		DBObject obj = userCollection.findOne(query, bucketData);
 		if (obj != null) {
 			Bucket[] buckets = gson.fromJson(obj.get("buckets").toString(), Bucket[].class);
 			List<ObjectItem> dataList = buckets[0].getData();
-			ObjectItem data = null;
+			ObjectItem objectItem = null;
 			logger.info("MongoManager: " + obj.get("buckets").toString());
 			logger.info("MongoManager: " + dataList.size());
 			for (int i = 0; i < dataList.size(); i++) {
 				logger.info("MongoManager: " + dataList.get(i));
 				logger.info("MongoManager: " + dataList.get(i).getId());
-				logger.info("MongoManager: " + dataId);
-				if (dataList.get(i).getId().equals(dataId)) {
-					data = dataList.get(i);
+				logger.info("MongoManager: " + objectId);
+				if (dataList.get(i).getId().equals(objectId.toString())) {
+					objectItem = dataList.get(i);
 					break;
 				}
 			}
-			logger.info("MongoManager: " + data);
-			if (data != null) {
-				return data;
+			logger.info("MongoManager: " + objectItem);
+			if (objectItem != null) {
+				return objectItem;
 			} else {
 				throw new AccountManagementException("data not found");
 			}

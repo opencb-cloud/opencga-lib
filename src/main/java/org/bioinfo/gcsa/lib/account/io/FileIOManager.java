@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -189,7 +190,7 @@ public class FileIOManager implements IOManager {
 	}
 
 	public boolean existBucket(String accountId, String bucketId) throws IOManagementException {
-		return Files.exists(Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, bucketId));
+		return Files.exists(getBucketPath(accountId, bucketId));
 	}
 
 	/********************
@@ -265,36 +266,22 @@ public class FileIOManager implements IOManager {
 
 	/********************
 	 * 
-	 * OTHER METHODS
+	 * OBJECT METHODS
 	 * 
 	 ********************/
-	public Path createFolder(String accountId, String bucketId, String objectId, boolean parents)
+	public Path createFolder(String accountId, String bucketId, Path objectId, boolean parents)
 			throws IOManagementException {
-		// String idStr = objectId.replace(":", "/");
-		// String fileName = getObjectName(idStr);
 
-		// String userFileStr = getBucketPath(accountId, bucketId) + "/" +
-		// idStr;
-		Path folder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, bucketId, objectId);
-		// File userFile = new File(userFileStr);
-
-		// logger.debug("IOManager: " + userFile.getAbsolutePath());
-		// if (!parents && !userFile.getParentFile().exists()) {
-		// throw new IOManagementException("no such folder");
-		// }
-		//
-		// if (userFile.exists()) {
-		// throw new IOManagementException("folder already exists");
-		// }
+		Path fullFolderPath = getObjectPath(accountId, bucketId, objectId);
 
 		try {
 			if (existBucket(accountId, bucketId)) {
-				if (Files.exists(folder.getParent()) && Files.isDirectory(folder.getParent())
-						&& Files.isWritable(folder.getParent())) {
-					Files.createDirectory(folder);
+				if (Files.exists(fullFolderPath.getParent()) && Files.isDirectory(fullFolderPath.getParent())
+						&& Files.isWritable(fullFolderPath.getParent())) {
+					Files.createDirectory(fullFolderPath);
 				} else {
 					if (parents) {
-						Files.createDirectories(folder);
+						Files.createDirectories(fullFolderPath);
 					} else {
 						throw new IOManagementException("createFolder(): path do no exist");
 					}
@@ -305,122 +292,105 @@ public class FileIOManager implements IOManager {
 		} catch (IOException e) {
 			throw new IOManagementException("createFolder(): could not create the directory " + e.toString());
 		}
-		// object.setId(idStr);
-		// object.setFileName(fileName);
 
-		return folder;
+		return fullFolderPath;
 	}
 
-	public String createObject(String bucket, String accountId, ObjectItem object, InputStream fileData,
-			String objectname, boolean parents) throws IOManagementException, IOException {
-		String idStr = objectname.replace(":", "/");
-		String fileName = getObjectName(idStr);
-		
-		
-		// CREATING A RANDOM TEMP FOLDER
-		String rndStr = StringUtils.randomString(20);
-		Path randomFolder = Paths.get(tmp, rndStr);
-		Path tmpFile = Paths.get(tmp, rndStr, fileName);
+	public Path createObject(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
+			InputStream fileIs, boolean parents) throws IOManagementException, IOException {
 
-		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
-		Path userFile = Paths.get(userFileStr);
+		Path fullFilePath = getObjectPath(accountId, bucketId, objectId);
 
 		// if parents is
 		// true, folders
 		// will be
 		// autocreated
-		logger.info("IOManager: " + tmpFile.toAbsolutePath());
-		logger.info("IOManager: " + userFile.toAbsolutePath());
-		if (!parents && !Files.exists(userFile.getParent())) {
-			throw new IOManagementException("no such folder");
+		if (!parents && !Files.exists(fullFilePath.getParent())) {
+			throw new IOManagementException("createObject(): folder '" + fullFilePath.getParent().getFileName()
+					+ "' not exists");
 		}
 
-		if (Files.exists(userFile)) {
-			userFileStr = renameExistingFile(userFileStr);
-			userFile = Paths.get(userFileStr);
-			idStr = userFileStr.replace(getBucketPath(accountId, bucket) + "/", "");
-			fileName = getObjectName(idStr);
-		}
+		// check if file exists and update fullFilePath and objectId
+		fullFilePath = renameExistingFileIfNeeded(fullFilePath);
+		objectId = getBucketPath(accountId, bucketId).relativize(fullFilePath);
 
-		object.setId(idStr);
-		object.setFileName(fileName);
-
-		logger.info(tmpFile.toAbsolutePath().toString());
+		// creating a random tmp folder
+		String rndStr = StringUtils.randomString(20);
+		Path randomFolder = Paths.get(tmp, rndStr);
+		Path tmpFile = randomFolder.resolve(fullFilePath.getFileName());
 
 		try {
 			Files.createDirectory(randomFolder);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new IOManagementException("Could not create the upload temp directory");
+			throw new IOManagementException("createObject(): Could not create the upload temp directory");
 		}
-		// COPYING TO DISK
-
 		try {
-			Files.copy(fileData, tmpFile);
-			// Java 7 method
-			// Files.copy(fileData, Paths.get(tmpFile.getAbsolutePath()));
+			Files.copy(fileIs, tmpFile);
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new IOManagementException("Could not write the file on disk");
+			throw new IOManagementException("createObject(): Could not write the file on disk");
 		}
-		// COPYING FROM TEMP TO ACCOUNT DIR
 		try {
-			logger.info(userFile.toAbsolutePath().toString());
-			Files.copy(tmpFile, userFile);
-			object.setDiskUsage(Files.size(userFile));
+			Files.copy(tmpFile, fullFilePath);
+			objectItem.setDiskUsage(Files.size(fullFilePath));
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new IOManagementException("Copying from tmp folder to account folder");
+			throw new IOManagementException("createObject(): Copying from tmp folder to bucket folder");
 		}
 		IOManagerUtils.deleteDirectory(randomFolder);
-		return idStr;
+		return objectId;
 	}
 
-	public String deleteObject(String bucket, String accountId, String objectname) throws IOManagementException {
-		String idStr = objectname.replace(":", "/");
-		String userFileStr = getBucketPath(accountId, bucket) + "/" + idStr;
-		logger.info("IOManager: " + userFileStr);
-		logger.info(userFileStr);
-		File dir = new File(userFileStr);
-		if (dir.delete()) {
-			return idStr;
-		} else {
-			throw new IOManagementException("could not delete the data");
+	public Path deleteObject(String accountId, String bucketId, Path objectId) throws IOManagementException {
+		Path fullFilePath = getObjectPath(accountId, bucketId, objectId);
+		try {
+			if (Files.deleteIfExists(fullFilePath)) {
+				return objectId;
+			} else {
+				throw new IOManagementException("could not delete the object");
+			}
+		} catch (IOException e) {
+			throw new IOManagementException("deleteObject(): could not delete the object " + e.toString());
 		}
-		// FileUtils.deleteDirectory(new File(userFileStr));
 	}
 
-	public String getJobResultFromBucket(String bucket, String accountId, String sessionId, String jobId)
-			throws IOException, DocumentException {
-		String resultFileStr = getJobPath(accountId, bucket, jobId).toString();
-		File resultFile = new File(resultFileStr + "/result.xml");
-		logger.debug("checking file: " + resultFile);
-		FileUtils.checkFile(resultFile);
-		logger.debug("file " + resultFile + " exists");
+	public String getJobResultFromBucket(String accountId, String bucketId, String jobId, String sessionId)
+			throws DocumentException, IOManagementException, IOException {
+		Path jobPath = getJobPath(accountId, bucketId, jobId);
+		Path resultFile = jobPath.resolve("result.xml");
 
-		Result resultXml = new Result();
-		resultXml.loadXmlFile(resultFile.getAbsolutePath());
-		Gson g = new Gson();
-		String resultJson = g.toJson(resultXml);
-		return resultJson;
+		if (Files.exists(resultFile)) {
+			Result resultXml = new Result();
+			resultXml.loadXmlFile(resultFile.toAbsolutePath().toString());
+			Gson g = new Gson();
+			String resultJson = g.toJson(resultXml);
+			return resultJson;
+		} else {
+			throw new IOManagementException("deleteObject(): the file '" + resultFile + "' not exists");
+		}
 	}
 
-	public String getFileTableFromJob(String bucket, String accountId, String sessionId, String jobId, String filename,
-			int first, int end, String[] colnamesArray, String[] colvisibilityArray, String callback, String sort)
+	public String getFileTableFromJob(String accountId, String bucketId, String jobId, String filename, String start,
+			String limit, String colNames, String colVisibility, String callback, String sort, String sessionId)
 			throws IOManagementException, IOException {
 
-		String jobFileStr = getJobPath(accountId, bucket, jobId).toString();
-		File jobFile = new File(jobFileStr + "/" + filename);
-		try {
-			FileUtils.checkFile(jobFile);
-		} catch (IOException e) {
-			throw new IOManagementException("File not found: " + jobFile.getAbsolutePath());
+		int first = Integer.parseInt(start);
+		int end = first + Integer.parseInt(limit);
+		String[] colnamesArray = colNames.split(",");
+		String[] colvisibilityArray = colVisibility.split(",");
+		
+		Path jobPath = getJobPath(accountId, bucketId, jobId);
+		Path jobFile = jobPath.resolve(filename);
+		
+		if (!Files.exists(jobFile)) {
+			throw new IOManagementException("getFileTableFromJob(): the file '" + jobFile.toAbsolutePath()+ "' not exists");
 		}
+		
 		String name = filename.replace("..", "").replace("/", "");
-
 		List<String> avoidingFiles = getAvoidingFiles();
 		if (avoidingFiles.contains(name)) {
-			throw new IOManagementException("No permission to use that file: " + jobFile.getAbsolutePath());
+			throw new IOManagementException("getFileTableFromJob(): No permission to use the file '" + jobFile.toAbsolutePath()+ "'");
 		}
 
 		StringBuilder stringBuilder = new StringBuilder();
@@ -428,9 +398,9 @@ public class FileIOManager implements IOManager {
 		int totalCount = -1;
 		List<String> headLines;
 		try {
-			headLines = IOUtils.head(jobFile, 30);
+			headLines = IOUtils.head(jobFile.toFile(), 30);
 		} catch (IOException e) {
-			throw new IOManagementException("could not head file: " + jobFile.getAbsolutePath());
+			throw new IOManagementException("getFileTableFromJob(): could not head the file '" + jobFile.toAbsolutePath()+ "'");
 		}
 		Iterator<String> headIterator = headLines.iterator();
 		while (headIterator.hasNext()) {
@@ -447,19 +417,17 @@ public class FileIOManager implements IOManager {
 			logger.debug("totalCount ---need to count all lines and prepend it---------> " + totalCount);
 
 			int numFeatures = 0;
-
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(jobFile)));
+			BufferedReader br = Files.newBufferedReader(jobFile, Charset.defaultCharset());
+//			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(jobFile.toFile())));
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (!line.startsWith("#")) {
 					numFeatures++;
 				}
 			}
-			br.close();
 			totalCount = numFeatures;
-
 			String text = "#NUMBER_FEATURES	" + numFeatures;
-			IOUtils.prepend(jobFile, text);
+			IOUtils.prepend(jobFile.toFile(), text);
 		}
 
 		if (!sort.equals("false")) {
@@ -485,8 +453,8 @@ public class FileIOManager implements IOManager {
 				decreasing = true;
 			}
 
-			List<String> dataFile = IOUtils.grep(jobFile, "^[^#].*");
-			double[] numbers = ListUtils.toDoubleArray(IOUtils.column(jobFile, numColumn, "\t", "^[^#].*"));
+			List<String> dataFile = IOUtils.grep(jobFile.toFile(), "^[^#].*");
+			double[] numbers = ListUtils.toDoubleArray(IOUtils.column(jobFile.toFile(), numColumn, "\t", "^[^#].*"));
 			int[] orderedRowIndices = ArrayUtils.order(numbers, decreasing);
 
 			String[] fields;
@@ -515,7 +483,7 @@ public class FileIOManager implements IOManager {
 			int numLine = 0;
 			String line = null;
 			String[] fields;
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(jobFile)));
+			BufferedReader br = Files.newBufferedReader(jobFile, Charset.defaultCharset());
 			stringBuilder.append(callback + "({\"total\":\"" + totalCount + "\",\"items\":[");
 			while ((line = br.readLine()) != null) {
 				if (!line.startsWith("#")) {
@@ -543,15 +511,14 @@ public class FileIOManager implements IOManager {
 				}
 			}
 			stringBuilder.append("]});");
-			br.close();
 		}
 		return stringBuilder.toString();
 	}
 
-	public DataInputStream getFileFromJob(String bucket, String accountId, String sessionId, String jobId,
-			String filename, String zip) throws IOManagementException, FileNotFoundException {
+	public DataInputStream getFileFromJob(String accountId, String bucketId,  String jobId,
+			String filename, String zip, String sessionId) throws IOManagementException, FileNotFoundException {
 
-		String fileStr = getJobPath(accountId, bucket, jobId).toString();
+		String fileStr = getJobPath(accountId, bucketId, jobId).toString();
 		File file = new File(fileStr + "/" + filename);
 		String name = filename.replace("..", "").replace("/", "");
 		List<String> avoidingFiles = getAvoidingFiles();
@@ -603,13 +570,13 @@ public class FileIOManager implements IOManager {
 
 	private Path getBucketPath(String accountId, String bucketId) {
 		if (bucketId != null) {
-			return getAccountPath(accountId).resolve(Paths.get("buckets", bucketId.toLowerCase()));
+			return getAccountPath(accountId).resolve(Paths.get(FileIOManager.BUCKETS_FOLDER, bucketId.toLowerCase()));
 		}
-		return getAccountPath(accountId).resolve("buckets");
+		return getAccountPath(accountId).resolve(FileIOManager.BUCKETS_FOLDER);
 	}
-	public Path getObjectPath(String accountId, String bucketId, String dataId) {
-		dataId = dataId.replaceAll(":", "/");
-		return getBucketPath(accountId, bucketId).resolve(dataId);
+
+	public Path getObjectPath(String accountId, String bucketId, Path objectId) {
+		return getBucketPath(accountId, bucketId).resolve(objectId);
 	}
 
 	// public String getDataPath(String wsDataId){
@@ -621,20 +588,21 @@ public class FileIOManager implements IOManager {
 	// return getAccountPath(accountId) + "/jobs/" + jobId;
 	// }
 
-	private String renameExistingFile(String name) {
-		File file = new File(name);
-		if (file.exists()) {
-			String fileName = FileUtils.removeExtension(name);
-			String fileExt = FileUtils.getExtension(name);
+	private Path renameExistingFileIfNeeded(Path fullFilePath) {
+		if (Files.exists(fullFilePath)) {
+			String file = fullFilePath.getFileName().toString();
+			Path parent = fullFilePath.getParent();
+			String fileName = FileUtils.removeExtension(file);
+			String fileExt = FileUtils.getExtension(file);
 			String newname = null;
 			if (fileName != null && fileExt != null) {
 				newname = fileName + "-copy" + fileExt;
 			} else {
-				newname = name + "-copy";
+				newname = file + "-copy";
 			}
-			return renameExistingFile(newname);
+			return renameExistingFileIfNeeded(parent.resolve(newname));
 		} else {
-			return name;
+			return fullFilePath;
 		}
 	}
 

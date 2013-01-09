@@ -64,7 +64,8 @@ public class CloudSessionManager {
 	}
 
 	/**
-	 * @throws IOManagementException *****************************/
+	 * @throws IOManagementException
+	 *****************************/
 	public void createAccount(String accountId, String password, String accountName, String email, String sessionIp)
 			throws AccountManagementException, IOManagementException {
 		checkStr(accountId, "accountId");
@@ -81,16 +82,16 @@ public class CloudSessionManager {
 			ioManager.deleteAccount(accountId);
 			throw e;
 		}
-		
+
 	}
-	
+
 	public String createAnonymousAccount(String sessionIp) throws AccountManagementException, IOManagementException {
 		checkStr(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 
 		String password = StringUtils.randomString(10);
 		String accountId = "anonymous_" + password;
-		
+
 		ioManager.createAccount(accountId);
 		try {
 			return accountManager.createAnonymousAccount(accountId, password, session);
@@ -118,16 +119,15 @@ public class CloudSessionManager {
 	public void logoutAnonymous(String sessionId) throws AccountManagementException, IOManagementException {
 		String accountId = "anonymous_" + sessionId;
 		System.out.println("-----> el accountId del anonimo es: " + accountId + " y la sesionId: " + sessionId);
-		
+
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		
-		//TODO check inconsistency
+
+		// TODO check inconsistency
 		ioManager.deleteAccount(accountId);
 		accountManager.logoutAnonymous(accountId, sessionId);
 	}
 
-	
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
 			throws AccountManagementException {
 		checkStr(accountId, "accountId");
@@ -162,11 +162,11 @@ public class CloudSessionManager {
 		return accountManager.getAccountInfo(accountId, sessionId, lastActivity);
 	}
 
-	public String getObjectPath(String accountId, String bucketId, String dataId) {
-		return ioManager.getObjectPath(accountId, bucketId, dataId).toString();
+	public String getObjectPath(String accountId, String bucketId, Path ObjectId) {
+		return ioManager.getObjectPath(accountId, bucketId, ObjectId).toString();
 	}
 
-	public void createBucket(Bucket bucket, String accountId, String sessionId) throws AccountManagementException,
+	public void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException,
 			IOManagementException {
 		checkStr(bucket.getName(), "bucketName");
 		checkStr(accountId, "accountId");
@@ -174,151 +174,139 @@ public class CloudSessionManager {
 
 		ioManager.createBucket(accountId, bucket.getName());
 		try {
-			accountManager.createBucket(bucket, accountId, sessionId);
+			accountManager.createBucket(accountId, bucket, sessionId);
 		} catch (AccountManagementException e) {
 			ioManager.deleteBucket(accountId, bucket.getName());
 			throw e;
 		}
 	}
 
-	public String createObjectToBucket(String bucket, String accountId, String sessionId, ObjectItem object,
-			InputStream fileData, String objectname, boolean parents) throws AccountManagementException,
+	public String createObjectToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
+			InputStream fileIs, boolean parents, String sessionId) throws AccountManagementException,
 			IOManagementException, IOException {
-		checkStr(bucket, "bucket");
+		checkStr(bucketId, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		checkStr(objectname, "objectname");
-		checkObj(object, "object");
+		checkStr(objectId.toString(), "objectId");
+		checkObj(objectItem, "objectItem");
 
-		String dataId = ioManager.createObject(bucket, accountId, object, fileData, objectname, parents);
-		logger.info(dataId);
+		objectId = ioManager.createObject(accountId, bucketId, objectId, objectItem, fileIs, parents);
+
+		// set id and name to the itemObject
+		objectItem.setId(objectId.toString());
+		objectItem.setFileName(objectId.getFileName().toString());
+
 		try {
-			accountManager.createObjectToBucket(bucket, accountId, sessionId, object);
-			return dataId;
+			accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
+			return objectId.toString();
 		} catch (AccountManagementException e) {
-			ioManager.deleteObject(bucket, accountId, objectname);
+			ioManager.deleteObject(accountId, bucketId, objectId);
 			throw e;
 		}
 	}
 
-	public String createFolderToBucket(String bucket, String accountId, String sessionId, ObjectItem object,
-			String objectname, boolean parents) throws AccountManagementException, IOManagementException {
-		checkStr(bucket, "bucket");
+	public String createFolderToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
+			boolean parents, String sessionId) throws AccountManagementException, IOManagementException {
+		checkStr(bucketId, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		checkStr(objectname, "objectname");
-		checkObj(object, "object");
+		checkStr(objectId.toString(), "objectId");
+		checkObj(objectItem, "objectItem");
 
-		String idStr = objectname.replace(":", "/");
-		String[] tokens = objectname.split("/");
-		String fileName = tokens[(tokens.length - 1)];
-		object.setId(idStr);
-		object.setFileName(fileName);
+		objectId = ioManager.createFolder(accountId, bucketId, objectId, parents);
 
-		Path objectId = ioManager.createFolder(accountId, bucket, objectname, parents);
-		
+		// set id and name to the itemObject
+		objectItem.setId(objectId.toString());
+		objectItem.setFileName(objectId.getFileName().toString());
+
 		try {
-			accountManager.createObjectToBucket(bucket, accountId, sessionId, object);
-			return idStr;
+			accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
+			return objectId.toString();
 		} catch (AccountManagementException e) {
-			ioManager.deleteObject(bucket, accountId, objectname);
+			ioManager.deleteObject(bucketId, accountId, objectId);
 			throw e;
 		}
 	}
 
-	public void deleteDataFromBucket(String bucket, String accountId, String sessionId, String objectname)
+	public void deleteDataFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
 			throws AccountManagementException, IOManagementException {
-		checkStr(bucket, "bucket");
+		checkStr(bucketId, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		checkStr(objectname, "objectname");
+		checkStr(objectId.toString(), "objectId");
 
-		String dataId = ioManager.deleteObject(bucket, accountId, objectname);
-		accountManager.deleteObjectFromBucket(bucket, accountId, sessionId, dataId);
-		logger.info(dataId);
+		objectId = ioManager.deleteObject(accountId, bucketId, objectId);
+		accountManager.deleteObjectFromBucket(accountId, bucketId, objectId, sessionId);
 
 	}
-	
+
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
 		Path jobPath = ioManager.getJobPath(accountId, "", jobId);
-		if(Files.exists(Paths.get(jobPath.toString(), "result.xml"))) {
+		if (Files.exists(Paths.get(jobPath.toString(), "result.xml"))) {
 			accountManager.incJobVisites(accountId, jobId);
 			return "DONE";
 		}
 		return "RUNNING";
 	}
 
-	public String region(String bucket, String accountId, String sessionId, String objectname, String regionStr,
-			Map<String, List<String>> params) throws AccountManagementException, IOManagementException, IOException {
+	public String region(String accountId, String bucketId, Path objectId, String regionStr,
+			Map<String, List<String>> params, String sessionId) throws AccountManagementException,
+			IOManagementException, IOException {
 
-		checkStr(bucket, "bucket");
+		checkStr(bucketId, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		checkStr(objectname, "objectname");
-
-		String dataPath = ioManager.getObjectPath(accountId, bucket, objectname).toString();
-		String dataId = objectname.replaceAll(":", "/");
-		ObjectItem data = accountManager.getObjectFromBucket(bucket, accountId, sessionId, dataId);
+		checkStr(objectId.toString(), "objectId");
 		checkStr(regionStr, "regionStr");
 		Region region = Region.parseRegion(regionStr);
 		checkObj(region, "region");
 
+		Path fullFilePath = ioManager.getObjectPath(accountId, bucketId, objectId);
+		ObjectItem objectItem = accountManager.getObjectFromBucket(accountId, bucketId, objectId, sessionId);
+
 		String result = "";
-		switch (data.getFileFormat()) {
+		switch (objectItem.getFileFormat()) {
 		case "bam":
-			Boolean viewAsPairs = false;
-			if (params.get("view_as_pairs") != null) {
-				viewAsPairs = true;
-			}
-			Boolean showSoftclipping = false;
-			if (params.get("show_softclipping") != null) {
-				showSoftclipping = true;
-			}
-
 			BamManager bamManager = new BamManager();
-			result = bamManager.getByRegion(dataPath, region.getChromosome(), region.getStart(), region.getEnd(),
-					viewAsPairs, showSoftclipping);
-
+			result = bamManager.getByRegion(fullFilePath, region.getChromosome(), region.getStart(), region.getEnd(),
+					params);
 			break;
 		}
 
 		return result;
 	}
 
-	public String getJobResultFromBucket(String bucket, String accountId, String sessionId, String jobId)
-			throws IOException, DocumentException {
-		// TODO check all
-		return ioManager.getJobResultFromBucket(bucket, accountId, sessionId, jobId);
+	public String getJobResultFromBucket(String accountId, String bucketId, String jobId, String sessionId)
+			throws IOException, DocumentException, IOManagementException, AccountManagementException {
+		checkStr(accountId, "accountId");
+		checkStr(bucketId, "bucketId");
+		checkStr(jobId, "jobId");
+		checkStr(sessionId, "sessionId");
+		return ioManager.getJobResultFromBucket(accountId, bucketId, jobId, sessionId);
 	}
 
-	public String getFileTableFromJob(String bucket, String accountId, String sessionId, String jobId, String filename,
-			String start, String limit, String colNames, String colVisibility, String callback, String sort)
+	public String getFileTableFromJob(String accountId, String bucketId, String jobId, String filename, String start,
+			String limit, String colNames, String colVisibility, String callback, String sort, String sessionId)
 			throws IOManagementException, IOException, AccountManagementException {
 		// TODO check all
-		checkStr(bucket, "bucket");
 		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
+		checkStr(bucketId, "bucketId");
 		checkStr(filename, "filename");
+		checkStr(sessionId, "sessionId");
 
-		int first = Integer.parseInt(start);
-		int end = first + Integer.parseInt(limit);
-		String[] colnamesArray = colNames.split(",");
-		String[] colvisibilityArray = colVisibility.split(",");
-
-		return ioManager.getFileTableFromJob(bucket, accountId, sessionId, jobId, filename, first, end, colnamesArray,
-				colvisibilityArray, callback, sort);
+		return ioManager.getFileTableFromJob(accountId, bucketId, jobId, filename, start, limit, colNames,
+				colVisibility, callback, sort, sessionId);
 	}
 
-	public DataInputStream getFileFromJob(String bucket, String accountId, String sessionId, String jobId,
-			String filename, String zip) throws IOManagementException, IOException, AccountManagementException {
-		// TODO check all
-		checkStr(bucket, "bucket");
+	public DataInputStream getFileFromJob(String accountId, String bucketId, String jobId, String filename, String zip,
+			String sessionId) throws IOManagementException, IOException, AccountManagementException {
+		checkStr(bucketId, "bucket");
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
 		checkStr(filename, "filename");
 		checkStr(zip, "zip");
 
-		return ioManager.getFileFromJob(bucket, accountId, sessionId, jobId, filename, zip);
+		return ioManager.getFileFromJob(accountId, bucketId, jobId, filename, zip, sessionId);
 	}
 
 	public String getAccountBuckets(String accountId, String sessionId) throws AccountManagementException {
@@ -327,34 +315,34 @@ public class CloudSessionManager {
 
 	public String createJob(String jobName, String jobFolder, String bucket, String toolName, List<String> dataList,
 			String commandLine, String sessionId) throws AccountManagementException, IOManagementException {
-		
+
 		checkStr(bucket, "bucket");
 		checkStr(jobName, "jobName");
 		checkStr(toolName, "toolName");
 		checkStr(commandLine, "commandLine");
 		checkStr(sessionId, "sessionId");
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
-		
+
 		String jobId = StringUtils.randomString(8);
-		Job job = new Job(jobId, jobName, null, toolName, Job.QUEUED, commandLine, "", dataList);
 		if (jobFolder == null) {
 			ioManager.createJob(accountId, bucket, jobId);
-		}else{
-//			jobId = otracosa
+		} else {
+			// jobId = recoger el del folder existente
 		}
-			
+		Job job = new Job(jobId, jobName, null, toolName, Job.QUEUED, commandLine, "", dataList);
+
 		try {
 			accountManager.createJob(accountId, job, sessionId);
 		} catch (AccountManagementException e) {
 			ioManager.removeJob(accountId, bucket, jobId);
 			throw e;
 		}
-		
+
 		return jobId;
-		
+
 	}
 
-	public String getJobFolder(String bucket, String jobId, String sessionId) {
+	public String getJobFolder(String bucketId, String jobId, String sessionId) {
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
 		return ioManager.getJobPath(accountId, jobId, sessionId).toString();
 	}

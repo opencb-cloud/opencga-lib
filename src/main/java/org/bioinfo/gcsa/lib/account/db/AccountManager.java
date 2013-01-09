@@ -1,5 +1,6 @@
 package org.bioinfo.gcsa.lib.account.db;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.bioinfo.gcsa.lib.account.beans.Job;
@@ -44,19 +45,19 @@ public interface AccountManager {
 	 * Project methods
 	 */
 
-//	public boolean checkSessionId(String accountId, String sessionId);
+	// public boolean checkSessionId(String accountId, String sessionId);
 
 	public Session getSession(String accountId, String sessionId);
 
 	public String getAllBucketsBySessionId(String accountId, String sessionId) throws AccountManagementException;
 
-	public void createBucket(Bucket project, String accountId, String sessionId) throws AccountManagementException;
+	public void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException;
 
 	// add file to project
-	public void createObjectToBucket(String project, String accountId, String sessionId, ObjectItem data)
+	public void createObjectToBucket(String accountId, String bucketId, ObjectItem objectItem, String sessionId)
 			throws AccountManagementException;
 
-	public void deleteObjectFromBucket(String project, String accountId, String sessionId, String dataId)
+	public void deleteObjectFromBucket(String accountId, String bucketId, Path objectId,  String sessionId)
 			throws AccountManagementException;
 
 	/*
@@ -76,7 +77,7 @@ public interface AccountManager {
 	 */
 	public List<Bucket> jsonToBucketList(String json);
 
-	public ObjectItem getObjectFromBucket(String bucket, String accountId, String sessionId, String dataId)
+	public ObjectItem getObjectFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
 			throws AccountManagementException;
 
 	public String getAccountIdBySessionId(String sessionId);
