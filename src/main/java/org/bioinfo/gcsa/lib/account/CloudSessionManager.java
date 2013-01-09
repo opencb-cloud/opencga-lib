@@ -64,7 +64,8 @@ public class CloudSessionManager {
 	}
 
 	/**
-	 * @throws IOManagementException *****************************/
+	 * @throws IOManagementException
+	 *****************************/
 	public void createAccount(String accountId, String password, String accountName, String email, String sessionIp)
 			throws AccountManagementException, IOManagementException {
 		checkStr(accountId, "accountId");
@@ -81,16 +82,16 @@ public class CloudSessionManager {
 			ioManager.deleteAccount(accountId);
 			throw e;
 		}
-		
+
 	}
-	
+
 	public String createAnonymousAccount(String sessionIp) throws AccountManagementException, IOManagementException {
 		checkStr(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 
 		String password = StringUtils.randomString(10);
 		String accountId = "anonymous_" + password;
-		
+
 		ioManager.createAccount(accountId);
 		try {
 			return accountManager.createAnonymousAccount(accountId, password, session);
@@ -118,16 +119,15 @@ public class CloudSessionManager {
 	public void logoutAnonymous(String sessionId) throws AccountManagementException, IOManagementException {
 		String accountId = "anonymous_" + sessionId;
 		System.out.println("-----> el accountId del anonimo es: " + accountId + " y la sesionId: " + sessionId);
-		
+
 		checkStr(accountId, "accountId");
 		checkStr(sessionId, "sessionId");
-		
-		//TODO check inconsistency
+
+		// TODO check inconsistency
 		ioManager.deleteAccount(accountId);
 		accountManager.logoutAnonymous(accountId, sessionId);
 	}
 
-	
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
 			throws AccountManagementException {
 		checkStr(accountId, "accountId");
@@ -216,7 +216,7 @@ public class CloudSessionManager {
 		object.setFileName(fileName);
 
 		Path objectId = ioManager.createFolder(accountId, bucket, objectname, parents);
-		
+
 		try {
 			accountManager.createObjectToBucket(bucket, accountId, sessionId, object);
 			return idStr;
@@ -238,10 +238,10 @@ public class CloudSessionManager {
 		logger.info(dataId);
 
 	}
-	
+
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
 		Path jobPath = ioManager.getJobPath(accountId, "", jobId);
-		if(Files.exists(Paths.get(jobPath.toString(), "result.xml"))) {
+		if (Files.exists(Paths.get(jobPath.toString(), "result.xml"))) {
 			accountManager.incJobVisites(accountId, jobId);
 			return "DONE";
 		}
@@ -327,31 +327,36 @@ public class CloudSessionManager {
 
 	public String createJob(String jobName, String jobFolder, String bucket, String toolName, List<String> dataList,
 			String commandLine, String sessionId) throws AccountManagementException, IOManagementException {
-		
-		checkStr(bucket, "bucket");
+
 		checkStr(jobName, "jobName");
+		checkStr(jobFolder, "jobFolder");
+		checkStr(bucket, "bucket");
 		checkStr(toolName, "toolName");
 		checkStr(commandLine, "commandLine");
 		checkStr(sessionId, "sessionId");
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
-		
-		String jobId = StringUtils.randomString(8);
-		Job job = new Job(jobId, jobName, null, toolName, Job.QUEUED, commandLine, "", dataList);
+
+		String jobId = StringUtils.randomString(15);
+		boolean jobFolderCreated = false;
+
 		if (jobFolder == null) {
 			ioManager.createJob(accountId, bucket, jobId);
-		}else{
-//			jobId = otracosa
+			jobFolder = "jobs:" + jobId;
+			jobFolderCreated = true;
 		}
-			
+
+		Job job = new Job(jobId, jobName, jobFolder, toolName, Job.QUEUED, commandLine, "", dataList);
+
 		try {
 			accountManager.createJob(accountId, job, sessionId);
 		} catch (AccountManagementException e) {
-			ioManager.removeJob(accountId, bucket, jobId);
+			if (jobFolderCreated) {
+				ioManager.removeJob(accountId, bucket, jobId);
+			}
 			throw e;
 		}
-		
+
 		return jobId;
-		
 	}
 
 	public String getJobFolder(String bucket, String jobId, String sessionId) {
@@ -361,6 +366,10 @@ public class CloudSessionManager {
 
 	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException {
 		return accountManager.getUserAnalysis(sessionId);
+	}
+
+	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException {
+		accountManager.setJobCommandLine(accountId, jobId, commandLine);
 	}
 
 	/********************/

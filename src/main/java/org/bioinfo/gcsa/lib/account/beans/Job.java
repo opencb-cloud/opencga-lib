@@ -9,7 +9,7 @@ public class Job {
 	
 	private String id;
 	private String name;
-	private String bucketId;
+	private String outdir;
 	private String toolName;
 	private long diskUsage;
 	private String status;
@@ -28,15 +28,15 @@ public class Job {
 	public static final String DONE = "done";
 	
 
-	public Job(String id, String name, String bucketId, String toolName, String status, String commandLine, String description, List<String> inputData) {
-		this(id, name, "", toolName, 0, status, GcsaUtils.getTime(), "", "", "", -2, commandLine, description, inputData, new ArrayList<String>());
+	public Job(String id, String name, String outdir, String toolName, String status, String commandLine, String description, List<String> inputData) {
+		this(id, name, outdir, toolName, 0, status, GcsaUtils.getTime(), "", "", "", -2, commandLine, description, inputData, new ArrayList<String>());
 	}
 	
-	public Job(String id, String name, String bucketId, String toolName, long diskUsage, String status, String date, String startTime,
+	public Job(String id, String name, String outdir, String toolName, long diskUsage, String status, String date, String startTime,
 			String endTime, String ouputError, int visites, String commandLine, String description, List<String> inputData, List<String> outputData) {
 		this.id = id;
 		this.name = name;
-		this.bucketId = bucketId;
+		this.outdir = outdir;
 		this.toolName = toolName;
 		this.diskUsage = diskUsage;
 		this.status = status;
@@ -68,12 +68,12 @@ public class Job {
 		this.name = name;
 	}
 
-	public String getBucketId() {
-		return bucketId;
+	public String getOutdir() {
+		return outdir;
 	}
 
-	public void setBucketId(String bucketId) {
-		this.bucketId = bucketId;
+	public void setOutdir(String outdir) {
+		this.outdir = outdir;
 	}
 
 	public String getToolName() {

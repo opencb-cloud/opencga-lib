@@ -44,7 +44,7 @@ public interface AccountManager {
 	 * Project methods
 	 */
 
-//	public boolean checkSessionId(String accountId, String sessionId);
+	// public boolean checkSessionId(String accountId, String sessionId);
 
 	public Session getSession(String accountId, String sessionId);
 
@@ -70,6 +70,8 @@ public interface AccountManager {
 	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException;
 
 	public void incJobVisites(String accountId, String jobId) throws AccountManagementException;
+
+	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException;
 
 	/*
 	 * Utils
