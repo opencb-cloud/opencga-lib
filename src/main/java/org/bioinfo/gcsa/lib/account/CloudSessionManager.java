@@ -316,25 +316,31 @@ public class CloudSessionManager {
 	public String createJob(String jobName, String jobFolder, String bucket, String toolName, List<String> dataList,
 			String commandLine, String sessionId) throws AccountManagementException, IOManagementException {
 
-		checkStr(bucket, "bucket");
 		checkStr(jobName, "jobName");
+		checkStr(jobFolder, "jobFolder");
+		checkStr(bucket, "bucket");
 		checkStr(toolName, "toolName");
 		checkStr(commandLine, "commandLine");
 		checkStr(sessionId, "sessionId");
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
 
-		String jobId = StringUtils.randomString(8);
+		String jobId = StringUtils.randomString(15);
+		boolean jobFolderCreated = false;
+
 		if (jobFolder == null) {
 			ioManager.createJob(accountId, bucket, jobId);
-		} else {
-			// jobId = recoger el del folder existente
+			jobFolder = "jobs:" + jobId;
+			jobFolderCreated = true;
 		}
-		Job job = new Job(jobId, jobName, null, toolName, Job.QUEUED, commandLine, "", dataList);
+
+		Job job = new Job(jobId, jobName, jobFolder, toolName, Job.QUEUED, commandLine, "", dataList);
 
 		try {
 			accountManager.createJob(accountId, job, sessionId);
 		} catch (AccountManagementException e) {
-			ioManager.removeJob(accountId, bucket, jobId);
+			if (jobFolderCreated) {
+				ioManager.removeJob(accountId, bucket, jobId);
+			}
 			throw e;
 		}
 
@@ -349,6 +355,10 @@ public class CloudSessionManager {
 
 	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException {
 		return accountManager.getUserAnalysis(sessionId);
+	}
+
+	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException {
+		accountManager.setJobCommandLine(accountId, jobId, commandLine);
 	}
 
 	/********************/

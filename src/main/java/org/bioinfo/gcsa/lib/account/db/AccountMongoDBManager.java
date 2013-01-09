@@ -489,6 +489,46 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
+	@Override
+	public void incJobVisites(String accountId, String jobId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("jobs.id", jobId);
+
+		BasicDBObject item = new BasicDBObject("jobs.$.visites", 1);
+
+		BasicDBObject action = new BasicDBObject("$inc", item);
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+
+		WriteResult result = userCollection.update(query, action);
+		if (result.getLastError().getErrorMessage() == null) {
+			if (result.getN() != 1) {
+				throw new AccountManagementException("could not update database, with this parameters");
+			}
+			logger.info("data object created");
+		} else {
+			throw new AccountManagementException("could not update database");
+		}
+	}
+
+	@Override
+	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("jobs.id", jobId);
+
+		BasicDBObject action = new BasicDBObject("$set", new BasicDBObject("jobs.$.commandLine", commandLine));
+		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+
+		WriteResult result = userCollection.update(query, action);
+		if (result.getLastError().getErrorMessage() == null) {
+			if (result.getN() != 1) {
+				throw new AccountManagementException("could not update database, with this parameters");
+			}
+			logger.info("data object created");
+		} else {
+			throw new AccountManagementException("could not update database");
+		}
+	}
+
 	/********************
 	 * 
 	 * ANALYSIS METHODS
@@ -516,26 +556,6 @@ public class AccountMongoDBManager implements AccountManager {
 	 * UTILS
 	 * 
 	 ********************/
-
-	public void incJobVisites(String accountId, String jobId) throws AccountManagementException {
-		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		query.put("jobs.id", jobId);
-
-		BasicDBObject item = new BasicDBObject("jobs.$.visites", 1);
-
-		BasicDBObject action = new BasicDBObject("$inc", item);
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
-
-		WriteResult result = userCollection.update(query, action);
-		if (result.getLastError().getErrorMessage() == null) {
-			if (result.getN() != 1) {
-				throw new AccountManagementException("could not update database, with this parameters");
-			}
-			logger.info("data object created");
-		} else {
-			throw new AccountManagementException("could not update database, files will be deleted");
-		}
-	}
 
 	public List<Bucket> jsonToBucketList(String json) {
 

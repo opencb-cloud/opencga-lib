@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +19,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.bioinfo.commons.log.Logger;
-import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.account.io.IOManagerUtils;
 import org.bioinfo.gcsa.lib.analysis.beans.Analysis;
 import org.bioinfo.gcsa.lib.analysis.beans.Execution;
@@ -54,19 +52,22 @@ public class AnalysisJobExecuter {
 	public AnalysisJobExecuter(String analysisStr) throws IOException, JsonSyntaxException, AnalysisExecutionException {
 		this(analysisStr, "system");
 	}
-	
-	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException, JsonSyntaxException, AnalysisExecutionException {
+
+	public AnalysisJobExecuter(String analysisStr, String analysisOwner) throws IOException, JsonSyntaxException,
+			AnalysisExecutionException {
 		home = System.getenv("GCSA_HOME");
 		config = new Properties();
 		config.load(new FileInputStream(new File(home + "/conf/analysis.properties")));
-		
+
 		gson = new Gson();
 		logger = new Logger();
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
 
-		if(analysisOwner.equals("system")) analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
-		else analysisRootPath = home + "/accounts/" + analysisOwner;
-		
+		if (analysisOwner.equals("system"))
+			analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
+		else
+			analysisRootPath = home + "/accounts/" + analysisOwner;
+
 		analysisName = analysisStr;
 		executionName = null;
 		if (analysisName.contains(".")) {
@@ -81,22 +82,11 @@ public class AnalysisJobExecuter {
 		execution = getExecution();
 	}
 
-	public String execute(String jobId, String jobFolder, Map<String, List<String>> params) throws AccountManagementException {
-		logger.debug("params received in execute: " + params);
-		
-		// Set output param
-		logger.debug("***JOB FOLDER: "+jobFolder);
-		params.put(execution.getOutputParam(), Arrays.asList(jobFolder));
-
-		// Set command line
-		String commandLine = createCommandLine(execution.getExecutable(), params);
+	public void execute(String jobId, String jobFolder, String commandLine) throws AnalysisExecutionException {
+		logger.debug("AnalysisJobExecuter: execute, 'jobId': " + jobId + ", 'jobFolder': " + jobFolder);
 		logger.debug("AnalysisJobExecuter: execute, command line: " + commandLine);
 
-		logger.debug("AnalysisJobExecuter: execute, 'jobId': " + jobId + ", 'jobFolder': " + jobFolder);
-
 		executeCommandLine(commandLine, jobId, jobFolder);
-
-		return jobId;
 	}
 
 	private boolean checkRequiredParams(Map<String, List<String>> params, List<Option> validParams) {
@@ -124,10 +114,11 @@ public class AnalysisJobExecuter {
 		return paramsCopy;
 	}
 
-	public String createCommandLine(String executable, Map<String, List<String>> params) throws AccountManagementException {
+	public String createCommandLine(String executable, Map<String, List<String>> params)
+			throws AnalysisExecutionException {
 		logger.debug("params received in createCommandLine: " + params);
 		String binaryPath = analysisPath + executable;
-		
+
 		// Check required params
 		List<Option> validParams = execution.getValidParams();
 		validParams.addAll(analysis.getGlobalParams());
@@ -135,7 +126,7 @@ public class AnalysisJobExecuter {
 		if (checkRequiredParams(params, validParams)) {
 			params = new HashMap<String, List<String>>(removeUnknownParams(params, validParams));
 		} else {
-			throw new AccountManagementException("ERROR: missing some required params.");
+			throw new AnalysisExecutionException("ERROR: missing some required params.");
 		}
 
 		StringBuilder cmdLine = new StringBuilder();
@@ -165,7 +156,8 @@ public class AnalysisJobExecuter {
 		return cmdLine.toString();
 	}
 
-	private void executeCommandLine(String commandLine, String jobId, String jobFolder) {
+	private void executeCommandLine(String commandLine, String jobId, String jobFolder)
+			throws AnalysisExecutionException {
 		// read execution param
 		String jobExecutor = config.getProperty("ANALYSIS.JOB.EXECUTOR");
 
@@ -173,9 +165,9 @@ public class AnalysisJobExecuter {
 		if (jobExecutor == null || jobExecutor.trim().equalsIgnoreCase("LOCAL")) {
 			logger.debug("AnalysisJobExecuter: execute, running by SingleProcess");
 
-			 Command com = new Command(commandLine);
-			 SingleProcess sp = new SingleProcess(com);
-			 sp.getRunnableProcess().run();
+			Command com = new Command(commandLine);
+			SingleProcess sp = new SingleProcess(com);
+			sp.getRunnableProcess().run();
 		}
 		// sge execution
 		else {
@@ -185,8 +177,8 @@ public class AnalysisJobExecuter {
 			try {
 				sgeManager.queueJob(analysisName, jobId, 0, jobFolder, commandLine);
 			} catch (Exception e) {
-				e.printStackTrace();
-				// return "ERROR: could not queue job: " + e.getMessage();
+				logger.error(e.toString());
+				throw new AnalysisExecutionException("ERROR: sge execution failed.");
 			}
 		}
 	}
@@ -213,18 +205,19 @@ public class AnalysisJobExecuter {
 		}
 		return execution;
 	}
-	
+
 	public String getExamplePath(String fileName) {
 		return analysisPath + "examples/" + fileName;
 	}
 
 	public String help(String baseUrl) {
-		if(!Files.exists(Paths.get(manifestFile))) {
+		if (!Files.exists(Paths.get(manifestFile))) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
 		String execName = "";
-		if (executionName != null) execName = "." + executionName;
+		if (executionName != null)
+			execName = "." + executionName;
 		StringBuilder sb = new StringBuilder();
 		sb.append("Analysis: " + analysis.getName() + "\n");
 		sb.append("Description: " + analysis.getDescription() + "\n");
@@ -244,7 +237,7 @@ public class AnalysisJobExecuter {
 	}
 
 	public String params() {
-		if(!Files.exists(Paths.get(manifestFile))) {
+		if (!Files.exists(Paths.get(manifestFile))) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
@@ -256,15 +249,18 @@ public class AnalysisJobExecuter {
 		sb.append("Valid params for " + analysis.getName() + ":\n\n");
 		for (Option param : execution.getValidParams()) {
 			String required = "";
-			if (param.isRequired()) required = "*";
+			if (param.isRequired())
+				required = "*";
 			sb.append("\t" + param.getName() + ": " + param.getDescription() + " " + required + "\n");
 		}
 		sb.append("\n\t*: required parameters.\n");
 		return sb.toString();
 	}
 
-	public String test(String jobId, String jobFolder) { // TODO probar cuando funcione lo de usuarios
-		if(!Files.exists(Paths.get(manifestFile))) {
+	public String test(String jobId, String jobFolder) throws AnalysisExecutionException {
+		// TODO test
+
+		if (!Files.exists(Paths.get(manifestFile))) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
@@ -277,7 +273,7 @@ public class AnalysisJobExecuter {
 		return String.valueOf(jobId);
 	}
 
-	public String status(String jobId) {
+	public String status(String jobId) throws AnalysisExecutionException {
 		String status = "unknown";
 		Map<String, String> stateDic = new HashMap<String, String>();
 		stateDic.put("r", "running");
@@ -297,7 +293,8 @@ public class AnalysisJobExecuter {
 			}
 			xml = stdOut.toString();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.toString());
+			throw new AnalysisExecutionException("ERROR: can't get status for job " + jobId + ".");
 		}
 
 		if (xml != null) {
@@ -326,7 +323,8 @@ public class AnalysisJobExecuter {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e.toString());
+				throw new AnalysisExecutionException("ERROR: can't get status for job " + jobId + ".");
 			}
 		}
 
