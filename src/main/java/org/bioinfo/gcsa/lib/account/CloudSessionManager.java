@@ -76,6 +76,7 @@ public class CloudSessionManager {
 		Session session = new Session(sessionIp);
 
 		ioManager.createAccount(accountId);
+
 		try {
 			accountManager.createAccount(accountId, password, accountName, email, session);
 		} catch (AccountManagementException e) {
@@ -213,7 +214,7 @@ public class CloudSessionManager {
 		checkStr(objectId.toString(), "objectId");
 		checkObj(objectItem, "objectItem");
 
-		objectId = ioManager.createFolder(accountId, bucketId, objectId, parents);
+		ioManager.createFolder(accountId, bucketId, objectId, parents);
 
 		// set id and name to the itemObject
 		objectItem.setId(objectId.toString());
@@ -313,14 +314,11 @@ public class CloudSessionManager {
 		return accountManager.getAllBucketsBySessionId(accountId, sessionId);
 	}
 
-	public String createJob(String jobName, String jobFolder, String bucket, String toolName, List<String> dataList,
+	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList,
 			String commandLine, String sessionId) throws AccountManagementException, IOManagementException {
 
 		checkStr(jobName, "jobName");
-		checkStr(jobFolder, "jobFolder");
-		checkStr(bucket, "bucket");
 		checkStr(toolName, "toolName");
-		checkStr(commandLine, "commandLine");
 		checkStr(sessionId, "sessionId");
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
 
@@ -328,10 +326,12 @@ public class CloudSessionManager {
 		boolean jobFolderCreated = false;
 
 		if (jobFolder == null) {
-			ioManager.createJob(accountId, bucket, jobId);
+			logger.debug("PAKO jobfolder=null");
+			ioManager.createJob(accountId, jobId);
 			jobFolder = "jobs:" + jobId;
 			jobFolderCreated = true;
 		}
+		checkStr(jobFolder, "jobFolder");
 
 		Job job = new Job(jobId, jobName, jobFolder, toolName, Job.QUEUED, commandLine, "", dataList);
 
@@ -339,7 +339,7 @@ public class CloudSessionManager {
 			accountManager.createJob(accountId, job, sessionId);
 		} catch (AccountManagementException e) {
 			if (jobFolderCreated) {
-				ioManager.removeJob(accountId, bucket, jobId);
+				ioManager.removeJob(accountId, jobId);
 			}
 			throw e;
 		}
@@ -348,9 +348,9 @@ public class CloudSessionManager {
 
 	}
 
-	public String getJobFolder(String bucketId, String jobId, String sessionId) {
+	public String getJobFolder(String jobId, String sessionId) {
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
-		return ioManager.getJobPath(accountId, jobId, sessionId).toString();
+		return ioManager.getJobPath(accountId, null, jobId).toString();
 	}
 
 	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException {

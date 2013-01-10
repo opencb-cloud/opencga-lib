@@ -48,7 +48,7 @@ public class FileIOManager implements IOManager {
 
 	public FileIOManager(Properties properties) {
 		logger = new Logger();
-		logger.setLevel(Logger.INFO_LEVEL);
+		logger.setLevel(Logger.DEBUG_LEVEL);
 		this.properties = properties;
 		appHomePath = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
 		accountHomePath = appHomePath + properties.getProperty("GCSA.ACCOUNT.PATH");
@@ -74,6 +74,7 @@ public class FileIOManager implements IOManager {
 
 			try {
 				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER));
+				createBucket(accountId, "default");
 				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.ANALYSIS_FOLDER));
 				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.JOBS_FOLDER));
 			} catch (IOException e) {
@@ -198,10 +199,11 @@ public class FileIOManager implements IOManager {
 	 * JOBS METHODS
 	 * 
 	 ********************/
-	public URI createJob(String accountId, String bucketId, String jobId) throws IOManagementException {
+	public URI createJob(String accountId, String jobId) throws IOManagementException {
 		// String path = getAccountPath(accountId) + "/jobs";
-		Path jobFolder = getJobPath(accountId, bucketId, jobId);
-
+		Path jobFolder = getJobPath(accountId, null, jobId);
+		logger.debug("PAKO "+jobFolder);
+		
 		if (Files.exists(jobFolder.getParent()) && Files.isDirectory(jobFolder.getParent())
 				&& Files.isWritable(jobFolder.getParent())) {
 			try {
@@ -215,8 +217,8 @@ public class FileIOManager implements IOManager {
 		return jobFolder.toUri();
 	}
 
-	public void removeJob(String accountId, String bucketId, String jobId) throws IOManagementException {
-		Path jobFolder = getJobPath(accountId, bucketId, jobId);
+	public void removeJob(String accountId, String jobId) throws IOManagementException {
+		Path jobFolder = getJobPath(accountId, null, jobId);
 
 		try {
 			IOManagerUtils.deleteDirectory(jobFolder);
@@ -293,7 +295,7 @@ public class FileIOManager implements IOManager {
 			throw new IOManagementException("createFolder(): could not create the directory " + e.toString());
 		}
 
-		return fullFolderPath;
+		return objectId;
 	}
 
 	public Path createObject(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
@@ -379,18 +381,20 @@ public class FileIOManager implements IOManager {
 		int end = first + Integer.parseInt(limit);
 		String[] colnamesArray = colNames.split(",");
 		String[] colvisibilityArray = colVisibility.split(",");
-		
+
 		Path jobPath = getJobPath(accountId, bucketId, jobId);
 		Path jobFile = jobPath.resolve(filename);
-		
+
 		if (!Files.exists(jobFile)) {
-			throw new IOManagementException("getFileTableFromJob(): the file '" + jobFile.toAbsolutePath()+ "' not exists");
+			throw new IOManagementException("getFileTableFromJob(): the file '" + jobFile.toAbsolutePath()
+					+ "' not exists");
 		}
-		
+
 		String name = filename.replace("..", "").replace("/", "");
 		List<String> avoidingFiles = getAvoidingFiles();
 		if (avoidingFiles.contains(name)) {
-			throw new IOManagementException("getFileTableFromJob(): No permission to use the file '" + jobFile.toAbsolutePath()+ "'");
+			throw new IOManagementException("getFileTableFromJob(): No permission to use the file '"
+					+ jobFile.toAbsolutePath() + "'");
 		}
 
 		StringBuilder stringBuilder = new StringBuilder();
@@ -400,7 +404,8 @@ public class FileIOManager implements IOManager {
 		try {
 			headLines = IOUtils.head(jobFile.toFile(), 30);
 		} catch (IOException e) {
-			throw new IOManagementException("getFileTableFromJob(): could not head the file '" + jobFile.toAbsolutePath()+ "'");
+			throw new IOManagementException("getFileTableFromJob(): could not head the file '"
+					+ jobFile.toAbsolutePath() + "'");
 		}
 		Iterator<String> headIterator = headLines.iterator();
 		while (headIterator.hasNext()) {
@@ -418,7 +423,8 @@ public class FileIOManager implements IOManager {
 
 			int numFeatures = 0;
 			BufferedReader br = Files.newBufferedReader(jobFile, Charset.defaultCharset());
-//			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(jobFile.toFile())));
+			// BufferedReader br = new BufferedReader(new InputStreamReader(new
+			// FileInputStream(jobFile.toFile())));
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (!line.startsWith("#")) {
@@ -515,8 +521,8 @@ public class FileIOManager implements IOManager {
 		return stringBuilder.toString();
 	}
 
-	public DataInputStream getFileFromJob(String accountId, String bucketId,  String jobId,
-			String filename, String zip, String sessionId) throws IOManagementException, FileNotFoundException {
+	public DataInputStream getFileFromJob(String accountId, String bucketId, String jobId, String filename, String zip,
+			String sessionId) throws IOManagementException, FileNotFoundException {
 
 		String fileStr = getJobPath(accountId, bucketId, jobId).toString();
 		File file = new File(fileStr + "/" + filename);
@@ -604,11 +610,6 @@ public class FileIOManager implements IOManager {
 		} else {
 			return fullFilePath;
 		}
-	}
-
-	private String getObjectName(String objectname) {
-		String[] tokens = objectname.split("/");
-		return tokens[(tokens.length - 1)];
 	}
 
 	/****/
