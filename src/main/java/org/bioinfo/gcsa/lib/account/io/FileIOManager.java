@@ -238,7 +238,7 @@ public class FileIOManager implements IOManager {
 				}
 			}
 		} catch (IOException e) {
-			throw new IOManagementException("removeJob(): could not delete the job folder: " + e.toString());
+			throw new IOManagementException("removeJobObjects(): could not delete the job folder: " + e.toString());
 		}
 	}
 
@@ -359,6 +359,7 @@ public class FileIOManager implements IOManager {
 
 	public String getJobResultFromBucket(String accountId, String bucketId, String jobId, String sessionId)
 			throws DocumentException, IOManagementException, IOException {
+		logger.debug("PAKO ..."+accountId+"..."+bucketId+"...."+jobId);
 		Path jobPath = getJobPath(accountId, bucketId, jobId);
 		Path resultFile = jobPath.resolve("result.xml");
 
@@ -369,7 +370,7 @@ public class FileIOManager implements IOManager {
 			String resultJson = g.toJson(resultXml);
 			return resultJson;
 		} else {
-			throw new IOManagementException("deleteObject(): the file '" + resultFile + "' not exists");
+			throw new IOManagementException("getJobResultFromBucket(): the file '" + resultFile + "' not exists");
 		}
 	}
 

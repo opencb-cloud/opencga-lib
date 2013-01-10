@@ -283,19 +283,20 @@ public class CloudSessionManager {
 		checkStr(bucketId, "bucketId");
 		checkStr(jobId, "jobId");
 		checkStr(sessionId, "sessionId");
-		return ioManager.getJobResultFromBucket(accountId, bucketId, jobId, sessionId);
+		//TODO is the bucketId needed by a job?
+		return ioManager.getJobResultFromBucket(accountId, null, jobId, sessionId);
 	}
 
 	public String getFileTableFromJob(String accountId, String bucketId, String jobId, String filename, String start,
 			String limit, String colNames, String colVisibility, String callback, String sort, String sessionId)
 			throws IOManagementException, IOException, AccountManagementException {
-		// TODO check all
 		checkStr(accountId, "accountId");
 		checkStr(bucketId, "bucketId");
 		checkStr(filename, "filename");
 		checkStr(sessionId, "sessionId");
 
-		return ioManager.getFileTableFromJob(accountId, bucketId, jobId, filename, start, limit, colNames,
+		//TODO is the bucketId needed by a job?
+		return ioManager.getFileTableFromJob(accountId, null, jobId, filename, start, limit, colNames,
 				colVisibility, callback, sort, sessionId);
 	}
 
@@ -307,7 +308,8 @@ public class CloudSessionManager {
 		checkStr(filename, "filename");
 		checkStr(zip, "zip");
 
-		return ioManager.getFileFromJob(accountId, bucketId, jobId, filename, zip, sessionId);
+		//TODO is the bucketId needed by a job?
+		return ioManager.getFileFromJob(accountId, null, jobId, filename, zip, sessionId);
 	}
 
 	public String getAccountBuckets(String accountId, String sessionId) throws AccountManagementException {
