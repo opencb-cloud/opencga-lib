@@ -348,8 +348,7 @@ public class CloudSessionManager {
 
 	}
 
-	public String getJobFolder(String jobId, String sessionId) {
-		String accountId = accountManager.getAccountIdBySessionId(sessionId);
+	public String getJobFolder(String accountId, String jobId) {
 		return ioManager.getJobPath(accountId, null, jobId).toString();
 	}
 
