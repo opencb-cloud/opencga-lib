@@ -8,13 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
@@ -26,8 +24,8 @@ import org.bioinfo.gcsa.lib.account.db.AccountFileManager;
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.account.db.AccountManager;
 import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
-import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.account.io.FileIOManager;
+import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.storage.alignment.BamManager;
 import org.bioinfo.infrared.lib.common.Region;
 import org.dom4j.DocumentException;
@@ -35,9 +33,10 @@ import org.dom4j.DocumentException;
 public class CloudSessionManager {
 
 	private AccountManager accountManager;
-	private Logger logger;
 	private FileIOManager ioManager;
-	public static Properties properties;
+
+	private Logger logger;
+	private Properties properties;
 
 	public CloudSessionManager() throws FileNotFoundException, IOException, AccountManagementException {
 		this(System.getenv("GCSA_HOME"));
@@ -68,11 +67,11 @@ public class CloudSessionManager {
 	 *****************************/
 	public void createAccount(String accountId, String password, String accountName, String email, String sessionIp)
 			throws AccountManagementException, IOManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(password, "password");
-		checkStr(accountName, "accountName");
+		checkParameter(accountId, "accountId");
+		checkParameter(password, "password");
+		checkParameter(accountName, "accountName");
 		checkEmail(email);
-		checkStr(sessionIp, "sessionIp");
+		checkParameter(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 
 		ioManager.createAccount(accountId);
@@ -87,7 +86,7 @@ public class CloudSessionManager {
 	}
 
 	public String createAnonymousAccount(String sessionIp) throws AccountManagementException, IOManagementException {
-		checkStr(sessionIp, "sessionIp");
+		checkParameter(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 
 		String password = StringUtils.randomString(10);
@@ -104,16 +103,16 @@ public class CloudSessionManager {
 	}
 
 	public String login(String accountId, String password, String sessionIp) throws AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(password, "password");
-		checkStr(sessionIp, "sessionIp");
+		checkParameter(accountId, "accountId");
+		checkParameter(password, "password");
+		checkParameter(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 		return accountManager.login(accountId, password, session);
 	}
 
 	public void logout(String accountId, String sessionId) throws AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
 		accountManager.logout(accountId, sessionId);
 	}
 
@@ -121,8 +120,8 @@ public class CloudSessionManager {
 		String accountId = "anonymous_" + sessionId;
 		System.out.println("-----> el accountId del anonimo es: " + accountId + " y la sesionId: " + sessionId);
 
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
 
 		// TODO check inconsistency
 		ioManager.deleteAccount(accountId);
@@ -131,11 +130,11 @@ public class CloudSessionManager {
 
 	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
 			throws AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
-		checkStr(password, "password");
-		checkStr(nPassword1, "nPassword1");
-		checkStr(nPassword2, "nPassword2");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
+		checkParameter(password, "password");
+		checkParameter(nPassword1, "nPassword1");
+		checkParameter(nPassword2, "nPassword2");
 		if (!nPassword1.equals(nPassword2)) {
 			throw new AccountManagementException("the new pass is not the same in both fields");
 		}
@@ -143,22 +142,22 @@ public class CloudSessionManager {
 	}
 
 	public void changeEmail(String accountId, String sessionId, String nEmail) throws AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
 		checkEmail(nEmail);
 		accountManager.changeEmail(accountId, sessionId, nEmail);
 	}
 
 	public void resetPassword(String accountId, String email) throws AccountManagementException {
-		checkStr(accountId, "accountId");
+		checkParameter(accountId, "accountId");
 		checkEmail(email);
 		accountManager.resetPassword(accountId, email);
 	}
 
 	public String getAccountInfo(String accountId, String sessionId, String lastActivity)
 			throws AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
 		// lastActivity can be null
 		return accountManager.getAccountInfo(accountId, sessionId, lastActivity);
 	}
@@ -177,9 +176,9 @@ public class CloudSessionManager {
 
 	public void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException,
 			IOManagementException {
-		checkStr(bucket.getName(), "bucketName");
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
+		checkParameter(bucket.getName(), "bucketName");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
 
 		ioManager.createBucket(accountId, bucket.getName());
 		try {
@@ -193,10 +192,10 @@ public class CloudSessionManager {
 	public String createObjectToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
 			InputStream fileIs, boolean parents, String sessionId) throws AccountManagementException,
 			IOManagementException, IOException {
-		checkStr(bucketId, "bucket");
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
-		checkStr(objectId.toString(), "objectId");
+		checkParameter(bucketId, "bucket");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
+		checkParameter(objectId.toString(), "objectId");
 		checkObj(objectItem, "objectItem");
 
 		objectId = ioManager.createObject(accountId, bucketId, objectId, objectItem, fileIs, parents);
@@ -216,10 +215,10 @@ public class CloudSessionManager {
 
 	public String createFolderToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
 			boolean parents, String sessionId) throws AccountManagementException, IOManagementException {
-		checkStr(bucketId, "bucket");
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
-		checkStr(objectId.toString(), "objectId");
+		checkParameter(bucketId, "bucket");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
+		checkParameter(objectId.toString(), "objectId");
 		checkObj(objectItem, "objectItem");
 
 		ioManager.createFolder(accountId, bucketId, objectId, parents);
@@ -239,10 +238,10 @@ public class CloudSessionManager {
 
 	public void deleteDataFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
 			throws AccountManagementException, IOManagementException {
-		checkStr(bucketId, "bucket");
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
-		checkStr(objectId.toString(), "objectId");
+		checkParameter(bucketId, "bucket");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
+		checkParameter(objectId.toString(), "objectId");
 
 		objectId = ioManager.deleteObject(accountId, bucketId, objectId);
 		accountManager.deleteObjectFromBucket(accountId, bucketId, objectId, sessionId);
@@ -262,11 +261,11 @@ public class CloudSessionManager {
 			Map<String, List<String>> params, String sessionId) throws AccountManagementException,
 			IOManagementException, IOException {
 
-		checkStr(bucketId, "bucket");
-		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
-		checkStr(objectId.toString(), "objectId");
-		checkStr(regionStr, "regionStr");
+		checkParameter(bucketId, "bucket");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
+		checkParameter(objectId.toString(), "objectId");
+		checkParameter(regionStr, "regionStr");
 		Region region = Region.parseRegion(regionStr);
 		checkObj(region, "region");
 
@@ -287,8 +286,8 @@ public class CloudSessionManager {
 
 	public String getJobResult(String accountId, String jobId) throws IOException, DocumentException,
 			IOManagementException, AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(jobId, "jobId");
+		checkParameter(accountId, "accountId");
+		checkParameter(jobId, "jobId");
 
 		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 
@@ -298,9 +297,9 @@ public class CloudSessionManager {
 	public String getFileTableFromJob(String accountId, String jobId, String filename, String start, String limit,
 			String colNames, String colVisibility, String callback, String sort) throws IOManagementException,
 			IOException, AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(jobId, "jobId");
-		checkStr(filename, "filename");
+		checkParameter(accountId, "accountId");
+		checkParameter(jobId, "jobId");
+		checkParameter(filename, "filename");
 
 		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 
@@ -308,10 +307,10 @@ public class CloudSessionManager {
 	}
 
 	public DataInputStream getFileFromJob(String accountId, String jobId, String filename, String zip) throws IOManagementException, IOException, AccountManagementException {
-		checkStr(accountId, "accountId");
-		checkStr(jobId, "jobId");
-		checkStr(filename, "filename");
-		checkStr(zip, "zip");
+		checkParameter(accountId, "accountId");
+		checkParameter(jobId, "jobId");
+		checkParameter(filename, "filename");
+		checkParameter(zip, "zip");
 		
 		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 
@@ -325,9 +324,9 @@ public class CloudSessionManager {
 	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList,
 			String commandLine, String sessionId) throws AccountManagementException, IOManagementException {
 
-		checkStr(jobName, "jobName");
-		checkStr(toolName, "toolName");
-		checkStr(sessionId, "sessionId");
+		checkParameter(jobName, "jobName");
+		checkParameter(toolName, "toolName");
+		checkParameter(sessionId, "sessionId");
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
 
 		String jobId = StringUtils.randomString(15);
@@ -338,7 +337,7 @@ public class CloudSessionManager {
 			jobFolder = "jobs:" + jobId;
 			jobFolderCreated = true;
 		}
-		checkStr(jobFolder, "jobFolder");
+		checkParameter(jobFolder, "jobFolder");
 
 		Job job = new Job(jobId, jobName, jobFolder, toolName, Job.QUEUED, commandLine, "", dataList);
 
@@ -377,9 +376,19 @@ public class CloudSessionManager {
 		}
 	}
 
-	private void checkStr(String str, String name) throws AccountManagementException {
-		if (str == null || str.equals("") || str.equals("null")) {
-			throw new AccountManagementException("parameter '" + name + "' is null or empty: " + str + ".");
+	private void checkParameter(String param, String name) throws AccountManagementException {
+		if (param == null || param.equals("") || param.equals("null")) {
+			throw new AccountManagementException("Error in parameter: parameter '" + name + "' is null or empty: " + param + ".");
+		}
+	}
+	
+	private void checkParameters(String ... args) throws AccountManagementException {
+		if(args.length % 2 == 0) {
+			for(int i=0; i<args.length; i+=2) {
+				checkParameter(args[i], args[i+1]);
+			}
+		}else {
+			throw new AccountManagementException("Error in parameter: parameter list is not multiple of 2");
 		}
 	}
 
