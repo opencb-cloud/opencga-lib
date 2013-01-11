@@ -163,6 +163,14 @@ public class CloudSessionManager {
 		return accountManager.getAccountInfo(accountId, sessionId, lastActivity);
 	}
 
+	public Path getAccountPath(String accountId) {
+		return ioManager.getAccountPath(accountId);
+	}
+
+	public Path getBucketPath(String accountId, String bucketId) {
+		return ioManager.getBucketPath(accountId, bucketId);
+	}
+
 	public String getObjectPath(String accountId, String bucketId, Path ObjectId) {
 		return ioManager.getObjectPath(accountId, bucketId, ObjectId).toString();
 	}
@@ -242,8 +250,8 @@ public class CloudSessionManager {
 	}
 
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
-		Path jobPath = ioManager.getJobPath(accountId, "", jobId);
-		if (Files.exists(Paths.get(jobPath.toString(), "result.xml"))) {
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
+		if (Files.exists(jobPath.resolve("result.xml"))) {
 			accountManager.incJobVisites(accountId, jobId);
 			return "DONE";
 		}
@@ -277,39 +285,37 @@ public class CloudSessionManager {
 		return result;
 	}
 
-	public String getJobResultFromBucket(String accountId, String bucketId, String jobId, String sessionId)
-			throws IOException, DocumentException, IOManagementException, AccountManagementException {
+	public String getJobResult(String accountId, String jobId) throws IOException, DocumentException,
+			IOManagementException, AccountManagementException {
 		checkStr(accountId, "accountId");
-		checkStr(bucketId, "bucketId");
 		checkStr(jobId, "jobId");
-		checkStr(sessionId, "sessionId");
-		//TODO is the bucketId needed by a job?
-		return ioManager.getJobResultFromBucket(accountId, null, jobId, sessionId);
+
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
+
+		return ioManager.getJobResult(jobPath);
 	}
 
-	public String getFileTableFromJob(String accountId, String bucketId, String jobId, String filename, String start,
-			String limit, String colNames, String colVisibility, String callback, String sort, String sessionId)
-			throws IOManagementException, IOException, AccountManagementException {
+	public String getFileTableFromJob(String accountId, String jobId, String filename, String start, String limit,
+			String colNames, String colVisibility, String callback, String sort) throws IOManagementException,
+			IOException, AccountManagementException {
 		checkStr(accountId, "accountId");
-		checkStr(bucketId, "bucketId");
+		checkStr(jobId, "jobId");
 		checkStr(filename, "filename");
-		checkStr(sessionId, "sessionId");
 
-		//TODO is the bucketId needed by a job?
-		return ioManager.getFileTableFromJob(accountId, null, jobId, filename, start, limit, colNames,
-				colVisibility, callback, sort, sessionId);
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
+
+		return ioManager.getFileTableFromJob(jobPath, filename, start, limit, colNames, colVisibility, callback, sort);
 	}
 
-	public DataInputStream getFileFromJob(String accountId, String bucketId, String jobId, String filename, String zip,
-			String sessionId) throws IOManagementException, IOException, AccountManagementException {
-		checkStr(bucketId, "bucket");
+	public DataInputStream getFileFromJob(String accountId, String jobId, String filename, String zip) throws IOManagementException, IOException, AccountManagementException {
 		checkStr(accountId, "accountId");
-		checkStr(sessionId, "sessionId");
+		checkStr(jobId, "jobId");
 		checkStr(filename, "filename");
 		checkStr(zip, "zip");
+		
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 
-		//TODO is the bucketId needed by a job?
-		return ioManager.getFileFromJob(accountId, null, jobId, filename, zip, sessionId);
+		return ioManager.getFileFromJob(jobPath, filename, zip);
 	}
 
 	public String getAccountBuckets(String accountId, String sessionId) throws AccountManagementException {
@@ -328,7 +334,6 @@ public class CloudSessionManager {
 		boolean jobFolderCreated = false;
 
 		if (jobFolder == null) {
-			logger.debug("PAKO jobfolder=null");
 			ioManager.createJob(accountId, jobId);
 			jobFolder = "jobs:" + jobId;
 			jobFolderCreated = true;

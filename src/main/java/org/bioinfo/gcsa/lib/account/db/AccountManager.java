@@ -65,10 +65,7 @@ public interface AccountManager {
 	 */
 	public void createJob(String accountId, Job job, String sessionId) throws AccountManagementException;
 
-	// public String getJobFolder(String project, String jobId, String
-	// sessionId);
-
-	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException;
+	public Path getJobPath(String accountId, String jobId) throws AccountManagementException;
 
 	public void incJobVisites(String accountId, String jobId) throws AccountManagementException;
 
@@ -77,6 +74,8 @@ public interface AccountManager {
 	/*
 	 * Utils
 	 */
+	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException;
+	
 	public List<Bucket> jsonToBucketList(String json);
 
 	public ObjectItem getObjectFromBucket(String accountId, String bucketId, Path objectId, String sessionId)

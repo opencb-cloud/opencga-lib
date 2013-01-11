@@ -2,6 +2,7 @@ package org.bioinfo.gcsa.lib.account.db;
 
 import java.net.UnknownHostException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -488,6 +489,24 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException("could not create job in database");
 		}
 	}
+	
+	@Override
+	public Path getJobPath(String accountId, String jobId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("jobs.id", jobId);
+		fields.put("_id", 0);
+		fields.put("jobs.$.outdir", 1);
+		DBObject item = userCollection.findOne(query, fields);
+		
+		if (item != null) {
+			Job[] job = gson.fromJson(item.get("jobs").toString(), Job[].class);
+			return Paths.get(job[0].getOutdir());
+		} else {
+			throw new AccountManagementException("job "+jobId+" not found");
+		}
+	}
 
 	@Override
 	public void incJobVisites(String accountId, String jobId) throws AccountManagementException {
@@ -544,7 +563,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 		DBObject item = userCollection.findOne(query, fields);
 		if (item != null) {
-			AnalysisPlugin[] userAnalysis = new Gson().fromJson(item.get("plugins").toString(), AnalysisPlugin[].class);
+			AnalysisPlugin[] userAnalysis = gson.fromJson(item.get("plugins").toString(), AnalysisPlugin[].class);
 			return Arrays.asList(userAnalysis);
 		} else {
 			throw new AccountManagementException("invalid session id");
@@ -559,7 +578,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 	public List<Bucket> jsonToBucketList(String json) {
 
-		Bucket[] buckets = new Gson().fromJson(json, Bucket[].class);
+		Bucket[] buckets = gson.fromJson(json, Bucket[].class);
 		return Arrays.asList(buckets);
 	}
 
@@ -569,7 +588,7 @@ public class AccountMongoDBManager implements AccountManager {
 			set = new BasicDBObject("$" + operator, new BasicDBObject().append(field, value));
 		} else {
 			set = new BasicDBObject("$" + operator, new BasicDBObject().append(field,
-					(DBObject) JSON.parse(new Gson().toJson(value))));
+					(DBObject) JSON.parse(gson.toJson(value))));
 		}
 		userCollection.update(filter, set);
 	}
@@ -583,36 +602,13 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 
 		BasicDBObject set = new BasicDBObject("$set", new BasicDBObject().append(field,
-				JSON.parse(new Gson().toJson(value))));
+				JSON.parse(gson.toJson(value))));
 
 		userCollection.update(container, set);
 
 	}
 
 	/* TODO Mirar estos métodos */
-	// @Override
-	// public String getJobFolder(String bucket, String jobId, String sessionId)
-	// {
-	// // String accountId = getAccountIdBySessionId(sessionId);
-	// // BasicDBObject query = new BasicDBObject();
-	// // BasicDBObject fields = new BasicDBObject();
-	// // query.put("accountId", accountId);
-	// // query.put("buckets.status", "1");
-	// // fields.put("_id", 0);
-	// // fields.put("buckets.$", 1);
-	// // DBObject item = userCollection.findOne(query,fields);
-	// // Bucket[] p = new Gson().fromJson(item.get("buckets").toString(),
-	// // Bucket[].class);
-	//
-	// String jobFolder = accounts + "/" + getAccountIdBySessionId(sessionId) +
-	// "/jobs/" + jobId + "/";
-	// if (new File(jobFolder).exists()) {
-	// return jobFolder;
-	// } else {
-	// return "ERROR: Invalid jobId";
-	// }
-	// }
-
 	// private BasicDBObject createBasicDBQuery(String accountId, String
 	// sessionId) {
 	// BasicDBObject query = new BasicDBObject();

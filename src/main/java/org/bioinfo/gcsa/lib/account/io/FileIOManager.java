@@ -202,8 +202,8 @@ public class FileIOManager implements IOManager {
 	public URI createJob(String accountId, String jobId) throws IOManagementException {
 		// String path = getAccountPath(accountId) + "/jobs";
 		Path jobFolder = getJobPath(accountId, null, jobId);
-		logger.debug("PAKO "+jobFolder);
-		
+		logger.debug("PAKO " + jobFolder);
+
 		if (Files.exists(jobFolder.getParent()) && Files.isDirectory(jobFolder.getParent())
 				&& Files.isWritable(jobFolder.getParent())) {
 			try {
@@ -357,10 +357,7 @@ public class FileIOManager implements IOManager {
 		}
 	}
 
-	public String getJobResultFromBucket(String accountId, String bucketId, String jobId, String sessionId)
-			throws DocumentException, IOManagementException, IOException {
-		logger.debug("PAKO ..."+accountId+"..."+bucketId+"...."+jobId);
-		Path jobPath = getJobPath(accountId, bucketId, jobId);
+	public String getJobResult(Path jobPath) throws DocumentException, IOManagementException, IOException {
 		Path resultFile = jobPath.resolve("result.xml");
 
 		if (Files.exists(resultFile)) {
@@ -374,16 +371,15 @@ public class FileIOManager implements IOManager {
 		}
 	}
 
-	public String getFileTableFromJob(String accountId, String bucketId, String jobId, String filename, String start,
-			String limit, String colNames, String colVisibility, String callback, String sort, String sessionId)
-			throws IOManagementException, IOException {
+	public String getFileTableFromJob(Path jobPath, String filename, String start, String limit, String colNames,
+			String colVisibility, String callback, String sort) throws IOManagementException, IOException {
 
 		int first = Integer.parseInt(start);
 		int end = first + Integer.parseInt(limit);
 		String[] colnamesArray = colNames.split(",");
 		String[] colvisibilityArray = colVisibility.split(",");
 
-		Path jobPath = getJobPath(accountId, bucketId, jobId);
+		// Path jobPath = getJobPath(accountId, bucketId, jobId);
 		Path jobFile = jobPath.resolve(filename);
 
 		if (!Files.exists(jobFile)) {
@@ -522,11 +518,12 @@ public class FileIOManager implements IOManager {
 		return stringBuilder.toString();
 	}
 
-	public DataInputStream getFileFromJob(String accountId, String bucketId, String jobId, String filename, String zip,
-			String sessionId) throws IOManagementException, FileNotFoundException {
+	public DataInputStream getFileFromJob(Path jobPath, String filename, String zip) throws IOManagementException,
+			FileNotFoundException {
 
-		String fileStr = getJobPath(accountId, bucketId, jobId).toString();
-		File file = new File(fileStr + "/" + filename);
+		// String fileStr = getJobPath(accountId, bucketId, jobId).toString();
+		Path filePath = jobPath.resolve(filename);
+		File file = filePath.toFile();
 		String name = filename.replace("..", "").replace("/", "");
 		List<String> avoidingFiles = getAvoidingFiles();
 		if (avoidingFiles.contains(name)) {
@@ -571,11 +568,11 @@ public class FileIOManager implements IOManager {
 
 	/**************/
 
-	private Path getAccountPath(String accountId) {
+	public Path getAccountPath(String accountId) {
 		return Paths.get(accountHomePath, accountId);
 	}
 
-	private Path getBucketPath(String accountId, String bucketId) {
+	public Path getBucketPath(String accountId, String bucketId) {
 		if (bucketId != null) {
 			return getAccountPath(accountId).resolve(Paths.get(FileIOManager.BUCKETS_FOLDER, bucketId.toLowerCase()));
 		}
