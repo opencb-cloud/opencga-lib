@@ -335,7 +335,7 @@ public class CloudSessionManager {
 
 		if (jobFolder == null) {
 			ioManager.createJob(accountId, jobId);
-			jobFolder = "jobs:" + jobId;
+			jobFolder = Paths.get("jobs").resolve(jobId).toString();
 			jobFolderCreated = true;
 		}
 		checkStr(jobFolder, "jobFolder");
@@ -352,7 +352,6 @@ public class CloudSessionManager {
 		}
 
 		return jobId;
-
 	}
 
 	public String getJobFolder(String accountId, String jobId) {

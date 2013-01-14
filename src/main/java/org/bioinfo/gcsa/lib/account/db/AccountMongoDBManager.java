@@ -536,6 +536,10 @@ public class AccountMongoDBManager implements AccountManager {
 
 		BasicDBObject action = new BasicDBObject("$set", new BasicDBObject("jobs.$.commandLine", commandLine));
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		
+		logger.info("setJobCommandLine - ACCOUNT: "+accountId);
+		logger.info("setJobCommandLine - JOB: "+jobId);
+		logger.info("setJobCommandLine - COMMAND LINE: "+commandLine);
 
 		WriteResult result = userCollection.update(query, action);
 		if (result.getLastError().getErrorMessage() == null) {
