@@ -65,11 +65,11 @@ public class CloudSessionManager {
 	/**
 	 * @throws IOManagementException
 	 *****************************/
-	public void createAccount(String accountId, String password, String accountName, String email, String sessionIp)
+	public void createAccount(String accountId, String password, String name, String email, String sessionIp)
 			throws AccountManagementException, IOManagementException {
 		checkParameter(accountId, "accountId");
 		checkParameter(password, "password");
-		checkParameter(accountName, "accountName");
+		checkParameter(name, "name");
 		checkEmail(email);
 		checkParameter(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
@@ -77,7 +77,7 @@ public class CloudSessionManager {
 		ioManager.createAccount(accountId);
 
 		try {
-			accountManager.createAccount(accountId, password, accountName, email, session);
+			accountManager.createAccount(accountId, password, name, email, session);
 		} catch (AccountManagementException e) {
 			ioManager.deleteAccount(accountId);
 			throw e;
