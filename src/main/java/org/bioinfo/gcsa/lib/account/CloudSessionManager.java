@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -15,6 +16,7 @@ import java.util.regex.Pattern;
 
 import org.bioinfo.commons.log.Logger;
 import org.bioinfo.commons.utils.StringUtils;
+import org.bioinfo.gcsa.lib.account.beans.Acl;
 import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Job;
@@ -162,6 +164,11 @@ public class CloudSessionManager {
 		return accountManager.getAccountInfo(accountId, sessionId, lastActivity);
 	}
 
+	public void deleteAccount(String accountId, String sessionId) throws AccountManagementException,
+			IOManagementException {
+		// TODO
+	}
+
 	public Path getAccountPath(String accountId) {
 		return ioManager.getAccountPath(accountId);
 	}
@@ -248,6 +255,15 @@ public class CloudSessionManager {
 
 	}
 
+	public void shareObject(String accountId, String bucketId, Path objectId, String toAccountId, boolean read,
+			boolean write, boolean execute, String sessionId) throws AccountManagementException {
+		checkParameters(accountId, "accountId", bucketId, "bucketId", objectId.toString(), "objectId", toAccountId,
+				"toAccountId", sessionId, "sessionId");
+		
+		Acl acl = new Acl(toAccountId, "", read, write, execute);
+		accountManager.shareObject(accountId, bucketId, objectId, acl, sessionId);
+	}
+
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
 		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 		if (Files.exists(jobPath.resolve("result.xml"))) {
@@ -306,12 +322,13 @@ public class CloudSessionManager {
 		return ioManager.getFileTableFromJob(jobPath, filename, start, limit, colNames, colVisibility, callback, sort);
 	}
 
-	public DataInputStream getFileFromJob(String accountId, String jobId, String filename, String zip) throws IOManagementException, IOException, AccountManagementException {
+	public DataInputStream getFileFromJob(String accountId, String jobId, String filename, String zip)
+			throws IOManagementException, IOException, AccountManagementException {
 		checkParameter(accountId, "accountId");
 		checkParameter(jobId, "jobId");
 		checkParameter(filename, "filename");
 		checkParameter(zip, "zip");
-		
+
 		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 
 		return ioManager.getFileFromJob(jobPath, filename, zip);
@@ -377,16 +394,17 @@ public class CloudSessionManager {
 
 	private void checkParameter(String param, String name) throws AccountManagementException {
 		if (param == null || param.equals("") || param.equals("null")) {
-			throw new AccountManagementException("Error in parameter: parameter '" + name + "' is null or empty: " + param + ".");
+			throw new AccountManagementException("Error in parameter: parameter '" + name + "' is null or empty: "
+					+ param + ".");
 		}
 	}
-	
-	private void checkParameters(String ... args) throws AccountManagementException {
-		if(args.length % 2 == 0) {
-			for(int i=0; i<args.length; i+=2) {
-				checkParameter(args[i], args[i+1]);
+
+	private void checkParameters(String... args) throws AccountManagementException {
+		if (args.length % 2 == 0) {
+			for (int i = 0; i < args.length; i += 2) {
+				checkParameter(args[i], args[i + 1]);
 			}
-		}else {
+		} else {
 			throw new AccountManagementException("Error in parameter: parameter list is not multiple of 2");
 		}
 	}

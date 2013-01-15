@@ -14,6 +14,7 @@ import org.bioinfo.commons.log.Logger;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 import org.bioinfo.gcsa.lib.account.beans.Account;
+import org.bioinfo.gcsa.lib.account.beans.Acl;
 import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Job;
@@ -463,6 +464,11 @@ public class AccountMongoDBManager implements AccountManager {
 		}
 	}
 
+	public void shareObject(String accountId, String bucketId, Path objectId, Acl acl, String sessionId)
+			throws AccountManagementException {
+		//TODO
+	}
+
 	/********************
 	 * 
 	 * JOB METHODS
@@ -489,7 +495,7 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException("could not create job in database");
 		}
 	}
-	
+
 	@Override
 	public Path getJobPath(String accountId, String jobId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
@@ -499,12 +505,12 @@ public class AccountMongoDBManager implements AccountManager {
 		fields.put("_id", 0);
 		fields.put("jobs.$.outdir", 1);
 		DBObject item = userCollection.findOne(query, fields);
-		
+
 		if (item != null) {
 			Job[] job = gson.fromJson(item.get("jobs").toString(), Job[].class);
 			return Paths.get(job[0].getOutdir());
 		} else {
-			throw new AccountManagementException("job "+jobId+" not found");
+			throw new AccountManagementException("job " + jobId + " not found");
 		}
 	}
 
@@ -536,10 +542,10 @@ public class AccountMongoDBManager implements AccountManager {
 
 		BasicDBObject action = new BasicDBObject("$set", new BasicDBObject("jobs.$.commandLine", commandLine));
 		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
-		
-		logger.info("setJobCommandLine - ACCOUNT: "+accountId);
-		logger.info("setJobCommandLine - JOB: "+jobId);
-		logger.info("setJobCommandLine - COMMAND LINE: "+commandLine);
+
+		logger.info("setJobCommandLine - ACCOUNT: " + accountId);
+		logger.info("setJobCommandLine - JOB: " + jobId);
+		logger.info("setJobCommandLine - COMMAND LINE: " + commandLine);
 
 		WriteResult result = userCollection.update(query, action);
 		if (result.getLastError().getErrorMessage() == null) {
@@ -605,8 +611,7 @@ public class AccountMongoDBManager implements AccountManager {
 			container.putAll(filter[i].toMap());
 		}
 
-		BasicDBObject set = new BasicDBObject("$set", new BasicDBObject().append(field,
-				JSON.parse(gson.toJson(value))));
+		BasicDBObject set = new BasicDBObject("$set", new BasicDBObject().append(field, JSON.parse(gson.toJson(value))));
 
 		userCollection.update(container, set);
 
