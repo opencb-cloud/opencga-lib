@@ -540,12 +540,9 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("jobs.id", jobId);
 
-		BasicDBObject action = new BasicDBObject("$set", new BasicDBObject("jobs.$.commandLine", commandLine));
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
-
-		logger.info("setJobCommandLine - ACCOUNT: " + accountId);
-		logger.info("setJobCommandLine - JOB: " + jobId);
-		logger.info("setJobCommandLine - COMMAND LINE: " + commandLine);
+		BasicDBObject item = new BasicDBObject("jobs.$.commandLine", commandLine);
+		BasicDBObject action = new BasicDBObject("$set", item);
+//		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
 
 		WriteResult result = userCollection.update(query, action);
 		if (result.getLastError().getErrorMessage() == null) {
@@ -556,6 +553,8 @@ public class AccountMongoDBManager implements AccountManager {
 		} else {
 			throw new AccountManagementException("could not update database");
 		}
+		
+		updateLastActivity(accountId);
 	}
 
 	/********************
@@ -615,6 +614,22 @@ public class AccountMongoDBManager implements AccountManager {
 
 		userCollection.update(container, set);
 
+	}
+	
+	private void updateLastActivity(String accountId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+
+		BasicDBObject action = new BasicDBObject("lastActivity", GcsaUtils.getTime());
+
+		WriteResult result = userCollection.update(query, action);
+		if (result.getLastError().getErrorMessage() == null) {
+			if (result.getN() != 1) {
+				throw new AccountManagementException("could not update lastActivity, with this parameters");
+			}
+			logger.info("data object created");
+		} else {
+			throw new AccountManagementException("could not update database");
+		}
 	}
 
 	/* TODO Mirar estos métodos */
