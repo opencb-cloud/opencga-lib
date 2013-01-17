@@ -357,7 +357,8 @@ public class CloudSessionManager {
 		checkParameter(jobFolder, "jobFolder");
 
 		Job job = new Job(jobId, jobName, jobFolder, toolName, Job.QUEUED, commandLine, "", dataList);
-
+		
+		
 		try {
 			accountManager.createJob(accountId, job, sessionId);
 		} catch (AccountManagementException e) {
@@ -379,7 +380,7 @@ public class CloudSessionManager {
 	}
 
 	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException {
-		accountManager.setJobCommandLine(accountId, jobId, commandLine);
+		accountManager.setJobCommandLine(accountId, jobId, commandLine);//this method increases visites by 1 in mongo
 	}
 
 	/********************/

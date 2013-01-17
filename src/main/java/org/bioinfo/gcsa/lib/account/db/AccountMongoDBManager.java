@@ -307,8 +307,11 @@ public class AccountMongoDBManager implements AccountManager {
 		fields.put("password", 0);
 		fields.put("sessions", 0);
 		fields.put("oldSessions", 0);
+		
 
 		DBObject item = userCollection.findOne(query, fields);
+		System.out.println("PAKO:::::::::"+lastActivity);
+		System.out.println("PAKO:::::::::"+item.get("lastActivity").toString());
 		if (item != null) {
 			// if has not been modified since last time was call
 			if (lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)) {
@@ -466,7 +469,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 	public void shareObject(String accountId, String bucketId, Path objectId, Acl acl, String sessionId)
 			throws AccountManagementException {
-		//TODO
+		// TODO
 	}
 
 	/********************
@@ -540,9 +543,15 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("jobs.id", jobId);
 
+		// If you have two $set actions to do, put them together, you can not
+		// create a BasicDBObject with two $set keys as you cannot set two keys
+		// with, the same name on a BasicDBObject, any previous BasicDBObject
+		// put() will be overridden.
+		// NOTE: this can be done with a query in the mongo console but not in JAVA.
 		BasicDBObject item = new BasicDBObject("jobs.$.commandLine", commandLine);
+		item.put("lastActivity", GcsaUtils.getTime());
 		BasicDBObject action = new BasicDBObject("$set", item);
-//		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		action.put("$inc", new BasicDBObject("jobs.$.visites", 1));
 
 		WriteResult result = userCollection.update(query, action);
 		if (result.getLastError().getErrorMessage() == null) {
@@ -553,8 +562,6 @@ public class AccountMongoDBManager implements AccountManager {
 		} else {
 			throw new AccountManagementException("could not update database");
 		}
-		
-		updateLastActivity(accountId);
 	}
 
 	/********************
@@ -615,7 +622,7 @@ public class AccountMongoDBManager implements AccountManager {
 		userCollection.update(container, set);
 
 	}
-	
+
 	private void updateLastActivity(String accountId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 
