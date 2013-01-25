@@ -310,8 +310,7 @@ public class AccountMongoDBManager implements AccountManager {
 		
 
 		DBObject item = userCollection.findOne(query, fields);
-		System.out.println("PAKO:::::::::"+lastActivity);
-		System.out.println("PAKO:::::::::"+item.get("lastActivity").toString());
+
 		if (item != null) {
 			// if has not been modified since last time was call
 			if (lastActivity != null && item.get("lastActivity").toString().equals(lastActivity)) {
