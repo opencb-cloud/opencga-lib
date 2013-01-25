@@ -500,6 +500,23 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
+	public String getJob(String accountId, String jobId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject();
+		BasicDBObject fields = new BasicDBObject();
+		query.put("accountId", accountId);
+		query.put("jobs.id", jobId);
+		fields.put("_id", 0);
+		fields.put("jobs.$", 1);
+		DBObject item = userCollection.findOne(query, fields);
+
+		if (item != null) {
+			return item.get("jobs").toString();
+		} else {
+			throw new AccountManagementException("job " + jobId + " not found");
+		}
+	}
+	
+	@Override
 	public Path getJobPath(String accountId, String jobId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
@@ -508,7 +525,7 @@ public class AccountMongoDBManager implements AccountManager {
 		fields.put("_id", 0);
 		fields.put("jobs.$.outdir", 1);
 		DBObject item = userCollection.findOne(query, fields);
-
+		
 		if (item != null) {
 			Job[] job = gson.fromJson(item.get("jobs").toString(), Job[].class);
 			return Paths.get(job[0].getOutdir());

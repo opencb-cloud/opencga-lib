@@ -309,6 +309,14 @@ public class CloudSessionManager {
 
 		return ioManager.getJobResult(jobPath);
 	}
+	
+	public String getJobObject(String accountId, String jobId) throws IOException, DocumentException,
+	IOManagementException, AccountManagementException {
+		checkParameter(accountId, "accountId");
+		checkParameter(jobId, "jobId");
+		
+		return accountManager.getJob(accountId, jobId);
+	}
 
 	public String getFileTableFromJob(String accountId, String jobId, String filename, String start, String limit,
 			String colNames, String colVisibility, String callback, String sort) throws IOManagementException,

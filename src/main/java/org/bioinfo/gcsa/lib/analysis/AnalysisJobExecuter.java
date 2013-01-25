@@ -273,6 +273,10 @@ public class AnalysisJobExecuter {
 		return String.valueOf(jobId);
 	}
 
+	public String getResult() throws AnalysisExecutionException {
+		return execution.getResult();
+	}
+	
 	public String status(String jobId) throws AnalysisExecutionException {
 		String status = "unknown";
 		Map<String, String> stateDic = new HashMap<String, String>();

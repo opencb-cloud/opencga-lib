@@ -69,6 +69,8 @@ public interface AccountManager {
 	 * Job methods
 	 */
 	public void createJob(String accountId, Job job, String sessionId) throws AccountManagementException;
+	
+	public String getJob(String accountId, String jobId) throws AccountManagementException;
 
 	public Path getJobPath(String accountId, String jobId) throws AccountManagementException;
 
