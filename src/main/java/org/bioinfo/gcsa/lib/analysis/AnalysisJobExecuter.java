@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,10 +42,11 @@ public class AnalysisJobExecuter {
 	protected Logger logger;
 	protected String home;
 	protected String analysisName;
-	protected String analysisRootPath;
-	protected String analysisPath;
 	protected String executionName;
-	protected String manifestFile;
+	protected Path analysisRootPath;
+	protected Path analysisPath;
+	protected Path manifestFile;
+	protected Path resultsFile;
 	protected String sessionId;
 	protected Analysis analysis;
 	protected Execution execution;
@@ -64,9 +66,9 @@ public class AnalysisJobExecuter {
 		logger.setLevel(Integer.parseInt(config.getProperty("ANALYSIS.LOG.LEVEL")));
 
 		if (analysisOwner.equals("system"))
-			analysisRootPath = config.getProperty("ANALYSIS.BINARIES.PATH");
+			analysisRootPath = Paths.get(config.getProperty("ANALYSIS.BINARIES.PATH"));
 		else
-			analysisRootPath = home + "/accounts/" + analysisOwner;
+			analysisRootPath = Paths.get(home, "accounts", analysisOwner);
 
 		analysisName = analysisStr;
 		executionName = null;
@@ -75,8 +77,11 @@ public class AnalysisJobExecuter {
 			analysisName = analysisName.split("\\.")[0];
 		}
 
-		analysisPath = home + "/" + analysisRootPath + "/" + analysisName + "/";
-		manifestFile = analysisPath + "manifest.json";
+		analysisPath = Paths.get(home).resolve(analysisRootPath).resolve(analysisName);
+//		manifestFile = analysisPath + "manifest.json";
+		manifestFile = analysisPath.resolve(Paths.get("manifest.json"));
+//		resultsFile = analysisPath + "results.json";
+		resultsFile = analysisPath.resolve(Paths.get("results.json"));
 
 		analysis = getAnalysis();
 		execution = getExecution();
@@ -185,7 +190,7 @@ public class AnalysisJobExecuter {
 
 	public Analysis getAnalysis() throws JsonSyntaxException, IOException, AnalysisExecutionException {
 		if (analysis == null) {
-			analysis = gson.fromJson(IOManagerUtils.toString(new File(manifestFile)), Analysis.class);
+			analysis = gson.fromJson(IOManagerUtils.toString(manifestFile.toFile()), Analysis.class);
 		}
 		return analysis;
 	}
@@ -211,7 +216,7 @@ public class AnalysisJobExecuter {
 	}
 
 	public String help(String baseUrl) {
-		if (!Files.exists(Paths.get(manifestFile))) {
+		if (!Files.exists(manifestFile)) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
@@ -237,7 +242,7 @@ public class AnalysisJobExecuter {
 	}
 
 	public String params() {
-		if (!Files.exists(Paths.get(manifestFile))) {
+		if (!Files.exists(manifestFile)) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
@@ -260,7 +265,7 @@ public class AnalysisJobExecuter {
 	public String test(String jobId, String jobFolder) throws AnalysisExecutionException {
 		// TODO test
 
-		if (!Files.exists(Paths.get(manifestFile))) {
+		if (!Files.exists(manifestFile)) {
 			return "Manifest for " + analysisName + " not found.";
 		}
 
@@ -275,6 +280,14 @@ public class AnalysisJobExecuter {
 
 	public String getResult() throws AnalysisExecutionException {
 		return execution.getResult();
+	}
+	
+	public String getResultJsonStr() throws AnalysisExecutionException, IOException {
+		File file = resultsFile.toFile();
+		if(file.exists()) {
+			return IOManagerUtils.toString(file);
+		}
+		else return "result.json not found.";
 	}
 	
 	public String status(String jobId) throws AnalysisExecutionException {

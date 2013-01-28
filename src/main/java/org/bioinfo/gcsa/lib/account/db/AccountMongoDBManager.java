@@ -509,7 +509,8 @@ public class AccountMongoDBManager implements AccountManager {
 		DBObject item = userCollection.findOne(query, fields);
 
 		if (item != null) {
-			return item.get("jobs").toString();
+			String content = item.get("jobs").toString();
+			return content.substring(1, content.length()-1);
 		} else {
 			throw new AccountManagementException("job " + jobId + " not found");
 		}
