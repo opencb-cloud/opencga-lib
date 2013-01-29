@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.file.Files;
@@ -122,7 +123,7 @@ public class AnalysisJobExecuter {
 	public String createCommandLine(String executable, Map<String, List<String>> params)
 			throws AnalysisExecutionException {
 		logger.debug("params received in createCommandLine: " + params);
-		String binaryPath = analysisPath + executable;
+		String binaryPath = analysisPath.resolve(executable).toString();
 
 		// Check required params
 		List<Option> validParams = execution.getValidParams();
@@ -212,7 +213,7 @@ public class AnalysisJobExecuter {
 	}
 
 	public String getExamplePath(String fileName) {
-		return analysisPath + "examples/" + fileName;
+		return analysisPath.resolve("examples").resolve(fileName).toString();
 	}
 
 	public String help(String baseUrl) {
@@ -282,12 +283,11 @@ public class AnalysisJobExecuter {
 		return execution.getResult();
 	}
 	
-	public String getResultJsonStr() throws AnalysisExecutionException, IOException {
-		File file = resultsFile.toFile();
-		if(file.exists()) {
-			return IOManagerUtils.toString(file);
+	public InputStream getResultInputStream() throws AnalysisExecutionException, IOException {
+		if(Files.exists(resultsFile)) {
+			return Files.newInputStream(resultsFile);
 		}
-		else return "result.json not found.";
+		throw new AnalysisExecutionException("result.json not found.");
 	}
 	
 	public String status(String jobId) throws AnalysisExecutionException {
