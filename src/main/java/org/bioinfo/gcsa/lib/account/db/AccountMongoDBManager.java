@@ -141,7 +141,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 			BasicDBObject fields = new BasicDBObject("sessions", JSON.parse(gson.toJson(accountSessionList)));
 			fields.put("oldSessions", JSON.parse(gson.toJson(accountOldSessionList)));
-			fields.put("lastActivity", GcsaUtils.getTime());
+			fields.put("lastActivity", System.currentTimeMillis());
 			BasicDBObject action = new BasicDBObject("$set", fields);
 			WriteResult wr = userCollection.update(query, action);
 
@@ -203,7 +203,7 @@ public class AccountMongoDBManager implements AccountManager {
 			query.removeField("sessions.id");
 			BasicDBObject value = new BasicDBObject("id", sessionId);
 			updateMongo("pull", query, "sessions", value);
-			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
+			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", System.currentTimeMillis());
 		} else {
 			throw new AccountManagementException("logout");
 		}
@@ -225,7 +225,7 @@ public class AccountMongoDBManager implements AccountManager {
 		query.put("sessions.id", sessionId);
 		query.put("password", password);
 		BasicDBObject fields = new BasicDBObject("password", nPassword1);
-		fields.put("lastActivity", GcsaUtils.getTime());
+		fields.put("lastActivity", System.currentTimeMillis());
 		BasicDBObject action = new BasicDBObject("$set", fields);
 		WriteResult wr = userCollection.update(query, action);
 
@@ -245,7 +245,7 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 		BasicDBObject fields = new BasicDBObject("email", nEmail);
-		fields.put("lastActivity", GcsaUtils.getTime());
+		fields.put("lastActivity", System.currentTimeMillis());
 		BasicDBObject action = new BasicDBObject("$set", fields);
 		WriteResult wr = userCollection.update(query, action);
 
@@ -307,7 +307,6 @@ public class AccountMongoDBManager implements AccountManager {
 		fields.put("password", 0);
 		fields.put("sessions", 0);
 		fields.put("oldSessions", 0);
-		
 
 		DBObject item = userCollection.findOne(query, fields);
 
@@ -352,7 +351,7 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(bucket));
 		BasicDBObject action = new BasicDBObject();
 		action.put("$push", new BasicDBObject("buckets", dataDBObject));
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		action.put("$set", new BasicDBObject("lastActivity", System.currentTimeMillis()));
 		WriteResult wr = userCollection.update(query, action);
 
 		if (wr.getLastError().getErrorMessage() == null) {
@@ -373,7 +372,7 @@ public class AccountMongoDBManager implements AccountManager {
 		DBObject item = userCollection.findOne(query);
 		if (item != null) {
 			String bucketsStr = item.get("buckets").toString();
-			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", GcsaUtils.getTime());
+			updateMongo("set", new BasicDBObject("accountId", accountId), "lastActivity", System.currentTimeMillis());
 			return bucketsStr;
 		} else {
 			throw new AccountManagementException("invalid sessionId");
@@ -392,7 +391,7 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(objectItem));
 		BasicDBObject item = new BasicDBObject("buckets.$.objects", dataDBObject);
 		BasicDBObject action = new BasicDBObject("$push", item);
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		action.put("$set", new BasicDBObject("lastActivity", System.currentTimeMillis()));
 		WriteResult wr = userCollection.update(query, action);
 
 		// db.users.update({"accountId":"fsalavert","buckets.name":"Default"},{$push:{"buckets.$.objects":{"a":"a"}}})
@@ -418,7 +417,7 @@ public class AccountMongoDBManager implements AccountManager {
 
 		BasicDBObject bucketData = new BasicDBObject("buckets.$.objects", new BasicDBObject("id", objectId.toString()));
 		BasicDBObject action = new BasicDBObject("$pull", bucketData);
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		action.put("$set", new BasicDBObject("lastActivity", System.currentTimeMillis()));
 
 		WriteResult wr = userCollection.update(query, action);
 		if (wr.getLastError().getErrorMessage() == null) {
@@ -485,7 +484,7 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject item = new BasicDBObject();
 		item.put("jobs", jobDBObject);
 		BasicDBObject action = new BasicDBObject("$push", item);
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		action.put("$set", new BasicDBObject("lastActivity", System.currentTimeMillis()));
 		WriteResult result = userCollection.update(query, action);
 
 		if (result.getLastError().getErrorMessage() == null) {
@@ -510,12 +509,12 @@ public class AccountMongoDBManager implements AccountManager {
 
 		if (item != null) {
 			String content = item.get("jobs").toString();
-			return content.substring(1, content.length()-1);
+			return content.substring(1, content.length() - 1);
 		} else {
 			throw new AccountManagementException("job " + jobId + " not found");
 		}
 	}
-	
+
 	@Override
 	public Path getJobPath(String accountId, String jobId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
@@ -525,7 +524,7 @@ public class AccountMongoDBManager implements AccountManager {
 		fields.put("_id", 0);
 		fields.put("jobs.$.outdir", 1);
 		DBObject item = userCollection.findOne(query, fields);
-		
+
 		if (item != null) {
 			Job[] job = gson.fromJson(item.get("jobs").toString(), Job[].class);
 			return Paths.get(job[0].getOutdir());
@@ -542,7 +541,7 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject item = new BasicDBObject("jobs.$.visites", 1);
 
 		BasicDBObject action = new BasicDBObject("$inc", item);
-		action.put("$set", new BasicDBObject("lastActivity", GcsaUtils.getTime()));
+		action.put("$set", new BasicDBObject("lastActivity", System.currentTimeMillis()));
 
 		WriteResult result = userCollection.update(query, action);
 		if (result.getLastError().getErrorMessage() == null) {
@@ -564,9 +563,10 @@ public class AccountMongoDBManager implements AccountManager {
 		// create a BasicDBObject with two $set keys as you cannot set two keys
 		// with, the same name on a BasicDBObject, any previous BasicDBObject
 		// put() will be overridden.
-		// NOTE: this can be done with a query in the mongo console but not in JAVA.
+		// NOTE: this can be done with a query in the mongo console but not in
+		// JAVA.
 		BasicDBObject item = new BasicDBObject("jobs.$.commandLine", commandLine);
-		item.put("lastActivity", GcsaUtils.getTime());
+		item.put("lastActivity", System.currentTimeMillis());
 		BasicDBObject action = new BasicDBObject("$set", item);
 		action.put("$inc", new BasicDBObject("jobs.$.visites", 1));
 
@@ -643,7 +643,7 @@ public class AccountMongoDBManager implements AccountManager {
 	private void updateLastActivity(String accountId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 
-		BasicDBObject action = new BasicDBObject("lastActivity", GcsaUtils.getTime());
+		BasicDBObject action = new BasicDBObject("lastActivity", System.currentTimeMillis());
 
 		WriteResult result = userCollection.update(query, action);
 		if (result.getLastError().getErrorMessage() == null) {
@@ -748,7 +748,7 @@ public class AccountMongoDBManager implements AccountManager {
 	//
 	// if (iterator.count() == 1) {
 	// userStr = iterator.next().toString();
-	// updateMongo("set", query, "lastActivity", GcsaUtils.getTime());
+	// updateMongo("set", query, "lastActivity", System.currentTimeMillis());
 	// }
 	//
 	// return userStr;
