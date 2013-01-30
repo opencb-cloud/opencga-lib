@@ -265,12 +265,13 @@ public class CloudSessionManager {
 	}
 
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
-		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
-		if (Files.exists(jobPath.resolve("result.xml"))) {
-			accountManager.incJobVisites(accountId, jobId);
-			return "DONE";
-		}
-		return "RUNNING";
+//		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
+//		if (Files.exists(jobPath.resolve("result.xml"))) {
+//			accountManager.incJobVisites(accountId, jobId);
+//			return "DONE";
+//		}
+//		return "RUNNING";
+		return accountManager.getJobStatus(accountId, jobId, sessionId);
 	}
 
 	public String region(String accountId, String bucketId, Path objectId, String regionStr,

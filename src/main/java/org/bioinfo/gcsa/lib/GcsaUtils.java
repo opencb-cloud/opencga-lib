@@ -17,12 +17,12 @@ import javax.mail.internet.MimeMessage;
 
 public class GcsaUtils {
 	public static String getTime() {
-		String timeStamp;
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-		Calendar calendar = Calendar.getInstance();
-		Date now = calendar.getTime();
-		timeStamp = sdf.format(now);
-		return timeStamp;
+		return sdf.format(new Date());
+	}
+	public static String getTimeMillis() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+		return sdf.format(new Date());
 	}
 
 	public static Date add24HtoDate(Date date) {

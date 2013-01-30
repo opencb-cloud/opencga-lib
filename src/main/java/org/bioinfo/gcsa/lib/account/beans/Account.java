@@ -11,8 +11,8 @@ public class Account {
 	private String password;
 	private String status;
 	private String mailingList;
-	private String diskQuota;
-	private String diskUsage;
+	private long diskQuota;
+	private long diskUsage;
 	private String lastActivity;
 	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
@@ -31,14 +31,14 @@ public class Account {
 		this.status = "1";
 		this.mailingList = "";
 		this.lastActivity = "";
-		this.diskQuota = "";
-		this.diskUsage = "";
+		this.diskQuota = 0;
+		this.diskUsage = 0;
 		this.buckets.add(new Bucket("default"));
 	}
 
 	public Account(String accountId, String accountName, String email,
 			String password, String status, String mailingList,
-			String diskQuota, String diskUsage, Session session,
+			long diskQuota, long diskUsage, Session session,
 			List<Session> oldSessions, List<Bucket> buckets,String lastActivity,
 			List<Credential> accounts, List<AnalysisPlugin> plugins, List<Config> configs, List<Job> jobs) {
 		this.accountId = accountId;
@@ -107,15 +107,15 @@ public class Account {
 		this.mailingList = mailingList;
 	}
 
-	public String getDiskQuota() {
+	public long getDiskQuota() {
 		return diskQuota;
 	}
 
-	public void setDiskQuota(String diskQuota) {
+	public void setDiskQuota(long diskQuota) {
 		this.diskQuota = diskQuota;
 	}
 
-	public String getDiskUsage() {
+	public long getDiskUsage() {
 		return diskUsage;
 	}
 
@@ -127,7 +127,7 @@ public class Account {
 		this.lastActivity = lastActivity;
 	}
 
-	public void setDiskUsage(String diskUsage) {
+	public void setDiskUsage(long diskUsage) {
 		this.diskUsage = diskUsage;
 	}
 

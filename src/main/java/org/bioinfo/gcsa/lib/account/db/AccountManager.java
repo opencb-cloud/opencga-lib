@@ -74,6 +74,8 @@ public interface AccountManager {
 
 	public Path getJobPath(String accountId, String jobId) throws AccountManagementException;
 
+	public String getJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException;
+
 	public void incJobVisites(String accountId, String jobId) throws AccountManagementException;
 
 	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException;
@@ -89,5 +91,6 @@ public interface AccountManager {
 			throws AccountManagementException;
 
 	public String getAccountIdBySessionId(String sessionId);
+
 
 }
