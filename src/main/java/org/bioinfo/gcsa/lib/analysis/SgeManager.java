@@ -46,7 +46,7 @@ public class SgeManager {
 	}
 
 	private String getSgeJobName(String toolName,String wumJobId){
-		return toolName.replace(" ", "_") + "_j" +wumJobId + "_u";
+		return toolName.replace(" ", "_") + "_" +wumJobId;
 	}
 
 	private String getQueueName(String toolName) throws Exception{
