@@ -305,7 +305,8 @@ public class CloudSessionManager {
 			IOManagementException, AccountManagementException {
 		checkParameter(accountId, "accountId");
 		checkParameter(jobId, "jobId");
-
+		
+		accountManager.incJobVisites(accountId, jobId);
 		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 
 		return ioManager.getJobResult(jobPath);
