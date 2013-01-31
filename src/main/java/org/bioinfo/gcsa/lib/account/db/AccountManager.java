@@ -76,7 +76,7 @@ public interface AccountManager {
 
 	public String getJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
-	public void incJobVisites(String accountId, String jobId) throws AccountManagementException;
+	public void incJobVisites(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
 	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException;
 

@@ -273,6 +273,9 @@ public class CloudSessionManager {
 //		return "RUNNING";
 		return accountManager.getJobStatus(accountId, jobId, sessionId);
 	}
+	public void incJobVisites(String accountId, String jobId, String sessionId) throws AccountManagementException {
+		accountManager.incJobVisites(accountId, jobId, sessionId);
+	}
 
 	public String region(String accountId, String bucketId, Path objectId, String regionStr,
 			Map<String, List<String>> params, String sessionId) throws AccountManagementException,
@@ -306,7 +309,6 @@ public class CloudSessionManager {
 		checkParameter(accountId, "accountId");
 		checkParameter(jobId, "jobId");
 		
-		accountManager.incJobVisites(accountId, jobId);
 		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId));
 
 		return ioManager.getJobResult(jobPath);

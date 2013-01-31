@@ -553,7 +553,7 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void incJobVisites(String accountId, String jobId) throws AccountManagementException {
+	public void incJobVisites(String accountId, String jobId, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("jobs.id", jobId);
 
