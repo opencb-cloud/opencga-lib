@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -21,12 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.commons.io.utils.IOUtils;
-import org.bioinfo.commons.log.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.bioinfo.commons.utils.ArrayUtils;
 import org.bioinfo.commons.utils.ListUtils;
-import org.bioinfo.commons.utils.StringUtils;
+import org.bioinfo.gcsa.lib.GcsaUtils;
+import org.bioinfo.gcsa.lib.account.CloudSessionManager;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.tool.result.Result;
 import org.dom4j.DocumentException;
@@ -35,7 +34,7 @@ import com.google.gson.Gson;
 
 public class FileIOManager implements IOManager {
 
-	private Logger logger;
+	private static Logger logger = Logger.getLogger(FileIOManager.class);
 	private Properties properties;
 
 	private String appHomePath;
@@ -47,8 +46,6 @@ public class FileIOManager implements IOManager {
 	private static String JOBS_FOLDER = "jobs";
 
 	public FileIOManager(Properties properties) {
-		logger = new Logger();
-		logger.setLevel(Logger.DEBUG_LEVEL);
 		this.properties = properties;
 		appHomePath = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
 		accountHomePath = appHomePath + properties.getProperty("GCSA.ACCOUNT.PATH");
@@ -85,55 +82,6 @@ public class FileIOManager implements IOManager {
 				}
 				throw new IOManagementException("IOException: " + e.toString());
 			}
-
-			// try {
-			// FileUtils.createDirectory(accountHomePath + "/" + accountId);
-			// logger.info("account scaffold created");
-			// } catch (IOException e1) {
-			// FileUtils.deleteDirectory(new File(accountHomePath + "/" +
-			// accountId));
-			// FileUtils.deleteDirectory(new File(accountHomePath));
-			// throw new IOManagementException("IOException" + e1.toString());
-			// }
-			//
-			// try {
-			// FileUtils.createDirectory(accountHomePath + "/" + accountId +
-			// "/analysis");
-			// } catch (IOException e1) {
-			// FileUtils.deleteDirectory(new File(accountHomePath + "/" +
-			// accountId + "/analysis"));
-			// FileUtils.deleteDirectory(new File(accountHomePath + "/" +
-			// accountId));
-			// FileUtils.deleteDirectory(new File(accountHomePath));
-			// throw new IOManagementException("IOException" + e1.toString());
-			// }
-			//
-			// try {
-			// FileUtils.createDirectory(accountHomePath + "/" + accountId +
-			// "/buckets");
-			// } catch (IOException e1) {
-			// FileUtils.deleteDirectory(new File(accountHomePath + "/" +
-			// accountId + "/buckets"));
-			// FileUtils.deleteDirectory(new File(accountHomePath + "/" +
-			// accountId + "/analysis"));
-			// FileUtils.deleteDirectory(new File(accountHomePath + "/" +
-			// accountId));
-			// FileUtils.deleteDirectory(new File(accountHomePath));
-			// throw new IOManagementException("IOException" + e1.toString());
-			// }
-			//
-			// try {
-			// FileUtils.createDirectory(accountHomePath + "/" + accountId +
-			// "/buckets/default");
-			// } catch (IOException e1) {
-			// throw new IOManagementException("IOException" + e1.toString());
-			// }
-			//
-			// try {
-			// FileUtils.createDirectory(getAccountPath(accountId) + "/jobs");
-			// } catch (IOException e) {
-			// throw new IOManagementException("IOException" + e.toString());
-			// }
 
 		} else {
 			throw new IOManagementException("ERROR: The account folder has not been created ");
@@ -217,17 +165,16 @@ public class FileIOManager implements IOManager {
 		return jobFolder.toUri();
 	}
 
-	public void removeJob(String accountId, String jobId) throws IOManagementException {
+	public void deleteJob(String accountId, String jobId) throws IOManagementException {
 		Path jobFolder = getJobPath(accountId, null, jobId);
-
 		try {
 			IOManagerUtils.deleteDirectory(jobFolder);
 		} catch (IOException e) {
-			throw new IOManagementException("removeJob(): could not delete the job folder: " + e.toString());
+			throw new IOManagementException("deleteJob(): could not delete the job folder: " + e.toString());
 		}
 	}
 
-	public void removeJobObjects(String accountId, String bucketId, String jobId, List<String> objects)
+	public void deleteJobObjects(String accountId, String bucketId, String jobId, List<String> objects)
 			throws IOManagementException {
 		Path jobFolder = getJobPath(accountId, bucketId, jobId);
 
@@ -238,7 +185,7 @@ public class FileIOManager implements IOManager {
 				}
 			}
 		} catch (IOException e) {
-			throw new IOManagementException("removeJobObjects(): could not delete the job folder: " + e.toString());
+			throw new IOManagementException("deleteJobObjects(): could not delete the job objects: " + e.toString());
 		}
 	}
 
@@ -302,7 +249,7 @@ public class FileIOManager implements IOManager {
 			InputStream fileIs, boolean parents) throws IOManagementException, IOException {
 
 		Path fullFilePath = getObjectPath(accountId, bucketId, objectId);
-		
+
 		// if parents is
 		// true, folders
 		// will be
@@ -317,7 +264,7 @@ public class FileIOManager implements IOManager {
 		objectId = getBucketPath(accountId, bucketId).relativize(fullFilePath);
 
 		// creating a random tmp folder
-		String rndStr = StringUtils.randomString(20);
+		String rndStr = GcsaUtils.randomString(20);
 		Path randomFolder = Paths.get(tmp, rndStr);
 		Path tmpFile = randomFolder.resolve(fullFilePath.getFileName());
 
@@ -379,7 +326,6 @@ public class FileIOManager implements IOManager {
 		String[] colnamesArray = colNames.split(",");
 		String[] colvisibilityArray = colVisibility.split(",");
 
-		// Path jobPath = getJobPath(accountId, bucketId, jobId);
 		Path jobFile = jobPath.resolve(filename);
 
 		if (!Files.exists(jobFile)) {
@@ -399,11 +345,12 @@ public class FileIOManager implements IOManager {
 		int totalCount = -1;
 		List<String> headLines;
 		try {
-			headLines = IOUtils.head(jobFile.toFile(), 30);
+			headLines = IOManagerUtils.head(jobFile, 30);
 		} catch (IOException e) {
 			throw new IOManagementException("getFileTableFromJob(): could not head the file '"
 					+ jobFile.toAbsolutePath() + "'");
 		}
+
 		Iterator<String> headIterator = headLines.iterator();
 		while (headIterator.hasNext()) {
 			String line = headIterator.next();
@@ -420,17 +367,16 @@ public class FileIOManager implements IOManager {
 
 			int numFeatures = 0;
 			BufferedReader br = Files.newBufferedReader(jobFile, Charset.defaultCharset());
-			// BufferedReader br = new BufferedReader(new InputStreamReader(new
-			// FileInputStream(jobFile.toFile())));
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (!line.startsWith("#")) {
 					numFeatures++;
 				}
 			}
+			br.close();
 			totalCount = numFeatures;
 			String text = "#NUMBER_FEATURES	" + numFeatures;
-			IOUtils.prepend(jobFile.toFile(), text);
+			IOManagerUtils.prependString(jobFile, text);
 		}
 
 		if (!sort.equals("false")) {
@@ -456,8 +402,10 @@ public class FileIOManager implements IOManager {
 				decreasing = true;
 			}
 
-			List<String> dataFile = IOUtils.grep(jobFile.toFile(), "^[^#].*");
-			double[] numbers = ListUtils.toDoubleArray(IOUtils.column(jobFile.toFile(), numColumn, "\t", "^[^#].*"));
+			List<String> dataFile = IOManagerUtils.grep(jobFile, "^[^#].*");
+
+			double[] numbers = ListUtils.toDoubleArray(IOManagerUtils.column(jobFile, numColumn, "\t", "^[^#].*"));
+
 			int[] orderedRowIndices = ArrayUtils.order(numbers, decreasing);
 
 			String[] fields;
@@ -495,10 +443,6 @@ public class FileIOManager implements IOManager {
 						stringBuilder.append("{");
 						logger.info("PAKO::length: " + fields.length);
 						for (int i = 0; i < fields.length; i++) {
-							// logger.info("PAKO::colvisibilityArray[i]: "+
-							// colvisibilityArray[i]);
-							// logger.info("PAKO::fields[i]: "+
-							// fields[i]);
 							if (Integer.parseInt(colvisibilityArray[i].toString()) == 1) {
 								stringBuilder.append("\"" + colnamesArray[i] + "\":\"" + fields[i] + "\",");
 							}
@@ -513,6 +457,7 @@ public class FileIOManager implements IOManager {
 					numLine++;
 				}
 			}
+			br.close();
 			stringBuilder.append("]});");
 		}
 		return stringBuilder.toString();
@@ -529,9 +474,8 @@ public class FileIOManager implements IOManager {
 		if (avoidingFiles.contains(name)) {
 			throw new IOManagementException("No permission to use that file: " + file.getAbsolutePath());
 		}
-		try {
-			FileUtils.checkFile(file);
-		} catch (IOException e) {
+
+		if (!Files.exists(filePath)) {
 			throw new IOManagementException("File not found: " + file.getAbsolutePath());
 		}
 
@@ -539,31 +483,45 @@ public class FileIOManager implements IOManager {
 			DataInputStream is = new DataInputStream(new FileInputStream(file));
 			return is;
 		} else {// PAKO zip=true, create the zip file
-			String randomFolder = StringUtils.randomString(20);
+			String randomFolder = GcsaUtils.randomString(20);
 			try {
-				FileUtils.createDirectory(tmp + "/" + randomFolder);
+				// FileUtils.createDirectory(tmp + "/" + randomFolder);
+				Files.createDirectory(Paths.get(tmp, randomFolder));
 			} catch (IOException e) {
 				throw new IOManagementException("Could not create the random folder '" + randomFolder + "'");
 			}
 			File zipfile = new File(tmp + "/" + randomFolder + "/" + filename + ".zip");
-			File arr[] = new File[] { file }; // PAKO creo un array con un único
-			// file porq zipFiles recibe un
-			// array de files
 			try {
-				FileUtils.zipFiles(arr, zipfile);
+				IOManagerUtils.zipFile(file, zipfile);
 			} catch (IOException e) {
 				throw new IOManagementException("Could not zip the file '" + file.getName() + "'");
 			}// PAKO comprimir
 			logger.debug("checking file: " + zipfile.getName());
-			try {
-				FileUtils.checkFile(zipfile);
-			} catch (IOException e) {
+
+			if (!Files.exists(zipfile.toPath())) {
 				throw new IOManagementException("Could not find zipped file '" + zipfile.getName() + "'");
 			}
+
 			logger.debug("file " + zipfile.getName() + " exists");
 			DataInputStream is = new DataInputStream(new FileInputStream(zipfile));
 			return is;
 		}
+	}
+
+	public InputStream getJobZipped(Path jobPath, String jobId) throws IOManagementException, IOException {
+		String zipName = jobId + ".zip";
+		Path zipPath = jobPath.resolve(zipName);
+		File jobFolder = jobPath.toFile();
+		File jobZip = zipPath.toFile();
+
+		List<String> avoidingFiles = getAvoidingFiles();
+		avoidingFiles.add(zipName);
+		try {
+			IOManagerUtils.zipDirectory(jobFolder, jobZip, (ArrayList<String>) avoidingFiles);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return Files.newInputStream(zipPath);
 	}
 
 	/**************/
@@ -596,8 +554,8 @@ public class FileIOManager implements IOManager {
 		if (Files.exists(fullFilePath)) {
 			String file = fullFilePath.getFileName().toString();
 			Path parent = fullFilePath.getParent();
-			String fileName = FileUtils.removeExtension(file);
-			String fileExt = FileUtils.getExtension(file);
+			String fileName = IOManagerUtils.removeExtension(file);
+			String fileExt = IOManagerUtils.getExtension(file);
 			String newname = null;
 			if (fileName != null && fileExt != null) {
 				newname = fileName + "-copy" + fileExt;
@@ -613,6 +571,7 @@ public class FileIOManager implements IOManager {
 	/****/
 	private List<String> getAvoidingFiles() {
 		List<String> avoidingFiles = new ArrayList<String>();
+		avoidingFiles.add("result.xml");
 		avoidingFiles.add("cli.txt");
 		avoidingFiles.add("form.txt");
 		avoidingFiles.add("input_params.txt");

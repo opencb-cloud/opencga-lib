@@ -60,8 +60,8 @@ public class AnalysisJobExecuter {
 			AnalysisExecutionException {
 		home = System.getenv("GCSA_HOME");
 		config = new Properties();
-//		config.load(new FileInputStream(new File(home + "/conf/analysis.properties")));
-		config.load(new FileInputStream(new File(home + "/conf/analysis-beta.properties")));
+		config.load(new FileInputStream(new File(home + "/conf/analysis.properties")));
+//		config.load(new FileInputStream(new File(home + "/conf/analysis-beta.properties")));
 
 		gson = new Gson();
 		logger = new Logger();

@@ -21,21 +21,19 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecord.SAMTagAndValue;
 import net.sf.samtools.SAMRecordIterator;
 
+import org.apache.log4j.Logger;
 import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.commons.log.Logger;
 
 import com.google.gson.Gson;
 
 public class BamManager {
 
-	protected Gson gson = new Gson();
-	protected Logger logger;
+	private Gson gson = new Gson();
+	private static Logger logger = Logger.getLogger(BamManager.class);
 
 	public BamManager() throws IOException {
 		// ResourceBundle properties = ResourceBundle.getBundle("application");
 		gson = new Gson();
-		logger = new Logger();
-		logger.setLevel(Logger.INFO_LEVEL);
 	}
 
 	// public String getByRegion(List<Region> regions)
@@ -49,7 +47,7 @@ public class BamManager {
 			Map<String, List<String>> params) throws IOException {
 		long totalTime = System.currentTimeMillis();
 
-		System.out.println("chr: " + chr + " start: " + start + " end: " + end);
+		logger.info("chr: " + chr + " start: " + start + " end: " + end);
 
 		Boolean viewAsPairs = false;
 		if (params.get("view_as_pairs") != null) {
@@ -62,15 +60,14 @@ public class BamManager {
 
 		File inputSamFile = new File(fullFilePath.toString());
 		File inputSamIndexFile = new File(fullFilePath + ".bai");
+
 		if (!inputSamIndexFile.exists()) {
-			// crearlo!
-			logger.info("BamManager: " + "creando indice...");
-			BAMIndexer.createAndWriteIndex(inputSamFile, inputSamIndexFile, false);
-			// Runtime.getRuntime().exec("");
+			logger.info("BamManager: " + "creating bam index for: " + fullFilePath);
+			createBamIndex(inputSamFile, inputSamIndexFile);
 		}
 
 		long t = System.currentTimeMillis();
-		final SAMFileReader inputSam = new SAMFileReader(inputSamFile, inputSamIndexFile);
+		SAMFileReader inputSam = new SAMFileReader(inputSamFile, inputSamIndexFile);
 		System.out.println("new SamFileReader in " + (System.currentTimeMillis() - t) + "ms");
 		System.out.println("hasIndex " + inputSam.hasIndex());
 
@@ -335,8 +332,10 @@ public class BamManager {
 		}
 
 		// Remove last comma
-		if (sb.length() > 1 && sb.charAt(sb.length() - 1) == ',') {
-			sb.replace(sb.length() - 1, sb.length(), "");
+		int sbLength = sb.length();
+		int sbLastPos = sbLength - 1;
+		if (sbLength > 1 && sb.charAt(sbLastPos) == ',') {
+			sb.replace(sbLastPos, sbLength, "");
 		}
 
 		// //FIXME
@@ -459,4 +458,18 @@ public class BamManager {
 
 	}
 
+	public void createBamIndex(File inputSamFile, File inputSamIndexFile) {
+		SAMFileReader reader = new SAMFileReader(inputSamFile);
+		BAMIndexer indexer = new BAMIndexer(inputSamIndexFile, reader.getFileHeader());
+		reader.enableFileSource(true);
+		int totalRecords = 0;
+		// create and write the content
+		for (SAMRecord rec : reader) {
+			if (++totalRecords % 1000000 == 0) {
+				logger.info(totalRecords + " reads processed ...");
+			}
+			indexer.processAlignment(rec);
+		}
+		indexer.finish();
+	}
 }

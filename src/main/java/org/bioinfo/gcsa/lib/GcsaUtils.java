@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Properties;
+import java.util.Random;
 
 import javax.mail.Message;
 import javax.mail.Transport;
@@ -16,10 +17,14 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 public class GcsaUtils {
+
+	private final static String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
 	public static String getTime() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 		return sdf.format(new Date());
 	}
+
 	public static String getTimeMillis() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 		return sdf.format(new Date());
@@ -42,6 +47,34 @@ public class GcsaUtils {
 			e.printStackTrace();
 		}
 		return now;
+	}
+
+	public static String randomString() {
+		return randomString(10);
+	}
+
+	public static String randomString(int length) {
+		StringBuilder string = new StringBuilder();
+		Random r = new Random(System.currentTimeMillis());
+		for (int i = 0; i < length; i++) {
+			string.append(characters.charAt(r.nextInt(characters.length())));
+		}
+		return string.toString();
+	}
+
+	public static String sha1(String text) throws NoSuchAlgorithmException {
+		MessageDigest sha1 = MessageDigest.getInstance("SHA1");
+		byte[] digest = sha1.digest((text).getBytes());
+		return bytes2String(digest);
+	}
+
+	public static String bytes2String(byte[] bytes) {
+		StringBuilder string = new StringBuilder();
+		for (byte b : bytes) {
+			String hexString = Integer.toHexString(0x00FF & b);
+			string.append(hexString.length() == 1 ? "0" + hexString : hexString);
+		}
+		return string.toString();
 	}
 
 	// public static String getSessionId() {
