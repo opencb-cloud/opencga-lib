@@ -3,7 +3,8 @@ package org.bioinfo.gcsa.lib.account.beans;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bioinfo.gcsa.lib.GcsaUtils;
+import org.bioinfo.gcsa.lib.utils.TimeUtils;
+
 
 public class ObjectItem {
 	
@@ -26,12 +27,12 @@ public class ObjectItem {
 	
 
 	public ObjectItem(String id, String fileName, String fileType) {
-		this(id, fileName, fileType, "", "", 0, ObjectItem.UPLOADING, "", GcsaUtils.getTime(), "", "", "", new ArrayList<Acl>());
+		this(id, fileName, fileType, "", "", 0, ObjectItem.UPLOADING, "", TimeUtils.getTime(), "", "", "", new ArrayList<Acl>());
 	}
 	
 	public ObjectItem(String id, String fileName, String fileType, String fileFormat, String fileBioType,
 			long diskUsage, String date, String responsible, String organization, String description, List<Acl> acl) {
-		this(id, fileName, fileType, fileFormat, fileBioType, diskUsage, ObjectItem.UPLOADING, date, GcsaUtils.getTime(), responsible, organization, description, acl);
+		this(id, fileName, fileType, fileFormat, fileBioType, diskUsage, ObjectItem.UPLOADING, date, TimeUtils.getTime(), responsible, organization, description, acl);
 	}
 
 

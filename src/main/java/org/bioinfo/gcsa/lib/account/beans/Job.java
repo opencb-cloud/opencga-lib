@@ -3,7 +3,8 @@ package org.bioinfo.gcsa.lib.account.beans;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bioinfo.gcsa.lib.GcsaUtils;
+import org.bioinfo.gcsa.lib.utils.TimeUtils;
+
 
 public class Job {
 	
@@ -29,7 +30,7 @@ public class Job {
 	
 
 	public Job(String id, String name, String outdir, String toolName, String status, String commandLine, String description, List<String> inputData) {
-		this(id, name, outdir, toolName, 0, status, GcsaUtils.getTime(), "", "", "", -2, commandLine, description, inputData, new ArrayList<String>());
+		this(id, name, outdir, toolName, 0, status, TimeUtils.getTime(), "", "", "", -2, commandLine, description, inputData, new ArrayList<String>());
 	}
 	
 	public Job(String id, String name, String outdir, String toolName, long diskUsage, String status, String date, String startTime,

@@ -1,8 +1,6 @@
 package org.bioinfo.gcsa.lib.account;
 
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +12,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.bioinfo.gcsa.lib.GcsaUtils;
+import org.bioinfo.gcsa.Config;
 import org.bioinfo.gcsa.lib.account.beans.Acl;
 import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
@@ -28,8 +25,12 @@ import org.bioinfo.gcsa.lib.account.db.AccountManager;
 import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
 import org.bioinfo.gcsa.lib.account.io.FileIOManager;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
-import org.bioinfo.gcsa.lib.storage.alignment.BamManager;
-import org.bioinfo.infrared.lib.common.Region;
+import org.bioinfo.gcsa.lib.analysis.AnalysisExecutionException;
+import org.bioinfo.gcsa.lib.analysis.AnalysisJobExecuter;
+import org.bioinfo.gcsa.lib.analysis.SgeManager;
+import org.bioinfo.gcsa.lib.storage.IndexerManager;
+import org.bioinfo.gcsa.lib.storage.feature.BamManager;
+import org.bioinfo.gcsa.lib.utils.StringUtils;
 import org.dom4j.DocumentException;
 
 public class CloudSessionManager {
@@ -38,31 +39,22 @@ public class CloudSessionManager {
 	private FileIOManager ioManager;
 
 	private static Logger logger = Logger.getLogger(CloudSessionManager.class);
-	private Properties properties;
+	private Properties accountProperties;
 
-	public CloudSessionManager() throws FileNotFoundException, IOException, AccountManagementException {
+	public CloudSessionManager() throws IOException   {
 		this(System.getenv("GCSA_HOME"));
 	}
 
-	public CloudSessionManager(String gcsaHome) throws FileNotFoundException, IOException, AccountManagementException {
-		File log4jFile = new File(gcsaHome + "/conf/log4j.properties");
-		PropertyConfigurator.configure(new FileInputStream(log4jFile));
+	public CloudSessionManager(String gcsaHome) throws IOException    {
+		Config.configureLog4j();
+		accountProperties = Config.getAccountProperties();
 		
-		properties = new Properties();
-		File propertiesFile = new File(gcsaHome + "/conf/account.properties");
-		if (gcsaHome != null && propertiesFile.exists()) {
-			properties.load(new FileInputStream(propertiesFile));
-			if (properties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
-				accountManager = (AccountManager) new AccountFileManager(properties);// TODO
-			} else {
-				accountManager = new AccountMongoDBManager(properties);
-			}
-			ioManager = new FileIOManager(properties);
-
-			logger.info(properties.toString());
+		if (accountProperties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
+			accountManager = (AccountManager) new AccountFileManager();
 		} else {
-			logger.error("properties file not found");
+			accountManager = new AccountMongoDBManager();
 		}
+		ioManager = new FileIOManager();
 	}
 
 	/**
@@ -92,7 +84,7 @@ public class CloudSessionManager {
 		checkParameter(sessionIp, "sessionIp");
 		Session session = new Session(sessionIp);
 
-		String password = GcsaUtils.randomString(10);
+		String password = StringUtils.randomString(10);
 		String accountId = "anonymous_" + password;
 
 		ioManager.createAccount(accountId);
@@ -199,7 +191,7 @@ public class CloudSessionManager {
 
 	public String createObjectToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
 			InputStream fileIs, boolean parents, String sessionId) throws AccountManagementException,
-			IOManagementException, IOException {
+			IOManagementException, IOException, AnalysisExecutionException {
 		checkParameter(bucketId, "bucket");
 		checkParameter(accountId, "accountId");
 		checkParameter(sessionId, "sessionId");
@@ -219,6 +211,7 @@ public class CloudSessionManager {
 			ioManager.deleteObject(accountId, bucketId, objectId);
 			throw e;
 		}
+		
 	}
 
 	public String createFolderToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
@@ -266,16 +259,13 @@ public class CloudSessionManager {
 	}
 
 	public String region(String accountId, String bucketId, Path objectId, String regionStr,
-			Map<String, List<String>> params, String sessionId) throws AccountManagementException,
-			IOManagementException, IOException {
+			Map<String, List<String>> params, String sessionId) throws Exception {
 
 		checkParameter(bucketId, "bucket");
 		checkParameter(accountId, "accountId");
 		checkParameter(sessionId, "sessionId");
 		checkParameter(objectId.toString(), "objectId");
 		checkParameter(regionStr, "regionStr");
-		Region region = Region.parseRegion(regionStr);
-		checkObj(region, "region");
 
 		Path fullFilePath = ioManager.getObjectPath(accountId, bucketId, objectId);
 		ObjectItem objectItem = accountManager.getObjectFromBucket(accountId, bucketId, objectId, sessionId);
@@ -284,12 +274,29 @@ public class CloudSessionManager {
 		switch (objectItem.getFileFormat()) {
 		case "bam":
 			BamManager bamManager = new BamManager();
-			result = bamManager.getByRegion(fullFilePath, region.getChromosome(), region.getStart(), region.getEnd(),
-					params);
+			result = bamManager.getByRegion(fullFilePath, regionStr, params);
 			break;
 		}
 
 		return result;
+	}
+	
+	public void indexFileObjects (String accountId, String bucketId, Path objectId) throws Exception{
+		String sgeJobName = IndexerManager.createBamIndex(Paths.get(getObjectPath(accountId,bucketId,objectId)));
+		String status = SgeManager.status(sgeJobName);
+		boolean finished = false;
+		while(!finished){
+			Thread.sleep(4000);
+			if("finished".equals(status)){
+				finished = true;
+			}else if(status.contains("error")){
+				throw new Exception("could not index the file: "+objectId);
+			}
+		}
+		
+//		//TODO TEST
+//		logger.info("launching indexer to SGE");
+//		indexFileObjects(accountId,bucketId,objectId);
 	}
 
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
@@ -384,7 +391,7 @@ public class CloudSessionManager {
 		checkParameter(sessionId, "sessionId");
 		String accountId = accountManager.getAccountIdBySessionId(sessionId);
 
-		String jobId = GcsaUtils.randomString(15);
+		String jobId = StringUtils.randomString(15);
 		boolean jobFolderCreated = false;
 
 		if (jobFolder == null) {

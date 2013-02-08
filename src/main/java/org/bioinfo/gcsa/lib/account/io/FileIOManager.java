@@ -20,13 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.bioinfo.commons.utils.ArrayUtils;
-import org.bioinfo.commons.utils.ListUtils;
-import org.bioinfo.gcsa.lib.GcsaUtils;
-import org.bioinfo.gcsa.lib.account.CloudSessionManager;
+import org.bioinfo.gcsa.Config;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
+import org.bioinfo.gcsa.lib.utils.ArrayUtils;
+import org.bioinfo.gcsa.lib.utils.IOUtils;
+import org.bioinfo.gcsa.lib.utils.ListUtils;
+import org.bioinfo.gcsa.lib.utils.StringUtils;
 import org.bioinfo.tool.result.Result;
 import org.dom4j.DocumentException;
 
@@ -35,7 +35,7 @@ import com.google.gson.Gson;
 public class FileIOManager implements IOManager {
 
 	private static Logger logger = Logger.getLogger(FileIOManager.class);
-	private Properties properties;
+	private Properties accountProperties;
 
 	private String appHomePath;
 	private String accountHomePath;
@@ -45,11 +45,11 @@ public class FileIOManager implements IOManager {
 	private static String ANALYSIS_FOLDER = "analysis";
 	private static String JOBS_FOLDER = "jobs";
 
-	public FileIOManager(Properties properties) {
-		this.properties = properties;
-		appHomePath = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
-		accountHomePath = appHomePath + properties.getProperty("GCSA.ACCOUNT.PATH");
-		tmp = properties.getProperty("TMP.PATH");
+	public FileIOManager() throws IOException  {
+		accountProperties = Config.getAccountProperties();
+		appHomePath = Config.getGcsaHome();
+		accountHomePath = appHomePath + accountProperties.getProperty("GCSA.ACCOUNT.PATH");
+		tmp = accountProperties.getProperty("TMP.PATH");
 	}
 
 	public void createAccount(String accountId) throws IOManagementException {
@@ -76,7 +76,7 @@ public class FileIOManager implements IOManager {
 				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.JOBS_FOLDER));
 			} catch (IOException e) {
 				try {
-					IOManagerUtils.deleteDirectory(accountPath);
+					IOUtils.deleteDirectory(accountPath);
 				} catch (IOException e1) {
 					throw new IOManagementException("IOException: " + e1.toString());
 				}
@@ -92,7 +92,7 @@ public class FileIOManager implements IOManager {
 	public void deleteAccount(String accountId) throws IOManagementException {
 		Path accountPath = Paths.get(accountHomePath, accountId);
 		try {
-			IOManagerUtils.deleteDirectory(accountPath);
+			IOUtils.deleteDirectory(accountPath);
 		} catch (IOException e1) {
 			throw new IOManagementException("IOException: " + e1.toString());
 		}
@@ -122,7 +122,7 @@ public class FileIOManager implements IOManager {
 		// String path = getBucketPath(accountId, bucketId);
 		Path bucketFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, bucketId);
 		try {
-			IOManagerUtils.deleteDirectory(bucketFolder);
+			IOUtils.deleteDirectory(bucketFolder);
 		} catch (IOException e) {
 			throw new IOManagementException("deleteBucket(): could not delete the bucket folder: " + e.toString());
 		}
@@ -168,7 +168,7 @@ public class FileIOManager implements IOManager {
 	public void deleteJob(String accountId, String jobId) throws IOManagementException {
 		Path jobFolder = getJobPath(accountId, null, jobId);
 		try {
-			IOManagerUtils.deleteDirectory(jobFolder);
+			IOUtils.deleteDirectory(jobFolder);
 		} catch (IOException e) {
 			throw new IOManagementException("deleteJob(): could not delete the job folder: " + e.toString());
 		}
@@ -264,7 +264,7 @@ public class FileIOManager implements IOManager {
 		objectId = getBucketPath(accountId, bucketId).relativize(fullFilePath);
 
 		// creating a random tmp folder
-		String rndStr = GcsaUtils.randomString(20);
+		String rndStr = StringUtils.randomString(20);
 		Path randomFolder = Paths.get(tmp, rndStr);
 		Path tmpFile = randomFolder.resolve(fullFilePath.getFileName());
 
@@ -287,7 +287,7 @@ public class FileIOManager implements IOManager {
 			e.printStackTrace();
 			throw new IOManagementException("createObject(): Copying from tmp folder to bucket folder");
 		}
-		IOManagerUtils.deleteDirectory(randomFolder);
+		IOUtils.deleteDirectory(randomFolder);
 		return objectId;
 	}
 
@@ -345,7 +345,7 @@ public class FileIOManager implements IOManager {
 		int totalCount = -1;
 		List<String> headLines;
 		try {
-			headLines = IOManagerUtils.head(jobFile, 30);
+			headLines = IOUtils.head(jobFile, 30);
 		} catch (IOException e) {
 			throw new IOManagementException("getFileTableFromJob(): could not head the file '"
 					+ jobFile.toAbsolutePath() + "'");
@@ -376,7 +376,7 @@ public class FileIOManager implements IOManager {
 			br.close();
 			totalCount = numFeatures;
 			String text = "#NUMBER_FEATURES	" + numFeatures;
-			IOManagerUtils.prependString(jobFile, text);
+			IOUtils.prependString(jobFile, text);
 		}
 
 		if (!sort.equals("false")) {
@@ -402,9 +402,9 @@ public class FileIOManager implements IOManager {
 				decreasing = true;
 			}
 
-			List<String> dataFile = IOManagerUtils.grep(jobFile, "^[^#].*");
+			List<String> dataFile = IOUtils.grep(jobFile, "^[^#].*");
 
-			double[] numbers = ListUtils.toDoubleArray(IOManagerUtils.column(jobFile, numColumn, "\t", "^[^#].*"));
+			double[] numbers = ListUtils.toDoubleArray(IOUtils.column(jobFile, numColumn, "\t", "^[^#].*"));
 
 			int[] orderedRowIndices = ArrayUtils.order(numbers, decreasing);
 
@@ -483,7 +483,7 @@ public class FileIOManager implements IOManager {
 			DataInputStream is = new DataInputStream(new FileInputStream(file));
 			return is;
 		} else {// PAKO zip=true, create the zip file
-			String randomFolder = GcsaUtils.randomString(20);
+			String randomFolder = StringUtils.randomString(20);
 			try {
 				// FileUtils.createDirectory(tmp + "/" + randomFolder);
 				Files.createDirectory(Paths.get(tmp, randomFolder));
@@ -492,7 +492,7 @@ public class FileIOManager implements IOManager {
 			}
 			File zipfile = new File(tmp + "/" + randomFolder + "/" + filename + ".zip");
 			try {
-				IOManagerUtils.zipFile(file, zipfile);
+				IOUtils.zipFile(file, zipfile);
 			} catch (IOException e) {
 				throw new IOManagementException("Could not zip the file '" + file.getName() + "'");
 			}// PAKO comprimir
@@ -517,7 +517,7 @@ public class FileIOManager implements IOManager {
 		List<String> avoidingFiles = getAvoidingFiles();
 		avoidingFiles.add(zipName);
 		try {
-			IOManagerUtils.zipDirectory(jobFolder, jobZip, (ArrayList<String>) avoidingFiles);
+			IOUtils.zipDirectory(jobFolder, jobZip, (ArrayList<String>) avoidingFiles);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -554,8 +554,8 @@ public class FileIOManager implements IOManager {
 		if (Files.exists(fullFilePath)) {
 			String file = fullFilePath.getFileName().toString();
 			Path parent = fullFilePath.getParent();
-			String fileName = IOManagerUtils.removeExtension(file);
-			String fileExt = IOManagerUtils.getExtension(file);
+			String fileName = IOUtils.removeExtension(file);
+			String fileExt = IOUtils.getExtension(file);
 			String newname = null;
 			if (fileName != null && fileExt != null) {
 				newname = fileName + "-copy" + fileExt;
