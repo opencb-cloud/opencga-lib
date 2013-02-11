@@ -364,7 +364,7 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public String getAllBucketsBySessionId(String accountId, String sessionId) throws AccountManagementException {
+	public String getBucketsList(String accountId, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 

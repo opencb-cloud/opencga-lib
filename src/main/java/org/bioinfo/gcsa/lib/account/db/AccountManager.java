@@ -51,7 +51,7 @@ public interface AccountManager {
 
 	public Session getSession(String accountId, String sessionId);
 
-	public String getAllBucketsBySessionId(String accountId, String sessionId) throws AccountManagementException;
+	public String getBucketsList(String accountId, String sessionId) throws AccountManagementException;
 
 	public void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException;
 

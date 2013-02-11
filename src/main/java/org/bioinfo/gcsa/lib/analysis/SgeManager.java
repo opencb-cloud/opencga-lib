@@ -167,13 +167,13 @@ public class SgeManager {
 			status = stateDic.get(status);
 		}
 		else{
-			String command = "qacct -j *"+ jobId +"*";
+			String command = "qacct -j "+ jobId;
 			logger.info(command);
 			Process p = Runtime.getRuntime().exec(command);
 		    BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		    String line;
-		    String exitStatus = "";
-		    String failed = "";
+		    String exitStatus = null;
+		    String failed =  null;
 		    while ((line = in.readLine()) != null) {
 		    	if(line.contains("exit_status")){
 		    		exitStatus = line.replace("exit_status", "").trim();
@@ -187,13 +187,15 @@ public class SgeManager {
 		    p.waitFor();
 		    in.close();
 		    
-		    if("0".equals(exitStatus)){
-		    	status = "finished";
-		    }else{
-		    	status = "execution error";
-		    }
-		    if(!"0".equals(failed)){
-		    	status = "queue error";
+		    if(exitStatus != null && failed != null){
+		    	if(!"0".equals(failed)){
+		    		status = "queue error";
+		    	}
+		    	if("0".equals(exitStatus)){
+		    		status = "finished";
+		    	}else{
+		    		status = "execution error";
+		    	}
 		    }
 		}
 		return status;

@@ -41,14 +41,14 @@ public class CloudSessionManager {
 	private static Logger logger = Logger.getLogger(CloudSessionManager.class);
 	private Properties accountProperties;
 
-	public CloudSessionManager() throws IOException   {
+	public CloudSessionManager() throws IOException {
 		this(System.getenv("GCSA_HOME"));
 	}
 
-	public CloudSessionManager(String gcsaHome) throws IOException    {
+	public CloudSessionManager(String gcsaHome) throws IOException {
 		Config.configureLog4j();
 		accountProperties = Config.getAccountProperties();
-		
+
 		if (accountProperties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
 			accountManager = (AccountManager) new AccountFileManager();
 		} else {
@@ -58,7 +58,23 @@ public class CloudSessionManager {
 	}
 
 	/**
-	 * @throws IOManagementException
+	 * Getter Path methods
+	 *****************************/
+
+	public Path getAccountPath(String accountId) {
+		return ioManager.getAccountPath(accountId);
+	}
+
+	public Path getBucketPath(String accountId, String bucketId) {
+		return ioManager.getBucketPath(accountId, bucketId);
+	}
+
+	public String getObjectPath(String accountId, String bucketId, Path ObjectId) {
+		return ioManager.getObjectPath(accountId, bucketId, ObjectId).toString();
+	}
+	
+	/**
+	 * Account methods
 	 *****************************/
 	public void createAccount(String accountId, String password, String name, String email, String sessionIp)
 			throws AccountManagementException, IOManagementException {
@@ -123,7 +139,7 @@ public class CloudSessionManager {
 		accountManager.logoutAnonymous(accountId, sessionId);
 	}
 
-	public void changePassword(String accountId, String sessionId, String password, String nPassword1, String nPassword2)
+	public void changePassword(String accountId, String password, String nPassword1, String nPassword2, String sessionId)
 			throws AccountManagementException {
 		checkParameter(accountId, "accountId");
 		checkParameter(sessionId, "sessionId");
@@ -136,7 +152,7 @@ public class CloudSessionManager {
 		accountManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
 	}
 
-	public void changeEmail(String accountId, String sessionId, String nEmail) throws AccountManagementException {
+	public void changeEmail(String accountId, String nEmail, String sessionId) throws AccountManagementException {
 		checkParameter(accountId, "accountId");
 		checkParameter(sessionId, "sessionId");
 		checkEmail(nEmail);
@@ -149,7 +165,7 @@ public class CloudSessionManager {
 		accountManager.resetPassword(accountId, email);
 	}
 
-	public String getAccountInfo(String accountId, String sessionId, String lastActivity)
+	public String getAccountInfo(String accountId, String lastActivity, String sessionId)
 			throws AccountManagementException {
 		checkParameter(accountId, "accountId");
 		checkParameter(sessionId, "sessionId");
@@ -162,18 +178,14 @@ public class CloudSessionManager {
 		// TODO
 	}
 
-	public Path getAccountPath(String accountId) {
-		return ioManager.getAccountPath(accountId);
+	
+	/**
+	 * Bucket methods
+	 *****************************/
+	public String getBucketsList(String accountId, String sessionId) throws AccountManagementException {
+		return accountManager.getBucketsList(accountId, sessionId);
 	}
-
-	public Path getBucketPath(String accountId, String bucketId) {
-		return ioManager.getBucketPath(accountId, bucketId);
-	}
-
-	public String getObjectPath(String accountId, String bucketId, Path ObjectId) {
-		return ioManager.getObjectPath(accountId, bucketId, ObjectId).toString();
-	}
-
+	
 	public void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException,
 			IOManagementException {
 		checkParameter(bucket.getName(), "bucketName");
@@ -211,7 +223,7 @@ public class CloudSessionManager {
 			ioManager.deleteObject(accountId, bucketId, objectId);
 			throw e;
 		}
-		
+
 	}
 
 	public String createFolderToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
@@ -280,25 +292,50 @@ public class CloudSessionManager {
 
 		return result;
 	}
-	
-	public void indexFileObjects (String accountId, String bucketId, Path objectId) throws Exception{
-		String sgeJobName = IndexerManager.createBamIndex(Paths.get(getObjectPath(accountId,bucketId,objectId)));
-		String status = SgeManager.status(sgeJobName);
-		boolean finished = false;
-		while(!finished){
+
+	public void indexFileObjects(String accountId, Path objectpath) throws Exception {
+		logger.info(objectpath);
+		String sgeJobName = IndexerManager.createBamIndex(getAccountPath(accountId).resolve("buckets").resolve(
+				objectpath));
+		logger.info(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
+		while (true) {
 			Thread.sleep(4000);
-			if("finished".equals(status)){
-				finished = true;
-			}else if(status.contains("error")){
-				throw new Exception("could not index the file: "+objectId);
+			String status = SgeManager.status(sgeJobName);
+			logger.info("job status: " + sgeJobName + " -> " + status);
+			if ("finished".equals(status)) {
+				break;
+			} else if (status.contains("error")) {
+				throw new Exception("could not index the file: " + objectpath);
 			}
 		}
-		
-//		//TODO TEST
-//		logger.info("launching indexer to SGE");
-//		indexFileObjects(accountId,bucketId,objectId);
+
+		// //TODO TEST
+		// logger.info("launching indexer to SGE");
+		// indexFileObjects(accountId,bucketId,objectId);
 	}
 
+	
+	/**
+	 * Project methods
+	 *****************************/
+	public String getProjectsList(String accountId, String sessionId) throws AccountManagementException {
+		return accountManager.getProjectsList(accountId, sessionId);
+	}
+	
+	public void createProject(String accountId, Project project, String sessionId) throws AccountManagementException,
+			IOManagementException {
+		checkParameter(project.getName(), "bucketName");
+		checkParameter(accountId, "accountId");
+		checkParameter(sessionId, "sessionId");
+
+		ioManager.createProject(accountId, project.getName());
+		try {
+			accountManager.createProject(accountId, project, sessionId);
+		} catch (AccountManagementException e) {
+			ioManager.deleteBucket(accountId, project.getName());
+			throw e;
+		}
+	}
 	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
 		// Path jobPath =
 		// getAccountPath(accountId).resolve(accountManager.getJobPath(accountId,
@@ -379,9 +416,6 @@ public class CloudSessionManager {
 		return ioManager.getJobZipped(jobPath, jobId);
 	}
 
-	public String getAccountBuckets(String accountId, String sessionId) throws AccountManagementException {
-		return accountManager.getAllBucketsBySessionId(accountId, sessionId);
-	}
 
 	public String createJob(String jobName, String jobFolder, String toolName, List<String> dataList,
 			String commandLine, String sessionId) throws AccountManagementException, IOManagementException {
