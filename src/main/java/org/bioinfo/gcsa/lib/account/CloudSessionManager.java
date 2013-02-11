@@ -368,14 +368,13 @@ public class CloudSessionManager {
 		return ioManager.getJobResult(jobPath);
 	}
 
-	// public String getJobObject(String accountId, String jobId, String
-	// sessionId) throws IOException, DocumentException,
-	// IOManagementException, AccountManagementException {
-	// checkParameter(accountId, "accountId");
-	// checkParameter(jobId, "jobId");
-	//
-	// return accountManager.getJob(accountId, jobId, sessionId);
-	// }
+	public Job getJobFromProject(String accountId, String projectId, String jobId, String sessionId)
+			throws IOException, DocumentException, IOManagementException, AccountManagementException {
+		checkParameter(accountId, "accountId");
+		checkParameter(jobId, "jobId");
+
+		return accountManager.getJobFromProject(accountId, projectId, jobId, sessionId);
+	}
 
 	public String getFileTableFromJob(String accountId, String projectId, String jobId, String filename, String start,
 			String limit, String colNames, String colVisibility, String callback, String sort, String sessionId)

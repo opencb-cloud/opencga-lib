@@ -79,7 +79,8 @@ public interface AccountManager {
 	public void deleteJobFromProject(String accountId, String projectId, String jobId, String sessionId)
 			throws AccountManagementException;
 
-	public String getJob(String accountId, String jobId, String sessionId) throws AccountManagementException;
+	public Job getJobFromProject(String accountId, String projectId, String jobId, String sessionId)
+			throws AccountManagementException;
 
 	public Path getJobPath(String accountId, String projectId, String jobId, String sessionId)
 			throws AccountManagementException;

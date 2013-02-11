@@ -20,6 +20,7 @@ public class Bucket {
 	private List<ObjectItem> objects;
 	
 	
+
 	public Bucket(String name){
 		this(name.toLowerCase(), name, "1", "", TimeUtils.getTime(), "", "", "", new ArrayList<Acl>(), new ArrayList<ObjectItem>());
 	}
@@ -113,12 +114,19 @@ public class Bucket {
 		this.acl = acl;
 	}
 
-	public List<ObjectItem> getData() {
+//	public List<ObjectItem> getData() {
+//		return objects;
+//	}
+//
+//	public void setData(List<ObjectItem> objectItemList) {
+//		this.objects = objectItemList;
+//	}
+	public List<ObjectItem> getObjects() {
 		return objects;
 	}
 
-	public void setData(List<ObjectItem> objectItemList) {
-		this.objects = objectItemList;
+	public void setObjects(List<ObjectItem> objects) {
+		this.objects = objects;
 	}
 	
 	

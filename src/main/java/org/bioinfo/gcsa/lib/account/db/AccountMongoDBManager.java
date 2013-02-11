@@ -435,7 +435,7 @@ public class AccountMongoDBManager implements AccountManager {
 		DBObject obj = userCollection.findOne(query, bucketData);
 		if (obj != null) {
 			Bucket[] buckets = gson.fromJson(obj.get("buckets").toString(), Bucket[].class);
-			List<ObjectItem> dataList = buckets[0].getData();
+			List<ObjectItem> dataList = buckets[0].getObjects();
 			ObjectItem objectItem = null;
 			logger.info("MongoManager: " + obj.get("buckets").toString());
 			logger.info("MongoManager: " + dataList.size());
@@ -551,22 +551,36 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	// XXX NOT USED
-	public String getJob(String accountId, String jobId, String sessionId) throws AccountManagementException {
-		BasicDBObject query = new BasicDBObject();
-		BasicDBObject fields = new BasicDBObject();
-		query.put("accountId", accountId);
+	public Job getJobFromProject(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
-		query.put("jobs.id", jobId);
-		fields.put("_id", 0);
-		fields.put("jobs.$", 1);
-		DBObject item = userCollection.findOne(query, fields);
+		query.put("projects.id", projectId.toLowerCase());
 
-		if (item != null) {
-			String content = item.get("jobs").toString();
-			return content.substring(1, content.length() - 1);
+		BasicDBObject jobObj = new BasicDBObject("projects.$.jobs", "1");
+		DBObject obj = userCollection.findOne(query, jobObj);
+		if (obj != null) {
+			Project[] projects = gson.fromJson(obj.get("projects").toString(), Project[].class);
+			List<Job> jobList = projects[0].getJobs();
+			Job job = null;
+			logger.info("MongoManager: " + obj.get("projects").toString());
+			logger.info("MongoManager: " + jobList.size());
+			for (int i = 0; i < jobList.size(); i++) {
+				logger.info("MongoManager: " + jobList.get(i));
+				logger.info("MongoManager: " + jobList.get(i).getId());
+				logger.info("MongoManager: " + jobId);
+				if (jobList.get(i).getId().equals(jobId.toString())) {
+					job = jobList.get(i);
+					break;
+				}
+			}
+			logger.info("MongoManager: " + job);
+			if (job != null) {
+				return job;
+			} else {
+				throw new AccountManagementException("job not found");
+			}
 		} else {
-			throw new AccountManagementException("job " + jobId + " not found");
+			throw new AccountManagementException("could not find job with this parameters");
 		}
 	}
 
