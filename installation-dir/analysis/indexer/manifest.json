@@ -4,8 +4,8 @@
 		email: ""
 	},
 	version: "1.0",
-	id: "pathiways",
-	name: "Pathiways",
+	id: "indexer",
+	name: "indexer",
 	description: "",
 	icon: {
 		size: "",
@@ -16,9 +16,9 @@
 	globalParams: [],
 	executions: [
 	             {
-	            	 id: "pathiways",
-	            	 name: "Pathiways",
-	            	 executable: "bin/pathiwaysANALYSIS.py",
+	            	 id: "indexer",
+	            	 name: "indexer",
+	            	 executable: "indexerManager.py",
 	            	 inputParams: [{name:"norm-matrix", dataType:"txt"},{name:"exp-design", dataType:"txt"}],
 	            	 inputParamsFromTxt: [],
 	            	 outputParam: "outdir",
@@ -34,7 +34,7 @@
 	            	 ],
 	            	 configAttr: [],
 	            	 testCmd: "",
-	            	 result: "pathiways"
+	            	 result: "indexer"
 	             }
 	],
     examples: [],

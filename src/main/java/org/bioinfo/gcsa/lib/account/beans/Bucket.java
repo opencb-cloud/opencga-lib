@@ -3,7 +3,8 @@ package org.bioinfo.gcsa.lib.account.beans;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bioinfo.gcsa.lib.GcsaUtils;
+import org.bioinfo.gcsa.lib.utils.TimeUtils;
+
 
 public class Bucket {
 	
@@ -19,12 +20,13 @@ public class Bucket {
 	private List<ObjectItem> objects;
 	
 	
+
 	public Bucket(String name){
-		this(name.toLowerCase(), name, "1", "", GcsaUtils.getTime(), "", "", "", new ArrayList<Acl>(), new ArrayList<ObjectItem>());
+		this(name.toLowerCase(), name, "1", "", TimeUtils.getTime(), "", "", "", new ArrayList<Acl>(), new ArrayList<ObjectItem>());
 	}
 
 	public Bucket(String id, String name, String status, String diskUsage, String ownerId, String type, String descripcion, List<Acl> acl) {
-		this(id, name, status, diskUsage, GcsaUtils.getTime(), ownerId, type, descripcion, acl, new ArrayList<ObjectItem>());
+		this(id, name, status, diskUsage, TimeUtils.getTime(), ownerId, type, descripcion, acl, new ArrayList<ObjectItem>());
 	}
 	
 	public Bucket(String id, String name, String status, String diskUsage, String creationDate, String ownerId, String type, String descripcion, List<Acl> acl, List<ObjectItem> objects) {
@@ -32,7 +34,7 @@ public class Bucket {
 		this.name = name;
 		this.status = status;
 		this.diskUsage = diskUsage;
-		this.creationDate = (creationDate != null && !creationDate.equals("")) ? creationDate : GcsaUtils.getTime();
+		this.creationDate = (creationDate != null && !creationDate.equals("")) ? creationDate : TimeUtils.getTime();
 		this.ownerId = ownerId;
 		this.type = type;
 		this.descripcion = descripcion;
@@ -112,12 +114,19 @@ public class Bucket {
 		this.acl = acl;
 	}
 
-	public List<ObjectItem> getData() {
+//	public List<ObjectItem> getData() {
+//		return objects;
+//	}
+//
+//	public void setData(List<ObjectItem> objectItemList) {
+//		this.objects = objectItemList;
+//	}
+	public List<ObjectItem> getObjects() {
 		return objects;
 	}
 
-	public void setData(List<ObjectItem> objectItemList) {
-		this.objects = objectItemList;
+	public void setObjects(List<ObjectItem> objects) {
+		this.objects = objects;
 	}
 	
 	

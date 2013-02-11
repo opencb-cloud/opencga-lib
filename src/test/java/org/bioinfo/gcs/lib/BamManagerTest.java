@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
-import org.bioinfo.gcsa.lib.storage.alignment.BamManager;
+import org.bioinfo.gcsa.lib.storage.feature.BamManager;
 import org.junit.Test;
 
 public class BamManagerTest {
@@ -25,7 +25,7 @@ public class BamManagerTest {
 //				view_as_pairs
 //				show_softclipping
 				params.put("show_softclipping", Arrays.asList("true"));
-				String result = bu.getByRegion(file,"20",32875000,32879999, params );
+				String result = bu.getByRegion(file,"20:32875000-32879999", params );
 //			String result = bu.getByRegion("/home/examples","out_sorted", "1", 90604245, 93604245);
 //			System.out.println(result);
 			} catch (IOException e) {

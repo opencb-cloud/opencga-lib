@@ -1,30 +1,25 @@
 package org.bioinfo.gcsa.lib.account.db;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.Properties;
 
-import org.bioinfo.commons.log.Logger;
-import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
-import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
-import org.bioinfo.gcsa.lib.account.beans.Bucket;
-import org.bioinfo.gcsa.lib.account.beans.Session;
+import org.apache.log4j.Logger;
+import org.bioinfo.gcsa.Config;
 
-public class AccountFileManager /*implements AccountManager*/ {
+public class AccountFileManager /* implements AccountManager */{
 
-	private Logger logger;
-	private Properties properties;
+	private static Logger logger = Logger.getLogger(AccountFileManager.class);
+	private Properties accountProperties;
 
 	private String home;
 	private String accounts;
 	private String tmp;
 
-	public AccountFileManager(Properties properties) {
-		logger = new Logger();
-		logger.setLevel(Logger.INFO_LEVEL);
-		this.properties = properties;
-		home = System.getenv(properties.getProperty("GCSA.ENV.HOME"));
-		accounts = home + properties.getProperty("GCSA.ACCOUNT.PATH");
-		tmp = properties.getProperty("TMP.PATH");
+	public AccountFileManager() throws IOException {
+		accountProperties = Config.getAccountProperties();
+		home = System.getenv(accountProperties.getProperty("GCSA.ENV.HOME"));
+		accounts = home + accountProperties.getProperty("GCSA.ACCOUNT.PATH");
+		tmp = accountProperties.getProperty("TMP.PATH");
 	}
 
 }

@@ -11,8 +11,8 @@ public class Account {
 	private String password;
 	private String status;
 	private String mailingList;
-	private String diskQuota;
-	private String diskUsage;
+	private long diskQuota;
+	private long diskUsage;
 	private String lastActivity;
 	private List<Session> sessions = new ArrayList<Session>();
 	private List<Session> oldSessions = new ArrayList<Session>();
@@ -20,7 +20,7 @@ public class Account {
 	private List<Credential> credentials = new ArrayList<Credential>();
 	private List<AnalysisPlugin> plugins = new ArrayList<AnalysisPlugin>();
 	private List<Config> configs = new ArrayList<Config>();
-	private List<Job> jobs = new ArrayList<>();
+	private List<Project> projects = new ArrayList<>();
 
 
 	public Account(String accountId, String accountName, String password, String email) {
@@ -31,16 +31,16 @@ public class Account {
 		this.status = "1";
 		this.mailingList = "";
 		this.lastActivity = "";
-		this.diskQuota = "";
-		this.diskUsage = "";
+		this.diskQuota = 0;
+		this.diskUsage = 0;
 		this.buckets.add(new Bucket("default"));
 	}
 
 	public Account(String accountId, String accountName, String email,
 			String password, String status, String mailingList,
-			String diskQuota, String diskUsage, Session session,
+			long diskQuota, long diskUsage, Session session,
 			List<Session> oldSessions, List<Bucket> buckets,String lastActivity,
-			List<Credential> accounts, List<AnalysisPlugin> plugins, List<Config> configs, List<Job> jobs) {
+			List<Credential> accounts, List<AnalysisPlugin> plugins, List<Config> configs, List<Project> projects) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
@@ -56,7 +56,7 @@ public class Account {
 		this.credentials = accounts;
 		this.plugins = plugins;
 		this.configs = configs;
-		this.jobs = jobs;
+		this.projects = projects;
 	}
 
 	public String getAccountId() {
@@ -107,15 +107,15 @@ public class Account {
 		this.mailingList = mailingList;
 	}
 
-	public String getDiskQuota() {
+	public long getDiskQuota() {
 		return diskQuota;
 	}
 
-	public void setDiskQuota(String diskQuota) {
+	public void setDiskQuota(long diskQuota) {
 		this.diskQuota = diskQuota;
 	}
 
-	public String getDiskUsage() {
+	public long getDiskUsage() {
 		return diskUsage;
 	}
 
@@ -127,7 +127,7 @@ public class Account {
 		this.lastActivity = lastActivity;
 	}
 
-	public void setDiskUsage(String diskUsage) {
+	public void setDiskUsage(long diskUsage) {
 		this.diskUsage = diskUsage;
 	}
 
@@ -183,12 +183,12 @@ public class Account {
 		this.configs = configs;
 	}
 
-	public List<Job> getJobs() {
-		return jobs;
+	public List<Project> getProjects() {
+		return projects;
 	}
 
-	public void setJobs(List<Job> jobs) {
-		this.jobs = jobs;
+	public void setProjects(List<Project> projects) {
+		this.projects = projects;
 	}
 
 }

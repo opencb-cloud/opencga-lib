@@ -3,7 +3,7 @@ package org.bioinfo.gcsa.lib.storage.feature;
 import java.io.File;
 import java.io.IOException;
 
-import org.bioinfo.commons.io.utils.FileUtils;
+import org.bioinfo.gcsa.lib.storage.TabixReader;
 
 public class FeatureManager {
 	private static StringBuilder directory;
@@ -16,12 +16,11 @@ public class FeatureManager {
 	public FeatureManager(String directory, String fileName) {
 		this.directory = new StringBuilder(directory);
 		this.tmpDir = new StringBuilder(directory).append("tmp/");
-		this.fileName = new StringBuilder(fileName.substring(0,
-				fileName.lastIndexOf(".")));
+		this.fileName = new StringBuilder(fileName.substring(0, fileName.lastIndexOf(".")));
 	}
 
-	public String getByRegion(final String fileName, final String chr,
-			final int start, final int end) throws IOException {
+	public String getByRegion(final String fileName, final String chr, final int start, final int end)
+			throws IOException {
 		// FileUtils.checkFile(fileName);
 		if (fileName.endsWith("gff") || fileName.toString().endsWith("gff.gz")) {
 			return getByRegionGff(fileName, chr, start, end);
@@ -35,14 +34,11 @@ public class FeatureManager {
 		return "Format unknown";
 	}
 
-	private String getByRegionBed(String fileName, final String chr,
-			final int start, final int end) {
-		StringBuilder infoChrom = new StringBuilder(chr).append(":")
-				.append(start).append(":").append(end);
+	private String getByRegionBed(String fileName, final String chr, final int start, final int end) {
+		StringBuilder infoChrom = new StringBuilder(chr).append(":").append(start).append(":").append(end);
 
-		if (!new File(new StringBuilder(fileName.substring(0,
-				fileName.lastIndexOf("."))).append("sort.gz.tbi").toString())
-				.exists()) {
+		if (!new File(new StringBuilder(fileName.substring(0, fileName.lastIndexOf("."))).append("sort.gz.tbi")
+				.toString()).exists()) {
 			if (fileName.toString().endsWith("gz")) {
 				if (descGz(/* fileName */)) {
 					if (process("bed"/* fileName */))
@@ -70,9 +66,8 @@ public class FeatureManager {
 			} else {
 				operation = "sort -k1,1 -k2,2n ";
 			}
-			StringBuilder commandToExecute = new StringBuilder(operation).append(tmpDir).append(fileName)
-					.append(" > ").append(tmpDir).append(fileName)
-					.append(".sort");
+			StringBuilder commandToExecute = new StringBuilder(operation).append(tmpDir).append(fileName).append(" > ")
+					.append(tmpDir).append(fileName).append(".sort");
 			String[] command = { "/bin/bash", "-c", commandToExecute.toString() };
 			System.out.println(commandToExecute.toString());
 
@@ -85,8 +80,7 @@ public class FeatureManager {
 
 			// remove
 			System.out.println("ESTAMOS ORDENANDO");
-			commandToExecute = new StringBuilder("rm -f ").append(tmpDir)
-					.append(fileName);
+			commandToExecute = new StringBuilder("rm -f ").append(tmpDir).append(fileName);
 			command[2] = commandToExecute.toString();
 			System.out.println(commandToExecute.toString());
 
@@ -99,8 +93,7 @@ public class FeatureManager {
 
 			// compress
 			System.out.println("ESTAMOS COMPRIMIENDO");
-			commandToExecute = new StringBuilder("/opt/tabix/bgzip ")
-					.append(tmpDir).append(fileName).append(".sort");
+			commandToExecute = new StringBuilder("/opt/tabix/bgzip ").append(tmpDir).append(fileName).append(".sort");
 			command[2] = commandToExecute.toString();
 			System.out.println(commandToExecute.toString());
 			process = execute.exec(command);
@@ -111,8 +104,7 @@ public class FeatureManager {
 
 			// Index
 			System.out.println("ESTAMOS INDEXANDO");
-			commandToExecute = new StringBuilder("/opt/tabix/tabix -p ")
-					.append(typeFile).append(" ").append(tmpDir)
+			commandToExecute = new StringBuilder("/opt/tabix/tabix -p ").append(typeFile).append(" ").append(tmpDir)
 					.append(fileName).append(".sort.gz");
 			command[2] = commandToExecute.toString();
 			System.out.println(commandToExecute.toString());
@@ -158,9 +150,8 @@ public class FeatureManager {
 		// StringBuilder tempDir = directory.append("tmp/");
 		try {
 			// descomprime
-			StringBuilder commandToExecute = new StringBuilder("gzip -cd ")
-					.append(tmpDir).append(fileName).append(".gz")
-					.append(" > ").append(tmpDir).append(fileName);
+			StringBuilder commandToExecute = new StringBuilder("gzip -cd ").append(tmpDir).append(fileName)
+					.append(".gz").append(" > ").append(tmpDir).append(fileName);
 			String[] command = { "/bin/bash", "-c", commandToExecute.toString() };
 
 			System.out.println(commandToExecute.toString());
@@ -192,13 +183,9 @@ public class FeatureManager {
 			System.out.println(tmpDir.toString());
 			File[] ficheros = f.listFiles();
 			for (int i = 0; i < ficheros.length; i++) {
-				System.out.println("VIENDO SI EXISTE -->"
-						+ ficheros[i]
-						+ " "
-						+ new File(new StringBuilder(directory.toString()
-								+ ficheros[i]).toString()).exists());
-				if (new File(new StringBuilder(directory.toString()
-						+ ficheros[i]).toString()).exists()) {
+				System.out.println("VIENDO SI EXISTE -->" + ficheros[i] + " "
+						+ new File(new StringBuilder(directory.toString() + ficheros[i]).toString()).exists());
+				if (new File(new StringBuilder(directory.toString() + ficheros[i]).toString()).exists()) {
 					fileNotExist = false;
 					break;
 				} else
@@ -208,11 +195,9 @@ public class FeatureManager {
 			if (fileNotExist) {
 				// move to dir
 				System.out.println("LOS FICHEROS SON: " + allFiles.toString());
-				StringBuilder commandToExecute = new StringBuilder("mv ")
-						.append(allFiles).append(directory);
+				StringBuilder commandToExecute = new StringBuilder("mv ").append(allFiles).append(directory);
 
-				String[] command = { "/bin/bash", "-c",
-						commandToExecute.toString() };
+				String[] command = { "/bin/bash", "-c", commandToExecute.toString() };
 				System.out.println(commandToExecute.toString());
 				process = execute.exec(command);
 
@@ -235,8 +220,7 @@ public class FeatureManager {
 	private String tabixFind(String infoChrom/* , String fileName */) {
 		System.out.println("ESTAMOS EN TABIXFIND");
 		StringBuilder strbuild = new StringBuilder();
-		StringBuilder tabixFile = new StringBuilder(directory.toString()
-				+ fileName.toString() + ".sort.gz");
+		StringBuilder tabixFile = new StringBuilder(directory.toString() + fileName.toString() + ".sort.gz");
 		try {
 			TabixReader tb = new TabixReader(tabixFile.toString());
 
@@ -252,14 +236,11 @@ public class FeatureManager {
 		return strbuild.toString();
 	}
 
-	private String getByRegionGff(String fileName, final String chr,
-			final int start, final int end) {
-		StringBuilder infoChrom = new StringBuilder(chr).append(":")
-				.append(start).append(":").append(end);
+	private String getByRegionGff(String fileName, final String chr, final int start, final int end) {
+		StringBuilder infoChrom = new StringBuilder(chr).append(":").append(start).append(":").append(end);
 
-		if (!new File(new StringBuilder(fileName.substring(0,
-				fileName.lastIndexOf("."))).append("sort.gz.tbi").toString())
-				.exists()) {
+		if (!new File(new StringBuilder(fileName.substring(0, fileName.lastIndexOf("."))).append("sort.gz.tbi")
+				.toString()).exists()) {
 			if (fileName.toString().endsWith("gz")) {
 				if (descGz(/* fileName */)) {
 					if (process("gff"/* fileName */))

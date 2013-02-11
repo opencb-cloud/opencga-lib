@@ -1,7 +1,7 @@
 package org.bioinfo.gcsa.lib.account.beans;
 
-import org.bioinfo.commons.utils.StringUtils;
-import org.bioinfo.gcsa.lib.GcsaUtils;
+import org.bioinfo.gcsa.lib.utils.StringUtils;
+import org.bioinfo.gcsa.lib.utils.TimeUtils;
 
 
 public class Session {
@@ -13,15 +13,15 @@ public class Session {
 //	private Map<String, String> attributes;
 
 	public Session() {
-		this(StringUtils.randomString(20), "", GcsaUtils.getTime(), "");
+		this(StringUtils.randomString(20), "", TimeUtils.getTime(), "");
 	}
 	
 	public Session(String ip){
-		this(StringUtils.randomString(20), ip, GcsaUtils.getTime(), "");
+		this(StringUtils.randomString(20), ip, TimeUtils.getTime(), "");
 	}
 	
 	public Session(String id, String ip, String logout) {
-		this(StringUtils.randomString(20), ip, GcsaUtils.getTime(), logout);
+		this(StringUtils.randomString(20), ip, TimeUtils.getTime(), logout);
 	}
 	
 	public Session(String id, String ip, String login, String logout) {
