@@ -19,6 +19,7 @@ import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
 import org.bioinfo.gcsa.lib.account.beans.Job;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
+import org.bioinfo.gcsa.lib.account.beans.Project;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.utils.MailUtils;
 import org.bioinfo.gcsa.lib.utils.StringUtils;
@@ -430,28 +431,6 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void deleteJob(String accountId, String jobId, String sessionId) throws AccountManagementException {
-		// db.users.update({"accountId":"paco"},{$pull:{"jobs":{"id":"KIDicL1OpfJ97Cu"}}})
-		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		query.put("sessions.id", sessionId);
-		query.put("jobs.id", jobId);
-
-		BasicDBObject jobObj = new BasicDBObject("jobs", new BasicDBObject("id", jobId));
-		BasicDBObject action = new BasicDBObject("$pull", jobObj);
-		action.put("$set", new BasicDBObject("lastActivity", TimeUtils.getTimeMillis()));
-
-		WriteResult wr = userCollection.update(query, action);
-		if (wr.getLastError().getErrorMessage() == null) {
-			if (wr.getN() != 1) {
-				throw new AccountManagementException("deleteJob(): deleting job, with this parameters");
-			}
-			logger.info("job deleted");
-		} else {
-			throw new AccountManagementException("deleteJob(): could not delete job item from database");
-		}
-	}
-
-	@Override
 	public ObjectItem getObjectFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
 			throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
@@ -498,12 +477,13 @@ public class AccountMongoDBManager implements AccountManager {
 	 ********************/
 
 	@Override
-	public void createJob(String accountId, Job job, String sessionId) throws AccountManagementException {
+	public void createJob(String accountId, String projectId, Job job, String sessionId) throws AccountManagementException {
 		BasicDBObject jobDBObject = (BasicDBObject) JSON.parse(gson.toJson(job));
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
+		query.put("projects.id", projectId);
 		BasicDBObject item = new BasicDBObject();
-		item.put("jobs", jobDBObject);
+		item.put("projects.$.jobs", jobDBObject);
 		BasicDBObject action = new BasicDBObject("$push", item);
 		action.put("$set", new BasicDBObject("lastActivity", TimeUtils.getTimeMillis()));
 		WriteResult result = userCollection.update(query, action);
@@ -517,8 +497,30 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException("could not create job in database");
 		}
 	}
-
+	
 	@Override
+	public void deleteJob(String accountId, String jobId, String sessionId) throws AccountManagementException {
+		// db.users.update({"accountId":"paco"},{$pull:{"jobs":{"id":"KIDicL1OpfJ97Cu"}}})
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		query.put("projects.jobs.id", jobId);
+
+		BasicDBObject jobObj = new BasicDBObject("projects.jobs", new BasicDBObject("id", jobId));
+		BasicDBObject action = new BasicDBObject("$pull", jobObj);
+		action.put("$set", new BasicDBObject("lastActivity", TimeUtils.getTimeMillis()));
+
+		WriteResult wr = userCollection.update(query, action);
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("deleteJob(): deleting job, with this parameters");
+			}
+			logger.info("job deleted");
+		} else {
+			throw new AccountManagementException("deleteJob(): could not delete job item from database");
+		}
+	}
+
+	@Override //XXX NOT USED
 	public String getJob(String accountId, String jobId, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
@@ -538,14 +540,14 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public Path getJobPath(String accountId, String jobId, String sessionId) throws AccountManagementException {
+	public Path getJobPath(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
 		query.put("accountId", accountId);
 		query.put("sessions.id", sessionId);
-		query.put("jobs.id", jobId);
+		query.put("projects.id", projectId);
 		fields.put("_id", 0);
-		fields.put("jobs.$.outdir", 1);
+		fields.put("projects.$.jobs", 1);
 		DBObject item = userCollection.findOne(query, fields);
 		logger.info("getJobPath");
 		logger.info(query.toString());
@@ -553,39 +555,66 @@ public class AccountMongoDBManager implements AccountManager {
 		logger.info(item.toString());
 
 		if (item != null) {
-			Job[] job = gson.fromJson(item.get("jobs").toString(), Job[].class);
-			return Paths.get(job[0].getOutdir());
+			Project[] projects = gson.fromJson(item.get("projects").toString(), Project[].class);
+			List<Job> jobList = projects[0].getJobs();
+			Job jobItem = null;
+			for (int i = 0; i < jobList.size(); i++) {
+				if (jobList.get(i).getId().equals(jobId)) {
+					jobItem = jobList.get(i);
+					break;
+				}
+			}
+			if (jobItem != null) {
+				return Paths.get(jobItem.getOutdir());
+			} else {
+				throw new AccountManagementException("job " + jobId + " not found");
+			}
 		} else {
 			throw new AccountManagementException("job " + jobId + " not found");
 		}
 	}
 
 	@Override
-	public String getJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
+	public String getJobStatus(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject();
 		BasicDBObject fields = new BasicDBObject();
 		query.put("accountId", accountId);
 		query.put("sessions.id", sessionId);
-		query.put("jobs.id", jobId);
+		query.put("projects.id", projectId);
 		fields.put("_id", 0);
-		fields.put("jobs.$.status", 1);
+		fields.put("projects.$.jobs", 1);
 		DBObject item = userCollection.findOne(query, fields);
 
 		if (item != null) {
-			Job[] job = gson.fromJson(item.get("jobs").toString(), Job[].class);
-			return job[0].getStatus();
+			Project[] projects = gson.fromJson(item.get("projects").toString(), Project[].class);
+			List<Job> jobList = projects[0].getJobs();
+			Job jobItem = null;
+			for (int i = 0; i < jobList.size(); i++) {
+				if (jobList.get(i).getId().equals(jobId)) {
+					jobItem = jobList.get(i);
+					break;
+				}
+			}
+			if (jobItem != null) {
+				return jobItem.getStatus();
+			} else {
+				throw new AccountManagementException("job " + jobId + " not found");
+			}
 		} else {
 			throw new AccountManagementException("job " + jobId + " not found");
 		}
 	}
 
 	@Override
-	public void incJobVisites(String accountId, String jobId, String sessionId) throws AccountManagementException {
+	public void incJobVisites(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
-		query.put("jobs.id", jobId);
+		query.put("projects.id", projectId);
+		query.put("projects.$.jobs.id", projectId);
 
-		BasicDBObject item = new BasicDBObject("jobs.$.visites", 1);
+//		BasicDBObject item = new BasicDBObject("jobs.$.visites", 1);
+		BasicDBObject itemVisites = new BasicDBObject("visites", 1);
+		BasicDBObject item = new BasicDBObject("projects.$.jobs", itemVisites);
 		BasicDBObject action = new BasicDBObject("$inc", item);
 		action.put("$set", new BasicDBObject("lastActivity", TimeUtils.getTimeMillis()));
 
@@ -594,16 +623,16 @@ public class AccountMongoDBManager implements AccountManager {
 			if (result.getN() != 1) {
 				throw new AccountManagementException("could not update database, with this parameters");
 			}
-			logger.info("data object created");
 		} else {
 			throw new AccountManagementException("could not update database");
 		}
 	}
 
 	@Override
-	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException {
+	public void setJobCommandLine(String accountId, String projectId, String jobId, String commandLine) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
-		query.put("jobs.id", jobId);
+		query.put("projects.id", projectId);
+		query.put("projects.$.jobs.id", jobId);
 
 		// If you have two $set actions to do, put them together, you can not
 		// create a BasicDBObject with two $set keys as you cannot set two keys
@@ -611,7 +640,8 @@ public class AccountMongoDBManager implements AccountManager {
 		// put() will be overridden.
 		// NOTE: this can be done with a query in the mongo console but not in
 		// JAVA.
-		BasicDBObject item = new BasicDBObject("jobs.$.commandLine", commandLine);
+		BasicDBObject itemCmdLine = new BasicDBObject("commandLine", commandLine);
+		BasicDBObject item = new BasicDBObject("projects.$.jobs", itemCmdLine);
 		item.put("lastActivity", TimeUtils.getTimeMillis());
 		BasicDBObject action = new BasicDBObject("$set", item);
 		// action.put("$inc", new BasicDBObject("jobs.$.visites", 1));

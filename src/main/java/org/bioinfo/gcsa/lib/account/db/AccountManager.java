@@ -68,19 +68,19 @@ public interface AccountManager {
 	/*
 	 * Job methods
 	 */
-	public void createJob(String accountId, Job job, String sessionId) throws AccountManagementException;
+	public void createJob(String accountId, String projectId, Job job, String sessionId) throws AccountManagementException;
 
 	public void deleteJob(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
 	public String getJob(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
-	public Path getJobPath(String accountId, String jobId, String sessionId) throws AccountManagementException;
+	public Path getJobPath(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException;
 
-	public String getJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException;
+	public String getJobStatus(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException;
 
-	public void incJobVisites(String accountId, String jobId, String sessionId) throws AccountManagementException;
+	public void incJobVisites(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException;
 
-	public void setJobCommandLine(String accountId, String jobId, String commandLine) throws AccountManagementException;
+	public void setJobCommandLine(String accountId, String projectId, String jobId, String commandLine) throws AccountManagementException;
 
 	/*
 	 * Utils

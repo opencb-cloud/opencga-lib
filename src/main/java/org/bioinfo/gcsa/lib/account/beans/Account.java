@@ -20,7 +20,7 @@ public class Account {
 	private List<Credential> credentials = new ArrayList<Credential>();
 	private List<AnalysisPlugin> plugins = new ArrayList<AnalysisPlugin>();
 	private List<Config> configs = new ArrayList<Config>();
-	private List<Job> jobs = new ArrayList<>();
+	private List<Project> projects = new ArrayList<>();
 
 
 	public Account(String accountId, String accountName, String password, String email) {
@@ -40,7 +40,7 @@ public class Account {
 			String password, String status, String mailingList,
 			long diskQuota, long diskUsage, Session session,
 			List<Session> oldSessions, List<Bucket> buckets,String lastActivity,
-			List<Credential> accounts, List<AnalysisPlugin> plugins, List<Config> configs, List<Job> jobs) {
+			List<Credential> accounts, List<AnalysisPlugin> plugins, List<Config> configs, List<Project> projects) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
@@ -56,7 +56,7 @@ public class Account {
 		this.credentials = accounts;
 		this.plugins = plugins;
 		this.configs = configs;
-		this.jobs = jobs;
+		this.projects = projects;
 	}
 
 	public String getAccountId() {
@@ -183,12 +183,12 @@ public class Account {
 		this.configs = configs;
 	}
 
-	public List<Job> getJobs() {
-		return jobs;
+	public List<Project> getProjects() {
+		return projects;
 	}
 
-	public void setJobs(List<Job> jobs) {
-		this.jobs = jobs;
+	public void setProjects(List<Project> projects) {
+		this.projects = projects;
 	}
 
 }
