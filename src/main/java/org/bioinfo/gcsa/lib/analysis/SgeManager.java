@@ -12,7 +12,8 @@ import org.bioinfo.commons.utils.StringUtils;
 public class SgeManager {
 
 	private Properties config;
-	private Logger logger;
+	private static Logger logger;
+
 
 	public SgeManager(Properties defaultConfig){
 		this.config = defaultConfig;
