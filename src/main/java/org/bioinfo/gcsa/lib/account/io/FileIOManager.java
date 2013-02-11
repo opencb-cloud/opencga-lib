@@ -42,16 +42,57 @@ public class FileIOManager implements IOManager {
 	private String tmp;
 
 	private static String BUCKETS_FOLDER = "buckets";
+	private static String PROJECTS_FOLDER = "projects";
 	private static String ANALYSIS_FOLDER = "analysis";
 	private static String JOBS_FOLDER = "jobs";
 
-	public FileIOManager() throws IOException  {
+	public FileIOManager() throws IOException {
 		accountProperties = Config.getAccountProperties();
 		appHomePath = Config.getGcsaHome();
 		accountHomePath = appHomePath + accountProperties.getProperty("GCSA.ACCOUNT.PATH");
 		tmp = accountProperties.getProperty("TMP.PATH");
 	}
 
+	/**
+	 * Getter Path methods
+	 *****************************/
+	public Path getAccountPath(String accountId) {
+		return Paths.get(accountHomePath, accountId);
+	}
+
+	public Path getBucketPath(String accountId, String bucketId) {
+		if (bucketId != null) {
+			return getAccountPath(accountId).resolve(Paths.get(FileIOManager.BUCKETS_FOLDER, bucketId.toLowerCase()));
+		}
+		return getAccountPath(accountId).resolve(FileIOManager.BUCKETS_FOLDER);
+	}
+
+	public Path getProjectPath(String accountId, String projectId) {
+		if (projectId != null) {
+			return getAccountPath(accountId).resolve(Paths.get(FileIOManager.PROJECTS_FOLDER, projectId.toLowerCase()));
+		}
+		return getAccountPath(accountId).resolve(FileIOManager.PROJECTS_FOLDER);
+	}
+
+	public Path getObjectPath(String accountId, String bucketId, Path objectId) {
+		return getBucketPath(accountId, bucketId).resolve(objectId);
+	}
+
+	// TODO tener en cuenta las demás implementaciones de la interfaz.
+	public Path getJobPath(String accountId, String projectId, String bucketId, String jobId) {
+		Path jobFolder;
+		// If a bucket is passed then outdir is set
+		if (bucketId != null && !bucketId.equals("")) {
+			jobFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, jobId);
+		} else {
+			jobFolder = getProjectPath(accountId, projectId).resolve(jobId);
+		}
+		return jobFolder;
+	}
+
+	/**
+	 * Account methods ···
+	 *****************************/
 	public void createAccount(String accountId) throws IOManagementException {
 
 		// get Java 7 Path object, concatenate home and account
@@ -72,8 +113,9 @@ public class FileIOManager implements IOManager {
 			try {
 				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER));
 				createBucket(accountId, "default");
+				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.PROJECTS_FOLDER));
+				createProject(accountId, "default");
 				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.ANALYSIS_FOLDER));
-				Files.createDirectory(Paths.get(accountHomePath, accountId, FileIOManager.JOBS_FOLDER));
 			} catch (IOException e) {
 				try {
 					IOUtils.deleteDirectory(accountPath);
@@ -98,43 +140,41 @@ public class FileIOManager implements IOManager {
 		}
 	}
 
-	/********************
-	 * 
-	 * BUCKETS METHODS
-	 * 
-	 ********************/
+	/**
+	 * Bucket methods ···
+	 *****************************/
 	public URI createBucket(String accountId, String bucketId) throws IOManagementException {
 		// String path = getBucketPath(accountId, bucketId);
-		Path bucketFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, bucketId);
-		if (Files.exists(bucketFolder.getParent()) && Files.isDirectory(bucketFolder.getParent())
-				&& Files.isWritable(bucketFolder.getParent())) {
+		Path folder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, bucketId);
+		if (Files.exists(folder.getParent()) && Files.isDirectory(folder.getParent())
+				&& Files.isWritable(folder.getParent())) {
 			try {
-				bucketFolder = Files.createDirectory(bucketFolder);
+				folder = Files.createDirectory(folder);
 			} catch (IOException e) {
 				// FileUtils.deleteDirectory(new File(path));
 				throw new IOManagementException("createBucket(): could not create the bucket folder: " + e.toString());
 			}
 		}
-		return bucketFolder.toUri();
+		return folder.toUri();
 	}
 
 	public void deleteBucket(String accountId, String bucketId) throws IOManagementException {
 		// String path = getBucketPath(accountId, bucketId);
-		Path bucketFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, bucketId);
+		Path folder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, bucketId);
 		try {
-			IOUtils.deleteDirectory(bucketFolder);
+			IOUtils.deleteDirectory(folder);
 		} catch (IOException e) {
 			throw new IOManagementException("deleteBucket(): could not delete the bucket folder: " + e.toString());
 		}
 	}
 
 	public void renameBucket(String accountId, String oldBucketId, String newBucketId) throws IOManagementException {
-		Path oldBucketFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, oldBucketId);
-		Path newBucketFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, newBucketId);
+		Path oldFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, oldBucketId);
+		Path newFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, newBucketId);
 		try {
-			Files.move(oldBucketFolder, newBucketFolder);
+			Files.move(oldFolder, newFolder);
 		} catch (IOException e) {
-			throw new IOManagementException("deleteBucket(): could not rename the bucket folder: " + e.toString());
+			throw new IOManagementException("renameBucket(): could not rename the bucket folder: " + e.toString());
 		}
 	}
 
@@ -142,14 +182,51 @@ public class FileIOManager implements IOManager {
 		return Files.exists(getBucketPath(accountId, bucketId));
 	}
 
-	/********************
-	 * 
-	 * JOBS METHODS
-	 * 
-	 ********************/
-	public URI createJob(String accountId, String jobId) throws IOManagementException {
+	/**
+	 * Project methods ···
+	 *****************************/
+	public URI createProject(String accountId, String projectId) throws IOManagementException {
+		Path folder = Paths.get(accountHomePath, accountId, FileIOManager.PROJECTS_FOLDER, projectId);
+		if (Files.exists(folder.getParent()) && Files.isDirectory(folder.getParent())
+				&& Files.isWritable(folder.getParent())) {
+			try {
+				folder = Files.createDirectory(folder);
+			} catch (IOException e) {
+				throw new IOManagementException("createProject(): could not create the bucket folder: " + e.toString());
+			}
+		}
+		return folder.toUri();
+	}
+
+	public void deleteProject(String accountId, String projectId) throws IOManagementException {
+		Path folder = Paths.get(accountHomePath, accountId, FileIOManager.PROJECTS_FOLDER, projectId);
+		try {
+			IOUtils.deleteDirectory(folder);
+		} catch (IOException e) {
+			throw new IOManagementException("deleteProject(): could not delete the project folder: " + e.toString());
+		}
+	}
+
+	public void renameProject(String accountId, String oldProjectId, String newProjectId) throws IOManagementException {
+		Path oldFolder = Paths.get(accountHomePath, accountId, FileIOManager.PROJECTS_FOLDER, oldProjectId);
+		Path newFolder = Paths.get(accountHomePath, accountId, FileIOManager.PROJECTS_FOLDER, newProjectId);
+		try {
+			Files.move(oldFolder, newFolder);
+		} catch (IOException e) {
+			throw new IOManagementException("renameProject(): could not rename the project folder: " + e.toString());
+		}
+	}
+
+	public boolean existProject(String accountId, String projectId) throws IOManagementException {
+		return Files.exists(getProjectPath(accountId, projectId));
+	}
+
+	/**
+	 * Job methods ···
+	 *****************************/
+	public URI createJob(String accountId, String projectId, String jobId) throws IOManagementException {
 		// String path = getAccountPath(accountId) + "/jobs";
-		Path jobFolder = getJobPath(accountId, null, jobId);
+		Path jobFolder = getJobPath(accountId, projectId, null, jobId);
 		logger.debug("PAKO " + jobFolder);
 
 		if (Files.exists(jobFolder.getParent()) && Files.isDirectory(jobFolder.getParent())
@@ -165,8 +242,8 @@ public class FileIOManager implements IOManager {
 		return jobFolder.toUri();
 	}
 
-	public void deleteJob(String accountId, String jobId) throws IOManagementException {
-		Path jobFolder = getJobPath(accountId, null, jobId);
+	public void deleteJob(String accountId, String projectId, String jobId) throws IOManagementException {
+		Path jobFolder = getJobPath(accountId, projectId, null, jobId);
 		try {
 			IOUtils.deleteDirectory(jobFolder);
 		} catch (IOException e) {
@@ -174,9 +251,9 @@ public class FileIOManager implements IOManager {
 		}
 	}
 
-	public void deleteJobObjects(String accountId, String bucketId, String jobId, List<String> objects)
+	public void deleteJobObjects(String accountId, String projectId, String bucketId, String jobId, List<String> objects)
 			throws IOManagementException {
-		Path jobFolder = getJobPath(accountId, bucketId, jobId);
+		Path jobFolder = getJobPath(accountId, projectId, bucketId, jobId);
 
 		try {
 			if (objects != null && objects.size() > 0) {
@@ -189,28 +266,16 @@ public class FileIOManager implements IOManager {
 		}
 	}
 
-	public void moveJob(String accountId, String oldBucketId, String oldJobId, String newBucketId, String newJobId)
-			throws IOManagementException {
-		Path oldBucketFolder = getJobPath(accountId, oldBucketId, oldJobId);
-		Path newBucketFolder = getJobPath(accountId, newBucketId, newJobId);
+	public void moveJob(String accountId, String projectId, String oldBucketId, String oldJobId, String newBucketId,
+			String newJobId) throws IOManagementException {
+		Path oldBucketFolder = getJobPath(accountId, projectId, oldBucketId, oldJobId);
+		Path newBucketFolder = getJobPath(accountId, projectId, newBucketId, newJobId);
 
 		try {
 			Files.move(oldBucketFolder, newBucketFolder);
 		} catch (IOException e) {
 			throw new IOManagementException("deleteBucket(): could not rename the bucket folder: " + e.toString());
 		}
-	}
-
-	// TODO tener en cuenta las demás implementaciones de la interfaz.
-	public Path getJobPath(String accountId, String bucketId, String jobId) {
-		Path jobFolder;
-		// If a bucket is passed then outdir is set
-		if (bucketId != null && !bucketId.equals("")) {
-			jobFolder = Paths.get(accountHomePath, accountId, FileIOManager.BUCKETS_FOLDER, jobId);
-		} else {
-			jobFolder = Paths.get(accountHomePath, accountId, FileIOManager.JOBS_FOLDER, jobId);
-		}
-		return jobFolder;
 	}
 
 	/********************
@@ -525,21 +590,6 @@ public class FileIOManager implements IOManager {
 	}
 
 	/**************/
-
-	public Path getAccountPath(String accountId) {
-		return Paths.get(accountHomePath, accountId);
-	}
-
-	public Path getBucketPath(String accountId, String bucketId) {
-		if (bucketId != null) {
-			return getAccountPath(accountId).resolve(Paths.get(FileIOManager.BUCKETS_FOLDER, bucketId.toLowerCase()));
-		}
-		return getAccountPath(accountId).resolve(FileIOManager.BUCKETS_FOLDER);
-	}
-
-	public Path getObjectPath(String accountId, String bucketId, Path objectId) {
-		return getBucketPath(accountId, bucketId).resolve(objectId);
-	}
 
 	// public String getDataPath(String wsDataId){
 	// wsDataId.replaceAll(":", "/")

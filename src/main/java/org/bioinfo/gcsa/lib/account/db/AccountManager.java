@@ -8,15 +8,16 @@ import org.bioinfo.gcsa.lib.account.beans.Job;
 import org.bioinfo.gcsa.lib.account.beans.ObjectItem;
 import org.bioinfo.gcsa.lib.account.beans.AnalysisPlugin;
 import org.bioinfo.gcsa.lib.account.beans.Bucket;
+import org.bioinfo.gcsa.lib.account.beans.Project;
 import org.bioinfo.gcsa.lib.account.beans.Session;
 import org.bioinfo.gcsa.lib.account.db.AccountManagementException;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 
 public interface AccountManager {
 
-	/*
-	 * Account methods
-	 */
+	/**
+	 * Account methods ···
+	 *****************************/
 	public void createAccount(String accountId, String password, String accountName, String email, Session session)
 			throws AccountManagementException;
 
@@ -43,9 +44,9 @@ public interface AccountManager {
 
 	public void resetPassword(String acccountId, String email) throws AccountManagementException;
 
-	/*
-	 * Project methods
-	 */
+	/**
+	 * Bucket methods ···
+	 *****************************/
 
 	// public boolean checkSessionId(String accountId, String sessionId);
 
@@ -65,26 +66,36 @@ public interface AccountManager {
 	public void shareObject(String accountId, String bucketId, Path objectId, Acl acl, String sessionId)
 			throws AccountManagementException;
 
-	/*
-	 * Job methods
-	 */
-	public void createJob(String accountId, String projectId, Job job, String sessionId) throws AccountManagementException;
+	/**
+	 * Project methods ···
+	 *****************************/
+	public String getProjectsList(String accountId, String sessionId) throws AccountManagementException;
 
-	public void deleteJob(String accountId, String jobId, String sessionId) throws AccountManagementException;
+	public void createProject(String accountId, Project project, String sessionId) throws AccountManagementException;
+
+	public void createJob(String accountId, String projectId, Job job, String sessionId)
+			throws AccountManagementException;
+
+	public void deleteJobFromProject(String accountId, String projectId, String jobId, String sessionId)
+			throws AccountManagementException;
 
 	public String getJob(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
-	public Path getJobPath(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException;
+	public Path getJobPath(String accountId, String projectId, String jobId, String sessionId)
+			throws AccountManagementException;
 
-	public String getJobStatus(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException;
+	public String getJobStatus(String accountId, String projectId, String jobId, String sessionId)
+			throws AccountManagementException;
 
-	public void incJobVisites(String accountId, String projectId, String jobId, String sessionId) throws AccountManagementException;
+	public void incJobVisites(String accountId, String projectId, String jobId, String sessionId)
+			throws AccountManagementException;
 
-	public void setJobCommandLine(String accountId, String projectId, String jobId, String commandLine) throws AccountManagementException;
+	public void setJobCommandLine(String accountId, String projectId, String jobId, String commandLine)
+			throws AccountManagementException;
 
-	/*
-	 * Utils
-	 */
+	/**
+	 * Util methods ···
+	 *****************************/
 	public List<AnalysisPlugin> getUserAnalysis(String sessionId) throws AccountManagementException;
 
 	public List<Bucket> jsonToBucketList(String json);
