@@ -1,7 +1,6 @@
 package org.bioinfo.gcsa.lib.account;
 
 import java.io.DataInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -27,7 +26,6 @@ import org.bioinfo.gcsa.lib.account.db.AccountMongoDBManager;
 import org.bioinfo.gcsa.lib.account.io.FileIOManager;
 import org.bioinfo.gcsa.lib.account.io.IOManagementException;
 import org.bioinfo.gcsa.lib.analysis.AnalysisExecutionException;
-import org.bioinfo.gcsa.lib.analysis.AnalysisJobExecuter;
 import org.bioinfo.gcsa.lib.analysis.SgeManager;
 import org.bioinfo.gcsa.lib.storage.IndexerManager;
 import org.bioinfo.gcsa.lib.storage.feature.BamManager;
