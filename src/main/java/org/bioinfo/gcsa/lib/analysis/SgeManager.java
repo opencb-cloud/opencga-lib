@@ -26,6 +26,7 @@ import org.xml.sax.InputSource;
 
 public class SgeManager {
 
+
 	private static Logger logger = Logger.getLogger(SgeManager.class);
 	private static Properties analysisProperties = Config.getAnalysisProperties();
 

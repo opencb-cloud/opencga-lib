@@ -20,6 +20,7 @@ public class Config {
 
 	private static Properties accountProperties = null;
 	private static Properties analysisProperties = null;
+	private static Properties localServerProperties = null;
 
 	public static String getGcsaHome() {
 		return gcsaHome;
@@ -30,6 +31,7 @@ public class Config {
 
 		accountProperties = null;
 		analysisProperties = null;
+		localServerProperties = null;
 
 		log4jReady = false;
 		LogManager.resetConfiguration();
@@ -75,6 +77,20 @@ public class Config {
 			}
 		}
 		return analysisProperties;
+	}
+	
+	public static Properties getLocalServerProperties(String basePath) {
+		if (localServerProperties == null) {
+			Path path = Paths.get(basePath, "conf", "localserver.properties");
+			localServerProperties = new Properties();
+			try {
+				localServerProperties.load(Files.newInputStream(path));
+			} catch (IOException e) {
+				logger.fatal("failed to load localServer.properties.");
+				return null;
+			}
+		}
+		return localServerProperties;
 	}
 
 }
