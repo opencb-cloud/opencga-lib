@@ -336,14 +336,12 @@ public class CloudSessionManager {
 		}
 	}
 
-	public String checkJobStatus(String accountId, String projectId, String jobId, String sessionId)
-			throws AccountManagementException {
-		return accountManager.getJobStatus(accountId, projectId, jobId, sessionId);
+	public String checkJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException {
+		return accountManager.getJobStatus(accountId, jobId, sessionId);
 	}
 
-	public void incJobVisites(String accountId, String projectId, String jobId, String sessionId)
-			throws AccountManagementException {
-		accountManager.incJobVisites(accountId, projectId, jobId, sessionId);
+	public void incJobVisites(String accountId, String jobId, String sessionId) throws AccountManagementException {
+		accountManager.incJobVisites(accountId, jobId, sessionId);
 	}
 
 	public void deleteJob(String accountId, String projectId, String jobId, String sessionId)
@@ -357,62 +355,54 @@ public class CloudSessionManager {
 		accountManager.deleteJobFromProject(accountId, projectId, jobId, sessionId);
 	}
 
-	public String getJobResult(String accountId, String projectId, String jobId, String sessionId) throws IOException,
-			DocumentException, IOManagementException, AccountManagementException {
+	public String getJobResult(String accountId, String jobId, String sessionId) throws IOException, DocumentException,
+			IOManagementException, AccountManagementException {
 		checkParameter(accountId, "accountId");
-		checkParameter(projectId, "projectId");
 		checkParameter(jobId, "jobId");
 
-		Path jobPath = getAccountPath(accountId).resolve(
-				accountManager.getJobPath(accountId, projectId, jobId, sessionId));
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId, sessionId));
 		return ioManager.getJobResult(jobPath);
 	}
 
-	public Job getJobFromProject(String accountId, String projectId, String jobId, String sessionId)
-			throws IOException, DocumentException, IOManagementException, AccountManagementException {
+	public Job getJob(String accountId, String jobId, String sessionId) throws IOException, DocumentException,
+			IOManagementException, AccountManagementException {
 		checkParameter(accountId, "accountId");
 		checkParameter(jobId, "jobId");
 
-		return accountManager.getJobFromProject(accountId, projectId, jobId, sessionId);
+		return accountManager.getJob(accountId, jobId, sessionId);
 	}
 
-	public String getFileTableFromJob(String accountId, String projectId, String jobId, String filename, String start,
-			String limit, String colNames, String colVisibility, String callback, String sort, String sessionId)
+	public String getFileTableFromJob(String accountId, String jobId, String filename, String start, String limit,
+			String colNames, String colVisibility, String callback, String sort, String sessionId)
 			throws IOManagementException, IOException, AccountManagementException {
 		checkParameter(accountId, "accountId");
-		checkParameter(projectId, "projectId");
 		checkParameter(jobId, "jobId");
 		checkParameter(filename, "filename");
 
-		Path jobPath = getAccountPath(accountId).resolve(
-				accountManager.getJobPath(accountId, projectId, jobId, sessionId));
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId, sessionId));
 
 		return ioManager.getFileTableFromJob(jobPath, filename, start, limit, colNames, colVisibility, callback, sort);
 	}
 
-	public DataInputStream getFileFromJob(String accountId, String projectId, String jobId, String filename,
-			String zip, String sessionId) throws IOManagementException, IOException, AccountManagementException {
+	public DataInputStream getFileFromJob(String accountId, String jobId, String filename, String zip, String sessionId)
+			throws IOManagementException, IOException, AccountManagementException {
 		checkParameter(accountId, "accountId");
-		checkParameter(projectId, "projectId");
 		checkParameter(jobId, "jobId");
 		checkParameter(filename, "filename");
 		checkParameter(zip, "zip");
 
-		Path jobPath = getAccountPath(accountId).resolve(
-				accountManager.getJobPath(accountId, projectId, jobId, sessionId));
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId, sessionId));
 
 		return ioManager.getFileFromJob(jobPath, filename, zip);
 	}
 
-	public InputStream getJobZipped(String accountId, String projectId, String jobId, String sessionId)
-			throws IOManagementException, IOException, AccountManagementException {
+	public InputStream getJobZipped(String accountId, String jobId, String sessionId) throws IOManagementException,
+			IOException, AccountManagementException {
 		checkParameter(accountId, "accountId");
-		checkParameter(projectId, "projectId");
 		checkParameter(jobId, "jobId");
 		checkParameter(sessionId, "sessionId");
 
-		Path jobPath = getAccountPath(accountId).resolve(
-				accountManager.getJobPath(accountId, projectId, jobId, sessionId));
+		Path jobPath = getAccountPath(accountId).resolve(accountManager.getJobPath(accountId, jobId, sessionId));
 		logger.info("getJobZipped");
 		logger.info(jobPath.toString());
 		logger.info(jobId);
@@ -452,7 +442,8 @@ public class CloudSessionManager {
 		return jobId;
 	}
 
-	public String getJobFolder(String accountId, String projectId, String jobId) {
+	public String getJobFolder(String accountId, String jobId, String sessionId) throws AccountManagementException {
+		String projectId = accountManager.getJobProject(accountId, jobId, sessionId).getId();
 		return ioManager.getJobPath(accountId, projectId, null, jobId).toString();
 	}
 
@@ -460,9 +451,9 @@ public class CloudSessionManager {
 		return accountManager.getUserAnalysis(sessionId);
 	}
 
-	public void setJobCommandLine(String accountId, String projectId, String jobId, String commandLine)
+	public void setJobCommandLine(String accountId, String jobId, String commandLine, String sessionId)
 			throws AccountManagementException {
-		accountManager.setJobCommandLine(accountId, projectId, jobId, commandLine);// this
+		accountManager.setJobCommandLine(accountId, jobId, commandLine, sessionId);// this
 		// method
 		// increases
 		// visites

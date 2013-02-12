@@ -34,6 +34,7 @@ public class Account {
 		this.diskQuota = 0;
 		this.diskUsage = 0;
 		this.buckets.add(new Bucket("default"));
+		this.projects.add(new Project("default"));
 	}
 
 	public Account(String accountId, String accountName, String email,

@@ -358,6 +358,7 @@ public class FileIOManager implements IOManager {
 
 	public Path deleteObject(String accountId, String bucketId, Path objectId) throws IOManagementException {
 		Path fullFilePath = getObjectPath(accountId, bucketId, objectId);
+		logger.info(fullFilePath);
 		try {
 			if (Files.deleteIfExists(fullFilePath)) {
 				return objectId;

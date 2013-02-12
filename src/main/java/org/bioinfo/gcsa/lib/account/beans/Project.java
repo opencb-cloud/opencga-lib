@@ -11,6 +11,22 @@ public class Project {
 	private int active;
 	private List<Acl> acl;
 	private List<Job> jobs = new ArrayList<>();
+	
+	
+	public Project(String name) {
+		this(name.toLowerCase(), name, "", "", 1, new ArrayList<Acl>(), new ArrayList<Job>());
+	}
+	
+	public Project(String id, String name, String descripcion, String ownerId, int active, List<Acl> acl, List<Job> jobs) {
+		this.id = id;
+		this.name = name;
+		this.descripcion = descripcion;
+		this.ownerId = ownerId;
+		this.active = active;
+		this.acl = acl;
+		this.jobs = jobs;
+	}
+
 	public String getId() {
 		return id;
 	}
