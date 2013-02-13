@@ -437,18 +437,13 @@ public class AccountMongoDBManager implements AccountManager {
 			Bucket[] buckets = gson.fromJson(obj.get("buckets").toString(), Bucket[].class);
 			List<ObjectItem> dataList = buckets[0].getObjects();
 			ObjectItem objectItem = null;
-			logger.info("MongoManager: " + obj.get("buckets").toString());
-			logger.info("MongoManager: " + dataList.size());
 			for (int i = 0; i < dataList.size(); i++) {
-				logger.info("MongoManager: " + dataList.get(i));
-				logger.info("MongoManager: " + dataList.get(i).getId());
-				logger.info("MongoManager: " + objectId);
 				if (dataList.get(i).getId().equals(objectId.toString())) {
 					objectItem = dataList.get(i);
 					break;
 				}
 			}
-			logger.info("MongoManager: " + objectItem);
+			logger.info(objectItem);
 			if (objectItem != null) {
 				return objectItem;
 			} else {
@@ -562,18 +557,13 @@ public class AccountMongoDBManager implements AccountManager {
 			Project[] projects = gson.fromJson(obj.get("projects").toString(), Project[].class);
 			List<Job> jobList = projects[0].getJobs();
 			Job job = null;
-			logger.info("MongoManager: " + obj.get("projects").toString());
-			logger.info("MongoManager: " + jobList.size());
 			for (int i = 0; i < jobList.size(); i++) {
-				logger.info("MongoManager: " + jobList.get(i));
-				logger.info("MongoManager: " + jobList.get(i).getId());
-				logger.info("MongoManager: " + jobId);
 				if (jobList.get(i).getId().equals(jobId.toString())) {
 					job = jobList.get(i);
 					break;
 				}
 			}
-			logger.info("MongoManager: " + job);
+			logger.info(job);
 			if (job != null) {
 				return job;
 			} else {

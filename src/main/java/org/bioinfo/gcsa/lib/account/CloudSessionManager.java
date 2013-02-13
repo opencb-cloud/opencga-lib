@@ -421,7 +421,7 @@ public class CloudSessionManager {
 
 		if (jobFolder == null) {
 			ioManager.createJob(accountId, projectId, jobId);
-			jobFolder = Paths.get("jobs").resolve(jobId).toString();
+			jobFolder = Paths.get("projects",projectId).resolve(jobId).toString();
 			jobFolderCreated = true;
 		}
 		checkParameter(jobFolder, "jobFolder");
