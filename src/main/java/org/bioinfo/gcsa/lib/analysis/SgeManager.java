@@ -176,6 +176,7 @@ public class SgeManager {
 		    String exitStatus = null;
 		    String failed =  null;
 		    while ((line = in.readLine()) != null) {
+		    	logger.info(line);
 		    	if(line.contains("exit_status")){
 		    		exitStatus = line.replace("exit_status", "").trim();
 		    		logger.info(line);

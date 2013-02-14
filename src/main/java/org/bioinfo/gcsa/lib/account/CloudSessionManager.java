@@ -45,6 +45,7 @@ public class CloudSessionManager {
 	}
 
 	public CloudSessionManager(String gcsaHome) throws IOException {
+		logger.info("!");
 		Config.configureLog4j();
 		accountProperties = Config.getAccountProperties();
 
