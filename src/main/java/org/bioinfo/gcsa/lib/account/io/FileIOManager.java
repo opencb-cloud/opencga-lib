@@ -492,31 +492,4 @@ public class FileIOManager implements IOManager {
 		return avoidingFiles;
 	}
 
-	public StringBuilder listRecursiveJson(File file) {
-		return listRecursiveJson(file, false);
-	}
-
-	private StringBuilder listRecursiveJson(File file, boolean coma) {
-		String c = "\"";
-		StringBuilder sb = new StringBuilder();
-		if (coma) {
-			sb.append(",");
-		}
-		sb.append("{");
-		sb.append(c + "text" + c + ":" + c + file.getName() + c);
-		if (file.isDirectory()) {
-			sb.append(",");
-			sb.append(c + "children" + c + ":[");
-			File[] files = file.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				if (i == 0) {
-					sb.append(listRecursiveJson(files[i], false));
-				} else {
-					sb.append(listRecursiveJson(files[i], true));
-				}
-			}
-			return sb.append("]}");
-		}
-		return sb.append("}");
-	}
 }

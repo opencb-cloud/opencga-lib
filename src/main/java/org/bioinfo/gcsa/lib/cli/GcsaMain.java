@@ -11,6 +11,7 @@ import org.bioinfo.gcsa.Config;
 public class GcsaMain {
 
 	public static Tomcat tomcat;
+	public static Properties properties;
 
 	public static void main(String[] args) {
 
@@ -19,7 +20,7 @@ public class GcsaMain {
 			home = ".";
 		}
 
-		Properties properties = Config.getLocalServerProperties(home);
+		properties = Config.getLocalServerProperties(home);
 		int port = Integer.parseInt(properties.getProperty("LOCAL.PORT", "61976"));
 
 		tomcat = new Tomcat();
@@ -32,6 +33,9 @@ public class GcsaMain {
 
 		Tomcat.addServlet(ctx, "admin", new AdminServlet());
 		ctx.addServletMapping("/admin", "admin");
+		
+		Tomcat.addServlet(ctx, "getdirs", new GetFoldersServlet());
+		ctx.addServletMapping("/getdirs", "getdirs");
 		
 		try {
 			tomcat.start();
