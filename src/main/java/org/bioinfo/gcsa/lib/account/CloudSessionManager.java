@@ -29,6 +29,7 @@ import org.bioinfo.gcsa.lib.analysis.AnalysisExecutionException;
 import org.bioinfo.gcsa.lib.analysis.SgeManager;
 import org.bioinfo.gcsa.lib.storage.IndexerManager;
 import org.bioinfo.gcsa.lib.storage.feature.BamManager;
+import org.bioinfo.gcsa.lib.storage.feature.VcfManager;
 import org.bioinfo.gcsa.lib.utils.StringUtils;
 import org.dom4j.DocumentException;
 
@@ -281,36 +282,33 @@ public class CloudSessionManager {
 		Path fullFilePath = ioManager.getObjectPath(accountId, bucketId, objectId);
 		ObjectItem objectItem = accountManager.getObjectFromBucket(accountId, bucketId, objectId, sessionId);
 
+		logger.debug(fullFilePath);
+		logger.debug(regionStr);
+		
 		String result = "";
 		switch (objectItem.getFileFormat()) {
 		case "bam":
 			BamManager bamManager = new BamManager();
 			result = bamManager.getByRegion(fullFilePath, regionStr, params);
 			break;
+		case "vcf":
+			VcfManager vcfManager = new VcfManager();
+			result = vcfManager.getByRegion(fullFilePath, regionStr, params);
+			break;
 		}
-
 		return result;
 	}
 
-	public void indexFileObjects(String accountId, Path objectpath) throws Exception {
+	public String indexFileObjects(String accountId, Path objectpath) throws Exception {
 		logger.info(objectpath);
 		String sgeJobName = IndexerManager.createBamIndex(getAccountPath(accountId).resolve("buckets").resolve(
 				objectpath));
 		logger.info(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
-		while (true) {
-			Thread.sleep(4000);
-			String status = SgeManager.status(sgeJobName);
-			logger.info("job status: " + sgeJobName + " -> " + status);
-			if ("finished".equals(status)) {
-				break;
-			} else if (status.contains("error")) {
-				throw new Exception("could not index the file: " + objectpath);
-			}
-		}
-
-		// //TODO TEST
-		// logger.info("launching indexer to SGE");
-		// indexFileObjects(accountId,bucketId,objectId);
+		return sgeJobName;
+	}
+	
+	public String indexJobStatus(String accountId, String jobId) throws Exception {
+		return SgeManager.status(jobId);
 	}
 
 	/**

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bioinfo.formats.core.variant.Vcf4;
+import org.bioinfo.formats.core.variant.vcf4.VcfRecord;
 import org.bioinfo.gcsa.lib.storage.TabixReader;
 
 import com.google.gson.Gson;
@@ -21,12 +22,29 @@ public class VcfManager {
 
 	public String getByRegion(Path fullFilePath, String regionStr, Map<String, List<String>> params) throws IOException {
 		TabixReader tabixReader = new TabixReader(fullFilePath.toString());
-		TabixReader.Iterator lines = tabixReader.query(regionStr);
+		StringBuilder sb = new StringBuilder();
+		try {
+			TabixReader.Iterator lines = tabixReader.query(regionStr);
 
-		String line;
-		while ((line = lines.next()) != null) {
-			Vcf4 vcfBean = new Vcf4(line);
+			String line;
+			sb.append("[");
+			while ((line = lines.next()) != null) {
+				VcfRecord vcfRecord = new VcfRecord(line.split("\t"));
+				sb.append(gson.toJson(vcfRecord) + ",");
+			}
+			// Remove last comma
+			int sbLength = sb.length();
+			int sbLastPos = sbLength - 1;
+			if (sbLength > 1 && sb.charAt(sbLastPos) == ',') {
+				sb.replace(sbLastPos, sbLength, "");
+			}
+			sb.append("]");
+
+		} catch (Exception e) {
+			logger.info(e);
+			sb.append("[]");
 		}
-		return regionStr;
+
+		return sb.toString();
 	}
 }

@@ -27,7 +27,7 @@ def checkGcsaHome():
         sys.exit(-1)
 
 
-def callOs(cmd):
+def execute(cmd):
     status, output = commands.getstatusoutput(cmd)
     print(str(status)+" -> "+output+" - "+cmd)
     if 35584 == status and "[bam_header_read]" in output:
@@ -51,25 +51,25 @@ def callOs(cmd):
 def indexBAM(inputBAM, outdir):
     print("indexing bam file...")
     sortBam(inputBAM, outdir)
-    callOs(samtoolsCmd + " index " + inputBAM)
+    execute(samtoolsCmd + " index " + inputBAM)
     print("index complete!")
 
 def sortBam(inputBAM, outdir):
     print("sorting bam file...")
     sortedBam = inputBAM + ".sort.bam"
     sortCmd = samtoolsCmd + " sort " + inputBAM + " " + inputBAM + ".sort"
-    callOs(sortCmd)
-    callOs("mv "+ sortedBam + " " + inputBAM)
+    execute(sortCmd)
+    execute("mv "+ sortedBam + " " + inputBAM)
     print("sort complete!")
 
 def indexVCF(inputVCF, outdir):
     #file inputFVCF "gzip compressed"  zcat file |
     print("indexing vcf file...")
-    callOs("tar -zcvf "+ inputVCF + ".tar.gz" + " " + inputVCF)
-    callOs("sort -k1,1 -k2,2n "+ inputVCF + " > " + inputVCF + ".sort.vcf");
-    callOs(tabixbgzipCmd + " -c " + inputVCF + ".sort.vcf" + " > " + inputVCF + ".gz")
-    callOs(tabixCmd + " -p vcf " + inputVCF + ".gz")
-    callOs("rm -rf "+ inputVCF + ".sort.vcf")
+    execute("tar -zcvf "+ inputVCF + ".tar.gz" + " " + inputVCF)
+    execute("sort -k1,1 -k2,2n "+ inputVCF + " > " + inputVCF + ".sort.vcf");
+    execute(tabixbgzipCmd + " -c " + inputVCF + ".sort.vcf" + " > " + inputVCF + ".gz")
+    execute(tabixCmd + " -p vcf " + inputVCF + ".gz")
+    execute("rm -rf "+ inputVCF + ".sort.vcf")
     print("index complete!")
     print("todo")
 
@@ -77,7 +77,7 @@ def indexVCF(inputVCF, outdir):
 
 
 parser = argparse.ArgumentParser(prog="indexer")
-parser.add_argument("type", choices=("bam","vcf"))
+parser.add_argument("-t","--type", choices=("bam","vcf"))
 parser.add_argument("input", help="input file")
 parser.add_argument("-c","--compressed", action="count", help="input file is gzipped")
 parser.add_argument("-o", dest="outdir", help="destination folder")

@@ -443,7 +443,7 @@ public class AccountMongoDBManager implements AccountManager {
 					break;
 				}
 			}
-			logger.info(objectItem);
+			logger.info(objectItem.getId());
 			if (objectItem != null) {
 				return objectItem;
 			} else {

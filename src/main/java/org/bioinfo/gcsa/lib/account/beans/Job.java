@@ -5,9 +5,8 @@ import java.util.List;
 
 import org.bioinfo.gcsa.lib.utils.TimeUtils;
 
-
 public class Job {
-	
+
 	private String id;
 	private String name;
 	private String outdir;
@@ -23,18 +22,21 @@ public class Job {
 	private String description;
 	private List<String> inputData;
 	private List<String> outputData;
-	
+	private Index index;
+
 	public static final String QUEUED = "queued";
 	public static final String RUNNING = "running";
 	public static final String DONE = "done";
-	
 
-	public Job(String id, String name, String outdir, String toolName, String status, String commandLine, String description, List<String> inputData) {
-		this(id, name, outdir, toolName, 0, status, TimeUtils.getTime(), "", "", "", -2, commandLine, description, inputData, new ArrayList<String>());
+	public Job(String id, String name, String outdir, String toolName, String status, String commandLine,
+			String description, List<String> inputData) {
+		this(id, name, outdir, toolName, 0, status, TimeUtils.getTime(), "", "", "", -2, commandLine, description,
+				inputData, new ArrayList<String>());
 	}
-	
-	public Job(String id, String name, String outdir, String toolName, long diskUsage, String status, String date, String startTime,
-			String endTime, String ouputError, int visites, String commandLine, String description, List<String> inputData, List<String> outputData) {
+
+	public Job(String id, String name, String outdir, String toolName, long diskUsage, String status, String date,
+			String startTime, String endTime, String ouputError, int visites, String commandLine, String description,
+			List<String> inputData, List<String> outputData) {
 		this.id = id;
 		this.name = name;
 		this.outdir = outdir;
@@ -50,9 +52,9 @@ public class Job {
 		this.description = description;
 		this.inputData = inputData;
 		this.outputData = outputData;
+		this.index = new Index();
 	}
 
-	
 	public String getId() {
 		return id;
 	}
@@ -171,6 +173,46 @@ public class Job {
 
 	public void setOutputData(List<String> outputData) {
 		this.outputData = outputData;
+	}
+
+	private class Index {
+		private String status;
+		private String filename;
+		private String indexer;
+
+		public Index() {
+			this("", "", "");
+		}
+
+		public Index(String status, String filename, String indexer) {
+			this.status = status;
+			this.filename = filename;
+			this.indexer = indexer;
+		}
+
+		private String getStatus() {
+			return status;
+		}
+
+		private void setStatus(String status) {
+			this.status = status;
+		}
+
+		private String getFilename() {
+			return filename;
+		}
+
+		private void setFilename(String filename) {
+			this.filename = filename;
+		}
+
+		private String getIndexer() {
+			return indexer;
+		}
+
+		private void setIndexer(String indexer) {
+			this.indexer = indexer;
+		}
 	}
 
 }
