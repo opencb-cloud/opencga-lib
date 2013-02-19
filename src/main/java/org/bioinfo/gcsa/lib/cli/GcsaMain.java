@@ -20,7 +20,7 @@ public class GcsaMain {
 		}
 
 		Properties properties = Config.getLocalServerProperties(home);
-		int port = Integer.parseInt(properties.getProperty("LOCAL.PORT", "33333"));
+		int port = Integer.parseInt(properties.getProperty("LOCAL.PORT", "61976"));
 
 		tomcat = new Tomcat();
 		tomcat.setPort(port);
@@ -32,7 +32,7 @@ public class GcsaMain {
 
 		Tomcat.addServlet(ctx, "admin", new AdminServlet());
 		ctx.addServletMapping("/admin", "admin");
-
+		
 		try {
 			tomcat.start();
 			tomcat.getServer().await();

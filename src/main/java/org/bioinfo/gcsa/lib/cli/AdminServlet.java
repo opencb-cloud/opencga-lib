@@ -38,6 +38,9 @@ public class AdminServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 			break;
+		case "status":
+				pw.write("it works");
+			break;
 		default:
 			pw.write("Unknown or unspecified action.");
 			break;
