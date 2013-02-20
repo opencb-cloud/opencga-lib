@@ -1,8 +1,9 @@
 package org.bioinfo.gcsa.lib.cli;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -27,38 +28,41 @@ public class GetFoldersServlet extends HttpServlet {
 		StringBuilder respStr = new StringBuilder("[");
 		String[] folders = GcsaMain.properties.getProperty("LOCAL.ALLOWED.FOLDERS").split(";");
 		for (String folder : folders) {
-			Path path = Paths.get(folder.toString());
-			respStr.append(listRecursiveJson(path.toFile()).toString()).append(',');
+			Path path = Paths.get(folder);
+			respStr.append(listRecursiveJson(path).toString()).append(',');
 		}
 		respStr.deleteCharAt(respStr.length() - 1);
 		respStr.append("]");
-		
+
 		pw.write(respStr.toString());
 		pw.close();
 	}
 
-	private StringBuilder listRecursiveJson(File file) {
-		return listRecursiveJson(file, false);
+	private StringBuilder listRecursiveJson(Path path) throws IOException {
+		return listRecursiveJson(path, false);
 	}
 
-	private StringBuilder listRecursiveJson(File file, boolean coma) {
+	private StringBuilder listRecursiveJson(Path filePath, boolean coma) throws IOException {
 		String c = "\"";
 		StringBuilder sb = new StringBuilder();
 		if (coma) {
 			sb.append(",");
 		}
 		sb.append("{");
-		sb.append(c + "text" + c + ":" + c + file.getName() + c);
-		File[] files;
-		if (file.isDirectory() && (files = file.listFiles()) !=null ) {
+		sb.append(c + "text" + c + ":" + c + filePath.toString() + c);
+		if (Files.isDirectory(filePath)) {
 			sb.append(",");
 			sb.append(c + "children" + c + ":[");
-			for (int i = 0; i < files.length; i++) {
+			DirectoryStream<Path> folderStream = Files.newDirectoryStream(filePath);
+			int i = 0;
+			for (Path p : folderStream) {
+				System.out.println(p.toAbsolutePath());
 				if (i == 0) {
-					sb.append(listRecursiveJson(files[i], false));
+					sb.append(listRecursiveJson(p, false));
 				} else {
-					sb.append(listRecursiveJson(files[i], true));
+					sb.append(listRecursiveJson(p, true));
 				}
+				i++;
 			}
 			return sb.append("]}");
 		}
