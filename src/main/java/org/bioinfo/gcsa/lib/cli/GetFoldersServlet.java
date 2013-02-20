@@ -27,7 +27,7 @@ public class GetFoldersServlet extends HttpServlet {
 		StringBuilder respStr = new StringBuilder("[");
 		String[] folders = GcsaMain.properties.getProperty("LOCAL.ALLOWED.FOLDERS").split(";");
 		for (String folder : folders) {
-			Path path = Paths.get(folder); 
+			Path path = Paths.get(folder.toString());
 			respStr.append(listRecursiveJson(path.toFile()).toString()).append(',');
 		}
 		respStr.deleteCharAt(respStr.length() - 1);
