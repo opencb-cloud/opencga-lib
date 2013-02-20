@@ -7,7 +7,7 @@
 
 	<properties>
 		<installation.dir>installation-dir</installation.dir>
-		<dest.installation.dir>/opt/gcsa</dest.installation.dir>
+		<dest.installation.dir>/opt/opencga</dest.installation.dir>
 	</properties>
 
 	<dependencies>
@@ -151,7 +151,7 @@
 									<arg value="${installation.dir}/conf" />
 									<arg value="${installation.dir}/example" />
 									<arg value="${installation.dir}/libs" />
-									<arg value="${installation.dir}/gcsa.sh" />
+									<arg value="${installation.dir}/opencga.sh" />
 									<arg value="${dest.installation.dir}" />
 								</exec>
 							</target>

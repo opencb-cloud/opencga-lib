@@ -42,7 +42,7 @@ public class CloudSessionManager {
 	private Properties accountProperties;
 
 	public CloudSessionManager() throws IOException {
-		this(System.getenv("GCSA_HOME"));
+		this(System.getenv("OPENCGA_HOME"));
 	}
 
 	public CloudSessionManager(String gcsaHome) throws IOException {
@@ -50,7 +50,7 @@ public class CloudSessionManager {
 		Config.configureLog4j();
 		accountProperties = Config.getAccountProperties();
 
-		if (accountProperties.getProperty("GCSA.ACCOUNT.MODE").equals("file")) {
+		if (accountProperties.getProperty("OPENCGA.ACCOUNT.MODE").equals("file")) {
 			accountManager = (AccountManager) new AccountFileManager();
 		} else {
 			accountManager = new AccountMongoDBManager();

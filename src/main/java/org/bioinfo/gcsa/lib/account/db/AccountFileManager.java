@@ -17,9 +17,9 @@ public class AccountFileManager /* implements AccountManager */{
 
 	public AccountFileManager() throws IOException {
 		accountProperties = Config.getAccountProperties();
-		home = System.getenv(accountProperties.getProperty("GCSA.ENV.HOME"));
-		accounts = home + accountProperties.getProperty("GCSA.ACCOUNT.PATH");
-		tmp = accountProperties.getProperty("TMP.PATH");
+		home = System.getenv(accountProperties.getProperty("OPENCGA.ENV.HOME"));
+		accounts = home + accountProperties.getProperty("OPENCGA.ACCOUNT.PATH");
+		tmp = accountProperties.getProperty("OPENCGA.TMP.PATH");
 	}
 
 }

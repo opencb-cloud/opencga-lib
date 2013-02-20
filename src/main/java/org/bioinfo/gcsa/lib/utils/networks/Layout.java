@@ -45,7 +45,7 @@ public class Layout {
 	}
 	
 	public Layout() throws IOException {
-		homePath = System.getenv("GCSA_HOME");
+		homePath = System.getenv("OPENCGA_HOME");
 		config = new Config(homePath + "/conf/utils.properties");
 		
 		logger = new Logger();

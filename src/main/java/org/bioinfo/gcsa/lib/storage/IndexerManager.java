@@ -13,7 +13,7 @@ import org.bioinfo.gcsa.lib.analysis.SgeManager;
 public class IndexerManager {
 	private static Logger logger = Logger.getLogger(IndexerManager.class);
 	private static Path indexerManagerScript = Paths.get(Config.getGcsaHome(),
-			Config.getAnalysisProperties().getProperty("ANALYSIS.BINARIES.PATH"), "indexer", "indexerManager.py");
+			Config.getAnalysisProperties().getProperty("OPENCGA.ANALYSIS.BINARIES.PATH"), "indexer", "indexerManager.py");
 
 	public static String createBamIndex(Path inputBamPath) throws IOException, InterruptedException,
 			AnalysisExecutionException {

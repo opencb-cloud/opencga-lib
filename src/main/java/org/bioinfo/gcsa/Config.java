@@ -15,7 +15,7 @@ public class Config {
 
 	private static Logger logger = Logger.getLogger(Config.class);
 
-	private static String gcsaHome = System.getenv("GCSA_HOME");
+	private static String opencgaHome = System.getenv("OPENCGA_HOME");
 	private static boolean log4jReady = false;
 
 	private static Properties accountProperties = null;
@@ -23,11 +23,11 @@ public class Config {
 	private static Properties localServerProperties = null;
 
 	public static String getGcsaHome() {
-		return gcsaHome;
+		return opencgaHome;
 	}
 
 	public static void setGcsaHome(String gcsaHome) {
-		Config.gcsaHome = gcsaHome;
+		Config.opencgaHome = gcsaHome;
 
 		accountProperties = null;
 		analysisProperties = null;
@@ -40,7 +40,7 @@ public class Config {
 
 	public static void configureLog4j() {
 		if (!log4jReady) {
-			Path path = Paths.get(gcsaHome, "conf", "log4j.properties");
+			Path path = Paths.get(opencgaHome, "conf", "log4j.properties");
 			try {
 				PropertyConfigurator.configure(Files.newInputStream(path));
 			} catch (IOException e) {
@@ -53,7 +53,7 @@ public class Config {
 
 	public static Properties getAccountProperties() {
 		if (accountProperties == null) {
-			Path path = Paths.get(gcsaHome, "conf", "account.properties");
+			Path path = Paths.get(opencgaHome, "conf", "account.properties");
 			accountProperties = new Properties();
 			try {
 				accountProperties.load(Files.newInputStream(path));
@@ -67,7 +67,7 @@ public class Config {
 
 	public static Properties getAnalysisProperties() {
 		if (analysisProperties == null) {
-			Path path = Paths.get(gcsaHome, "conf", "analysis.properties");
+			Path path = Paths.get(opencgaHome, "conf", "analysis.properties");
 			analysisProperties = new Properties();
 			try {
 				analysisProperties.load(Files.newInputStream(path));

@@ -32,7 +32,7 @@ public class GetFoldersServlet extends HttpServlet {
 		PrintWriter pw = resp.getWriter();
 
 		StringBuilder respStr = new StringBuilder("[");
-		String[] folders = GcsaMain.properties.getProperty("OCGA.LOCAL.FOLDERS.ALLOWED").split(",");
+		String[] folders = GcsaMain.properties.getProperty("OPENCGA.LOCAL.FOLDERS.ALLOWED").split(",");
 		for (String folder : folders) {
 			Path path = Paths.get(folder);
 //			respStr.append(listRecursiveJson(path).toString()).append(',');

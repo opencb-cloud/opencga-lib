@@ -53,10 +53,10 @@ public class AccountMongoDBManager implements AccountManager {
 
 	private void connect() throws NumberFormatException, UnknownHostException {
 		logger.info("mongodb connect");
-		String host = accountProperties.getProperty("GCSA.MONGO.HOST", "localhost");
-		int port = Integer.parseInt(accountProperties.getProperty("GCSA.MONGO.PORT"));
-		String db = accountProperties.getProperty("GCSA.MONGO.DB");
-		String collection = accountProperties.getProperty("GCSA.MONGO.COLLECTION");
+		String db = accountProperties.getProperty("OPENCGA.MONGO.DB");
+		String collection = accountProperties.getProperty("OPENCGA.MONGO.COLLECTION");
+		String host = accountProperties.getProperty("OPENCGA.MONGO.HOST", "localhost");
+		int port = Integer.parseInt(accountProperties.getProperty("OPENCGA.MONGO.PORT"));
 
 		mongoClient = new MongoClient(host, port);
 		mongoDB = mongoClient.getDB(db);

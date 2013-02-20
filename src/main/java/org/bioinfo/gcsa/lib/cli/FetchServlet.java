@@ -30,7 +30,7 @@ public class FetchServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		System.out.println("GCSA Local server");
+		System.out.println("OpenCGA Local server");
 
 		PrintWriter pw = resp.getWriter();
 		

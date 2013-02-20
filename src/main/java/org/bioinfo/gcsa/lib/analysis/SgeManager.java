@@ -74,7 +74,7 @@ public class SgeManager {
 		String queueProperty;
 		for (String queue : queueList) {
 			if (!queue.equalsIgnoreCase(defaultQueue)) {
-				queueProperty = "SGE." + queue.toUpperCase() + ".TOOLS";
+				queueProperty = "OPENCGA.SGE." + queue.toUpperCase() + ".TOOLS";
 				if (analysisProperties.containsKey(queueProperty)) {
 					if (belongsTheToolToQueue(analysisProperties.getProperty(queueProperty), toolName)) {
 						selectedQueue = queue;
@@ -87,16 +87,16 @@ public class SgeManager {
 	}
 
 	private static String getDefaultQueue() throws Exception {
-		if (analysisProperties.containsKey("SGE.DEFAULT.QUEUE")) {
-			return analysisProperties.getProperty("SGE.DEFAULT.QUEUE");
+		if (analysisProperties.containsKey("OPENCGA.SGE.DEFAULT.QUEUE")) {
+			return analysisProperties.getProperty("OPENCGA.SGE.DEFAULT.QUEUE");
 		} else {
-			throw new Exception("SGE.DEFAULT.QUEUE is not defined!");
+			throw new Exception("OPENCGA.SGE.DEFAULT.QUEUE is not defined!");
 		}
 	}
 
 	private static List<String> getQueueList() {
-		if (analysisProperties.containsKey("SGE.AVAILABLE.QUEUES")) {
-			return StringUtils.toList(analysisProperties.getProperty("SGE.AVAILABLE.QUEUES"), ",");
+		if (analysisProperties.containsKey("OPENCGA.SGE.AVAILABLE.QUEUES")) {
+			return StringUtils.toList(analysisProperties.getProperty("OPENCGA.SGE.AVAILABLE.QUEUES"), ",");
 		} else {
 			return new ArrayList<String>();
 		}

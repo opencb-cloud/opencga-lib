@@ -49,8 +49,8 @@ public class FileIOManager implements IOManager {
 	public FileIOManager() throws IOException {
 		accountProperties = Config.getAccountProperties();
 		appHomePath = Config.getGcsaHome();
-		accountHomePath = appHomePath + accountProperties.getProperty("GCSA.ACCOUNT.PATH");
-		tmp = accountProperties.getProperty("TMP.PATH");
+		accountHomePath = appHomePath + accountProperties.getProperty("OPENCGA.ACCOUNT.PATH");
+		tmp = accountProperties.getProperty("OPENCGA.TMP.PATH");
 	}
 
 	/**

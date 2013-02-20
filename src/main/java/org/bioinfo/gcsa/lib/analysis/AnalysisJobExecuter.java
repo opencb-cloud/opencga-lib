@@ -66,7 +66,7 @@ public class AnalysisJobExecuter {
 		gson = new Gson();
 
 		if (analysisOwner.equals("system"))
-			analysisRootPath = Paths.get(analysisProperties.getProperty("ANALYSIS.BINARIES.PATH"));
+			analysisRootPath = Paths.get(analysisProperties.getProperty("OPENCGA.ANALYSIS.BINARIES.PATH"));
 		else
 			analysisRootPath = Paths.get(home, "accounts", analysisOwner);
 
@@ -164,7 +164,7 @@ public class AnalysisJobExecuter {
 	private void executeCommandLine(String commandLine, String jobId, String jobFolder)
 			throws AnalysisExecutionException, IOException {
 		// read execution param
-		String jobExecutor = analysisProperties.getProperty("ANALYSIS.JOB.EXECUTOR");
+		String jobExecutor = analysisProperties.getProperty("OPENCGA.ANALYSIS.JOB.EXECUTOR");
 
 		// local execution
 		if (jobExecutor == null || jobExecutor.trim().equalsIgnoreCase("LOCAL")) {
