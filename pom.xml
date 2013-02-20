@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bioinfo</groupId>
-	<artifactId>gcsa-lib</artifactId>
+	<artifactId>opencga-lib</artifactId>
 	<version>0.1.0</version>
 
 	<properties>
@@ -111,7 +111,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.bioinfo.gcsa.lib.cli.GcsaMain</mainClass>
+							<mainClass>org.bioinfo.opencga.lib.cli.OpenCGAMain</mainClass>
 							<addClasspath>true</addClasspath>
 						</manifest>
 					</archive>

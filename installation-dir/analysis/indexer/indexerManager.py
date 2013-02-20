@@ -3,7 +3,7 @@
 import sys, os, argparse, commands
 
 
-gcsaHome = "";
+opencgaHome = "";
 samtoolsCmd = "";
 tabixCmd = "";
 tabixbgzipCmd = "";
@@ -11,19 +11,19 @@ tabixbgzipCmd = "";
 #Functions
 def checkGcsaHome():
     try:
-        global gcsaHome
+        global opencgaHome
         global samtoolsCmd
         global tabixCmd
         global tabixbgzipCmd
-        #gcsaHome = os.environ["GCSA_HOME"]
-        gcsaHome = "/httpd/bioinfo/gcsa"
-        samtoolsCmd = gcsaHome +"/analysis/samtools/samtools"
-        tabixCmd = gcsaHome +"/analysis/tabix/tabix"
-        tabixbgzipCmd = gcsaHome +"/analysis/tabix/bgzip"
+        #opencgaHome = os.environ["GCSA_HOME"]
+        opencgaHome = "/httpd/bioinfo/opencga"
+        samtoolsCmd = opencgaHome +"/analysis/samtools/samtools"
+        tabixCmd = opencgaHome +"/analysis/tabix/tabix"
+        tabixbgzipCmd = opencgaHome +"/analysis/tabix/bgzip"
         #print(tabixCmd)
         #print(tabixbgzipCmd)
     except:
-        print("Environment variable GCSA_HOME is not set")
+        print("Environment variable OPENCGA_HOME is not set")
         sys.exit(-1)
 
 

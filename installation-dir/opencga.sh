@@ -10,15 +10,15 @@ absolute=`echo $shell_path | grep "^/"`;
 
 if [ -z $absolute ]
 then
-        GCSA_HOME="`pwd`/$shell_path"
+        OPENCGA_HOME="`pwd`/$shell_path"
 else
-        GCSA_HOME="$shell_path"
+        OPENCGA_HOME="$shell_path"
 fi
 
 
-if [ -z "$GCSA_HOME" ]
+if [ -z "$OPENCGA_HOME" ]
 then
-	echo "You must define the enviroment variable: GCSA_HOME"
+	echo "You must define the enviroment variable: OPENCGA_HOME"
 	exit 1
 fi
 
@@ -28,16 +28,16 @@ fi
 #	exit 1
 #fi
 
-for i in $GCSA_HOME/libs/*; do
+for i in $OPENCGA_HOME/libs/*; do
 	CLASSPATH=$CLASSPATH:$i
 done;
 
 echo "*************************"
 echo "*************************"
-echo "*** GCSA Local server ***"
+echo "*** OpenCGA Local server ***"
 echo "*************************"
 echo "*************************"
-echo "A example of URL address to access the server is: http://localhost:{PORT}/gcsa/rest/storage/fetch?filepath={ABSOLUTE FILE PATH}&region={REGION}"
+echo "A example of URL address to access the server is: http://localhost:{PORT}/opencga/rest/storage/fetch?filepath={ABSOLUTE FILE PATH}&region={REGION}"
 
-java $OPTIONS -classpath $CLASSPATH org.bioinfo.gcsa.lib.cli.GcsaMain $GCSA_HOME $@ 2> /dev/null
+java $OPTIONS -classpath $CLASSPATH org.bioinfo.opencga.lib.cli.OpenCGAMain $OPENCGA_HOME $@ 2> /dev/null
 
