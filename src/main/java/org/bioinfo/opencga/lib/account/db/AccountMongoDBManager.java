@@ -56,10 +56,13 @@ public class AccountMongoDBManager implements AccountManager {
 		String db = accountProperties.getProperty("OPENCGA.MONGO.DB");
 		String collection = accountProperties.getProperty("OPENCGA.MONGO.COLLECTION");
 		String host = accountProperties.getProperty("OPENCGA.MONGO.HOST", "localhost");
+		String user = accountProperties.getProperty("OPENCGA.MONGO.USER", "");
+		String pass = accountProperties.getProperty("OPENCGA.MONGO.PASS", "");
 		int port = Integer.parseInt(accountProperties.getProperty("OPENCGA.MONGO.PORT"));
 
 		mongoClient = new MongoClient(host, port);
 		mongoDB = mongoClient.getDB(db);
+		boolean auth = mongoDB.authenticate(user, pass.toCharArray());
 		userCollection = mongoDB.getCollection(collection);
 	}
 
