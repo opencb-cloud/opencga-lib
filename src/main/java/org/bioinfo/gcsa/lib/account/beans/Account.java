@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Account {
-	
+
 	private String accountId;
 	private String accountName;
 	private String email;
 	private String password;
+	private String role;
 	private String status;
 	private String mailingList;
 	private long diskQuota;
@@ -22,12 +23,12 @@ public class Account {
 	private List<Config> configs = new ArrayList<Config>();
 	private List<Project> projects = new ArrayList<>();
 
-
-	public Account(String accountId, String accountName, String password, String email) {
+	public Account(String accountId, String accountName, String password, String role, String email) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
 		this.password = password;
+		this.role = role;
 		this.status = "1";
 		this.mailingList = "";
 		this.lastActivity = "";
@@ -37,15 +38,15 @@ public class Account {
 		this.projects.add(new Project("default"));
 	}
 
-	public Account(String accountId, String accountName, String email,
-			String password, String status, String mailingList,
-			long diskQuota, long diskUsage, Session session,
-			List<Session> oldSessions, List<Bucket> buckets,String lastActivity,
-			List<Credential> accounts, List<AnalysisPlugin> plugins, List<Config> configs, List<Project> projects) {
+	public Account(String accountId, String accountName, String email, String password, String role, String status,
+			String mailingList, long diskQuota, long diskUsage, Session session, List<Session> oldSessions,
+			List<Bucket> buckets, String lastActivity, List<Credential> accounts, List<AnalysisPlugin> plugins,
+			List<Config> configs, List<Project> projects) {
 		this.accountId = accountId;
 		this.accountName = accountName;
 		this.email = email;
 		this.password = password;
+		this.role = role;
 		this.status = status;
 		this.mailingList = mailingList;
 		this.diskQuota = diskQuota;
@@ -139,8 +140,8 @@ public class Account {
 	public void setSessions(List<Session> sessions) {
 		this.sessions = sessions;
 	}
-	
-	public void addSession(Session session){
+
+	public void addSession(Session session) {
 		this.sessions.add(session);
 	}
 
@@ -190,6 +191,14 @@ public class Account {
 
 	public void setProjects(List<Project> projects) {
 		this.projects = projects;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 }

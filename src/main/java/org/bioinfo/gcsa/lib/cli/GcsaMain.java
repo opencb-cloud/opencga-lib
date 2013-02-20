@@ -21,7 +21,7 @@ public class GcsaMain {
 		}
 
 		properties = Config.getLocalServerProperties(home);
-		int port = Integer.parseInt(properties.getProperty("LOCAL.PORT", "61976"));
+		int port = Integer.parseInt(properties.getProperty("OCGA.LOCAL.PORT", "61976"));
 
 		tomcat = new Tomcat();
 		tomcat.setPort(port);

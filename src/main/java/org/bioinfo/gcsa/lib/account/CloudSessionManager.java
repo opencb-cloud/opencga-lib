@@ -89,7 +89,7 @@ public class CloudSessionManager {
 		ioManager.createAccount(accountId);
 
 		try {
-			accountManager.createAccount(accountId, password, name, email, session);
+			accountManager.createAccount(accountId, password, name, "user", email, session);
 		} catch (AccountManagementException e) {
 			ioManager.deleteAccount(accountId);
 			throw e;
@@ -284,7 +284,7 @@ public class CloudSessionManager {
 
 		logger.debug(fullFilePath);
 		logger.debug(regionStr);
-		
+
 		String result = "";
 		switch (objectItem.getFileFormat()) {
 		case "bam":
@@ -306,7 +306,7 @@ public class CloudSessionManager {
 		logger.info(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
 		return sgeJobName;
 	}
-	
+
 	public String indexJobStatus(String accountId, String jobId) throws Exception {
 		return SgeManager.status(jobId);
 	}
@@ -420,7 +420,7 @@ public class CloudSessionManager {
 
 		if (jobFolder == null) {
 			ioManager.createJob(accountId, projectId, jobId);
-			jobFolder = Paths.get("projects",projectId).resolve(jobId).toString();
+			jobFolder = Paths.get("projects", projectId).resolve(jobId).toString();
 			jobFolderCreated = true;
 		}
 		checkParameter(jobFolder, "jobFolder");

@@ -18,7 +18,7 @@ public interface AccountManager {
 	/**
 	 * Account methods ···
 	 *****************************/
-	void createAccount(String accountId, String password, String accountName, String email, Session session)
+	void createAccount(String accountId, String password, String accountName, String role, String email, Session session)
 			throws AccountManagementException;
 
 	String createAnonymousAccount(String accountId, String password, Session session) throws AccountManagementException;
@@ -76,23 +76,19 @@ public interface AccountManager {
 	void deleteJobFromProject(String accountId, String projectId, String jobId, String sessionId)
 			throws AccountManagementException;
 
-	Job getJob(String accountId, String jobId, String sessionId)
-			throws AccountManagementException;
+	Job getJob(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
-	Path getJobPath(String accountId, String jobId, String sessionId)
-			throws AccountManagementException;
+	Path getJobPath(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
-	String getJobStatus(String accountId,  String jobId, String sessionId)
-			throws AccountManagementException;
+	String getJobStatus(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
-	void incJobVisites(String accountId, String jobId, String sessionId)
-			throws AccountManagementException;
+	void incJobVisites(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
 	void setJobCommandLine(String accountId, String jobId, String commandLine, String sessionId)
 			throws AccountManagementException;
 
-	int getJobIndex(String accountId, String jobId, String sessionId)
-			throws AccountManagementException;
+	int getJobIndex(String accountId, String jobId, String sessionId) throws AccountManagementException;
+
 	Project getJobProject(String accountId, String jobId, String sessionId) throws AccountManagementException;
 
 	/**
@@ -106,6 +102,5 @@ public interface AccountManager {
 			throws AccountManagementException;
 
 	String getAccountIdBySessionId(String sessionId);
-
 
 }

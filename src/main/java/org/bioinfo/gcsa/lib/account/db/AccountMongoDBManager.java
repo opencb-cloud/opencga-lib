@@ -87,10 +87,10 @@ public class AccountMongoDBManager implements AccountManager {
 	}
 
 	@Override
-	public void createAccount(String accountId, String password, String accountName, String email, Session session)
-			throws AccountManagementException {
+	public void createAccount(String accountId, String password, String accountName, String role, String email,
+			Session session) throws AccountManagementException {
 		checkAccountExists(accountId);
-		Account account = new Account(accountId, accountName, password, email);
+		Account account = new Account(accountId, accountName, password, role, email);
 		account.setLastActivity(TimeUtils.getTime());
 		WriteResult wr = userCollection.insert((DBObject) JSON.parse(gson.toJson(account)));
 		if (wr.getLastError().getErrorMessage() != null) {
@@ -101,7 +101,7 @@ public class AccountMongoDBManager implements AccountManager {
 	@Override
 	public String createAnonymousAccount(String accountId, String password, Session session)
 			throws AccountManagementException {
-		createAccount(accountId, password, "anonymous", "anonymous", session);
+		createAccount(accountId, password, "anonymous", "anonymous", "anonymous", session);
 		// Everything is ok, so we login account
 		// session = new Session();
 		return login(accountId, password, session);
@@ -573,7 +573,7 @@ public class AccountMongoDBManager implements AccountManager {
 			throw new AccountManagementException("could not find job with this parameters");
 		}
 	}
-	
+
 	@Override
 	public Project getJobProject(String accountId, String jobId, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
