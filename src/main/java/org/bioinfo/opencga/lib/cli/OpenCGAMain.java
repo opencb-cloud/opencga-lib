@@ -1,12 +1,17 @@
 package org.bioinfo.opencga.lib.cli;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 import org.bioinfo.opencga.lib.utils.Config;
+import org.bioinfo.opencga.lib.utils.IOUtils;
 
 public class OpenCGAMain {
 
@@ -47,5 +52,15 @@ public class OpenCGAMain {
 
 	public static void stop() throws LifecycleException {
 		tomcat.stop();
+		// FIXME
+		Path tomcatTempPath = Paths.get("tomcat."+properties.getProperty("OPENCGA.LOCAL.PORT", "61976"));
+		System.out.println(tomcatTempPath.toAbsolutePath().toString());
+		if(Files.exists(tomcatTempPath)) {
+			try {
+				IOUtils.deleteDirectory(tomcatTempPath);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
