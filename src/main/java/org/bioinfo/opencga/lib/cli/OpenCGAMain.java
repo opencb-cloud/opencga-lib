@@ -26,7 +26,7 @@ public class OpenCGAMain {
 		tomcat = new Tomcat();
 		tomcat.setPort(port);
 
-		Context ctx = tomcat.addContext("/gcsa/rest", new File(".").getAbsolutePath());
+		Context ctx = tomcat.addContext("/opencga/rest", new File(".").getAbsolutePath());
 
 		Tomcat.addServlet(ctx, "fetch", new FetchServlet());
 		ctx.addServletMapping("/storage/fetch", "fetch");
