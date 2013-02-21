@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.bioinfo.opencga.lib.storage.feature.BamManager;
 import org.bioinfo.opencga.lib.storage.feature.VcfManager;
+import org.bioinfo.opencga.lib.utils.StringUtils;
 
 public class FetchServlet extends HttpServlet {
 
@@ -30,6 +31,7 @@ public class FetchServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.setHeader("Access-Control-Allow-Origin", "*");
 		System.out.println("OpenCGA Local server");
 
 		PrintWriter pw = resp.getWriter();
@@ -39,7 +41,7 @@ public class FetchServlet extends HttpServlet {
 		if(filePathStr != null && region != null) {
 			int dotPosition = filePathStr.lastIndexOf(".");
 			String ext = filePathStr.substring(dotPosition + 1, filePathStr.length());
-			Path filePath = Paths.get(filePathStr);
+			Path filePath = Paths.get("/").resolve(StringUtils.parseObjectId(filePathStr));
 			
 			System.out.println("filepath: " + filePath + ", exists: " + Files.exists(filePath));
 			System.out.println("region: " + region);
