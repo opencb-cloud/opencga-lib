@@ -6,8 +6,10 @@
 	<version>0.1.0</version>
 
 	<properties>
-		<installation.dir>installation-dir</installation.dir>
-		<dest.installation.dir>/opt/opencga</dest.installation.dir>
+		<installation.server>installation-server</installation.server>
+		<installation.local>installation-local</installation.local>
+		<dest.installation.server>/opt/opencga</dest.installation.server>
+		<dest.installation.local>/opt/opencga-local</dest.installation.local>
 	</properties>
 
 	<dependencies>
@@ -115,7 +117,7 @@
 							<addClasspath>true</addClasspath>
 						</manifest>
 					</archive>
-					<outputDirectory>${installation.dir}/libs</outputDirectory>
+					<outputDirectory>${installation.local}/libs</outputDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -130,7 +132,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${installation.dir}/libs</outputDirectory>
+							<outputDirectory>${installation.local}/libs</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -140,19 +142,19 @@
 				<version>1.7</version>
 				<executions>
 					<execution>
+					    <id>server</id>
 						<phase>install</phase>
 						<configuration>
 							<target>
-								<echo>Copying to ${dest.installation.dir}</echo><!-- <copy todir="${installation.dir}"> 
+								<echo>Copying to ${dest.installation.server}</echo><!-- <copy todir="${installation.dir}"> 
 									<fileset dir="installation" includes="**" /> </copy> -->
 								<exec executable="cp">
 									<arg value="-r" />
-									<arg value="${installation.dir}/analysis" />
-									<arg value="${installation.dir}/conf" />
-									<arg value="${installation.dir}/example" />
-									<arg value="${installation.dir}/libs" />
-									<arg value="${installation.dir}/opencga.sh" />
-									<arg value="${dest.installation.dir}" />
+									<arg value="${installation.server}/analysis" />
+									<arg value="${installation.server}/conf" />
+									<arg value="${installation.server}/example" />
+									<arg value="${installation.server}/COPYING" />
+									<arg value="${dest.installation.server}" />
 								</exec>
 							</target>
 						</configuration>
@@ -160,6 +162,28 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+					<execution>
+					    <id>local</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <target>
+                                <echo>Copying to ${dest.installation.local}</echo><!-- <copy todir="${installation.dir}"> 
+                                    <fileset dir="installation" includes="**" /> </copy> -->
+                                <exec executable="cp">
+                                    <arg value="-r" />
+                                    <arg value="${installation.local}/conf" />
+                                    <arg value="${installation.local}/example" />
+                                    <arg value="${installation.local}/libs" />
+                                    <arg value="${installation.local}/opencga.sh" />
+                                    <arg value="${installation.server}/COPYING" />
+                                    <arg value="${dest.installation.local}" />
+                                </exec>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
 				</executions>
 			</plugin>
 		</plugins>

@@ -3,4 +3,4 @@ target*
 .settings*
 .classpath
 *.class
-installation-dir/libs/*
+installation-local/libs/*.jar

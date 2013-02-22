@@ -1,6 +1,5 @@
 package org.bioinfo.opencga.lib.account.io;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,24 +7,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.bioinfo.opencga.lib.account.beans.ObjectItem;
-import org.bioinfo.opencga.lib.utils.ArrayUtils;
 import org.bioinfo.opencga.lib.utils.Config;
 import org.bioinfo.opencga.lib.utils.IOUtils;
-import org.bioinfo.opencga.lib.utils.ListUtils;
 import org.bioinfo.opencga.lib.utils.StringUtils;
 import org.bioinfo.tool.result.Result;
 import org.dom4j.DocumentException;
@@ -49,7 +41,8 @@ public class FileIOManager implements IOManager {
 	public FileIOManager() throws IOException {
 		accountProperties = Config.getAccountProperties();
 		appHomePath = Config.getGcsaHome();
-		accountHomePath = appHomePath + accountProperties.getProperty("OPENCGA.ACCOUNT.PATH");
+//		accountHomePath = appHomePath + accountProperties.getProperty("OPENCGA.ACCOUNT.PATH");
+		accountHomePath = accountProperties.getProperty("OPENCGA.ACCOUNT.PATH");
 		tmp = accountProperties.getProperty("OPENCGA.TMP.PATH");
 	}
 

@@ -1,5 +1,7 @@
 package org.bioinfo.opencga.lib.utils;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
@@ -33,5 +35,17 @@ public class StringUtils {
 			string.append(hexString.length() == 1 ? "0" + hexString : hexString);
 		}
 		return string.toString();
+	}
+	
+	public static Path parseObjectId(String objectIdFromURL) {
+		String[] tokens = objectIdFromURL.split(":");
+		// if(tokens.length == 0){
+		// return Paths.get(objectIdFromURL);
+		// }
+		Path objectPath = Paths.get("");
+		for (int i = 0; i < tokens.length; i++) {
+			objectPath = objectPath.resolve(Paths.get(tokens[i]));
+		}
+		return objectPath;
 	}
 }
