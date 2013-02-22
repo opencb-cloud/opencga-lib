@@ -32,11 +32,11 @@ for i in $OPENCGA_HOME/libs/*; do
 	CLASSPATH=$CLASSPATH:$i
 done;
 
-echo "*************************"
-echo "*************************"
+echo "****************************"
+echo "****************************"
 echo "*** OpenCGA Local server ***"
-echo "*************************"
-echo "*************************"
+echo "****************************"
+echo "****************************"
 echo "A example of URL address to access the server is: http://localhost:{PORT}/opencga/rest/storage/fetch?filepath={ABSOLUTE FILE PATH}&region={REGION}"
 
 java $OPTIONS -classpath $CLASSPATH org.bioinfo.opencga.lib.cli.OpenCGAMain $OPENCGA_HOME $@ 2> /dev/null
