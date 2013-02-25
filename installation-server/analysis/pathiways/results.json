@@ -2,6 +2,7 @@ var RESULT = {
 	"pathiways": {
 		"layout" : {
 			"title": "Job results",
+			"presentation":"tabs",
 			"children": function() {
 				var children = [];
 				var groups = {};
