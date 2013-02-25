@@ -104,7 +104,7 @@ public class GetFoldersServlet extends HttpServlet {
 		Files.walkFileTree(filePath, new SimpleFileVisitor<Path>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				System.out.println(">>>>>>>>>>>>>>>>>>>>>>"+file.toString());
+//				System.out.println(">>>>>>>>>>>>>>>>>>>>>>"+file.toString());
 				if(!Files.isDirectory(file) && (file.toString().endsWith(".vcf") || file.toString().endsWith(".bam"))) {
 					sb.append("{");
 					sb.append(c + "text" + c + ":" + c + file.getFileName()+ c + ",");
@@ -113,7 +113,7 @@ public class GetFoldersServlet extends HttpServlet {
 					sb.append(c + "iconCls" + c + ":" + c + "icon-regular-file" + c + ",");
 					sb.append(c + "leaf" + c + ":" + c + "true" + c);
 					sb.append("},");
-					System.out.println("*********************+"+file.toAbsolutePath());
+//					System.out.println("*********************+"+file.toAbsolutePath());
 					return FileVisitResult.CONTINUE;					
 				}else {
 					return FileVisitResult.CONTINUE;
