@@ -69,6 +69,21 @@ var RESULT = {
 				}
 
 				return children;
+			},
+			sortOutputItems : function(a,b){
+				if(a.indexOf('ALL.txt')!=-1){
+					return -1;
+				}
+				if(b.indexOf('ALL.txt')!=-1){
+					return 1;
+				}
+				if(a.indexOf('Result.jpeg')!=-1){
+					return 1;
+				}
+				if(b.indexOf('Result.jpeg')!=-1){
+					return -1;
+				}
+				//Compare "a" and "b" in some fashion, and return -1, 0, or 1
 			}
 		}
 	}
