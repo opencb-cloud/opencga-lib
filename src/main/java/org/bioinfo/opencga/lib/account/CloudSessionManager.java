@@ -41,11 +41,11 @@ public class CloudSessionManager {
 	private static Logger logger = Logger.getLogger(CloudSessionManager.class);
 	private Properties accountProperties;
 
-	public CloudSessionManager() throws IOException {
+	public CloudSessionManager() throws IOException, IOManagementException {
 		this(System.getenv("OPENCGA_HOME"));
 	}
 
-	public CloudSessionManager(String gcsaHome) throws IOException {
+	public CloudSessionManager(String gcsaHome) throws IOException, IOManagementException {
 		logger.info("!");
 		Config.configureLog4j();
 		accountProperties = Config.getAccountProperties();
