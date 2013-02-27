@@ -175,6 +175,7 @@
                                     <arg value="${installation.local}/example" />
                                     <arg value="${installation.local}/libs" />
                                     <arg value="${installation.local}/opencga.sh" />
+                                    <arg value="${installation.local}/opencga.py" />
                                     <arg value="${installation.server}/COPYING" />
                                     <arg value="${dest.installation.local}" />
                                 </exec>
