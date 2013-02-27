@@ -6,8 +6,8 @@
 	<version>0.1.0</version>
 
 	<properties>
-		<installation.server>installation-server</installation.server>
-		<installation.local>installation-local</installation.local>
+		<installation.server>opencga-cloud</installation.server>
+		<installation.local>opencga-light</installation.local>
 		<dest.installation.server>/opt/opencga</dest.installation.server>
 		<dest.installation.local>/opt/opencga-local</dest.installation.local>
 	</properties>
@@ -142,7 +142,7 @@
 				<version>1.7</version>
 				<executions>
 					<execution>
-					    <id>server</id>
+						<id>server</id>
 						<phase>install</phase>
 						<configuration>
 							<target>
@@ -163,28 +163,64 @@
 						</goals>
 					</execution>
 					<execution>
-					    <id>local</id>
-                        <phase>install</phase>
-                        <configuration>
-                            <target>
-                                <echo>Copying to ${dest.installation.local}</echo><!-- <copy todir="${installation.dir}"> 
-                                    <fileset dir="installation" includes="**" /> </copy> -->
-                                <exec executable="cp">
-                                    <arg value="-r" />
-                                    <arg value="${installation.local}/conf" />
-                                    <arg value="${installation.local}/example" />
-                                    <arg value="${installation.local}/libs" />
-                                    <arg value="${installation.local}/opencga.sh" />
-                                    <arg value="${installation.local}/opencga.py" />
-                                    <arg value="${installation.server}/COPYING" />
-                                    <arg value="${dest.installation.local}" />
-                                </exec>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
+						<id>server-tgz</id>
+						<phase>install</phase>
+						<configuration>
+							<target>
+								<echo>Copying to ${dest.installation.server}</echo><!-- <copy todir="${installation.dir}"> 
+									<fileset dir="installation" includes="**" /> </copy> -->
+								<exec executable="tar">
+									<arg value="-zcvf" />
+									<arg value="opencga-cloud-${project.version}.tar.gz" />
+									<arg value="${installation.server}" />
+								</exec>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>light</id>
+						<phase>install</phase>
+						<configuration>
+							<target>
+								<echo>Copying to ${dest.installation.local}</echo><!-- <copy todir="${installation.dir}"> 
+									<fileset dir="installation" includes="**" /> </copy> -->
+								<exec executable="cp">
+									<arg value="-r" />
+									<arg value="${installation.local}/conf" />
+									<arg value="${installation.local}/example" />
+									<arg value="${installation.local}/libs" />
+									<arg value="${installation.local}/opencga.sh" />
+									<arg value="${installation.local}/opencga.py" />
+									<arg value="${installation.server}/COPYING" />
+									<arg value="${dest.installation.local}" />
+								</exec>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>light-tgz</id>
+						<phase>install</phase>
+						<configuration>
+							<target>
+								<echo>Copying to ${dest.installation.server}</echo><!-- <copy todir="${installation.dir}"> 
+									<fileset dir="installation" includes="**" /> </copy> -->
+								<exec executable="tar">
+									<arg value="-zcvf" />
+									<arg value="opencga-light-${project.version}.tar.gz" />
+									<arg value="${installation.local}" />
+								</exec>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>

@@ -16,11 +16,14 @@ public class Config {
 	private static Logger logger = Logger.getLogger(Config.class);
 
 	private static String opencgaHome = System.getenv("OPENCGA_HOME");
+	private static String opencgaLightHome;
 	private static boolean log4jReady = false;
 
 	private static Properties accountProperties = null;
 	private static Properties analysisProperties = null;
 	private static Properties localServerProperties = null;
+
+	private static long lastPropertyLoad = System.currentTimeMillis();
 
 	public static String getGcsaHome() {
 		return opencgaHome;
@@ -52,6 +55,7 @@ public class Config {
 	}
 
 	public static Properties getAccountProperties() {
+		// checkPopertiesStatus();
 		if (accountProperties == null) {
 			Path path = Paths.get(opencgaHome, "conf", "account.properties");
 			accountProperties = new Properties();
@@ -66,6 +70,7 @@ public class Config {
 	}
 
 	public static Properties getAnalysisProperties() {
+		// checkPopertiesStatus();
 		if (analysisProperties == null) {
 			Path path = Paths.get(opencgaHome, "conf", "analysis.properties");
 			analysisProperties = new Properties();
@@ -78,8 +83,20 @@ public class Config {
 		}
 		return analysisProperties;
 	}
-	
+
 	public static Properties getLocalServerProperties(String basePath) {
+		opencgaLightHome = basePath;
+
+//		// First time we create the object, a singleton pattern is applied.
+//		if (localServerProperties == null) {
+//			loadProperties(localServerProperties, Paths.get(basePath, "conf", "localserver.properties"));
+//			return localServerProperties;
+//		}
+//
+//		// next times we check last time loaded
+//		checkPopertiesStatus();
+//		return localServerProperties;
+		
 		if (localServerProperties == null) {
 			Path path = Paths.get(basePath, "conf", "localserver.properties");
 			localServerProperties = new Properties();
@@ -91,6 +108,28 @@ public class Config {
 			}
 		}
 		return localServerProperties;
+	}
+
+	private static void loadProperties(Properties propertiesToLoad, Path propertiesPath) {
+		if (propertiesToLoad != null) {
+			propertiesToLoad = new Properties();
+		}
+		try {
+			propertiesToLoad.clear();
+			propertiesToLoad.load(Files.newInputStream(propertiesPath));
+		} catch (IOException e) {
+			logger.fatal("failed to load: " + propertiesPath.toString());
+			e.printStackTrace();
+		}
+	}
+
+	private static void checkPopertiesStatus() {
+		if (System.currentTimeMillis() - lastPropertyLoad > 60000) {
+			loadProperties(accountProperties, Paths.get(opencgaHome, "conf", "account.properties"));
+			loadProperties(analysisProperties, Paths.get(opencgaHome, "conf", "analysis.properties"));
+			loadProperties(localServerProperties, Paths.get(opencgaLightHome, "conf", "localserver.properties"));
+			lastPropertyLoad = System.currentTimeMillis();
+		}
 	}
 
 }

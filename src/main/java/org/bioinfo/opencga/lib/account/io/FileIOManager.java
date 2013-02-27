@@ -38,12 +38,16 @@ public class FileIOManager implements IOManager {
 	private static String ANALYSIS_FOLDER = "analysis";
 	private static String JOBS_FOLDER = "jobs";
 
-	public FileIOManager() throws IOException {
+	public FileIOManager() throws IOException, IOManagementException {
 		accountProperties = Config.getAccountProperties();
 		appHomePath = Config.getGcsaHome();
 //		accountHomePath = appHomePath + accountProperties.getProperty("OPENCGA.ACCOUNT.PATH");
 		accountHomePath = accountProperties.getProperty("OPENCGA.ACCOUNT.PATH");
 		tmp = accountProperties.getProperty("OPENCGA.TMP.PATH");
+		
+		if(!Files.exists(Paths.get(accountHomePath))) {
+			throw new IOManagementException("ERROR: The accounts folder not exists");
+		}
 	}
 
 	/**

@@ -29,6 +29,7 @@ import com.google.gson.Gson;
 
 public class BamManager {
 
+	private String species = "hsa";
 	private Gson gson;
 	private static Logger logger = Logger.getLogger(BamManager.class);
 
@@ -61,6 +62,9 @@ public class BamManager {
 		Boolean showSoftclipping = false;
 		if (params.get("show_softclipping") != null) {
 			showSoftclipping = true;
+		}
+		if (params.get("species") != null) {
+			species = params.get("species").get(0);
 		}
 
 		File inputBamFile = new File(fullFilePath.toString());
@@ -382,7 +386,7 @@ public class BamManager {
 	}
 
 	private String getSequence(final String chr, final int start, final int end) {
-		String urlString = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/region/" + chr + ":"
+		String urlString = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/"+species+"/genomic/region/" + chr + ":"
 				+ (start - 500) + "-" + (end + 500) + "/sequence";
 		System.out.println(urlString);
 		StringBuilder sb = new StringBuilder();
