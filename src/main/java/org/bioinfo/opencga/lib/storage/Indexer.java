@@ -18,7 +18,7 @@ public class Indexer {
 	public static String createBamIndex(Path inputBamPath) throws IOException, InterruptedException,
 			AnalysisExecutionException {
 		String jobId = StringUtils.randomString(8);
-		String commandLine = indexerManagerScript + " bam " + " index " + inputBamPath;
+		String commandLine = indexerManagerScript + " -t bam " + inputBamPath;
 		try {
 			SgeManager.queueJob("indexer", jobId, 0, inputBamPath.getParent().toString(), commandLine);
 		} catch (Exception e) {

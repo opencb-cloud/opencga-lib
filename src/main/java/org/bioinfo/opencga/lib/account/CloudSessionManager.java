@@ -3,8 +3,12 @@ package org.bioinfo.opencga.lib.account;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,6 +34,7 @@ import org.bioinfo.opencga.lib.storage.Indexer;
 import org.bioinfo.opencga.lib.storage.feature.BamManager;
 import org.bioinfo.opencga.lib.storage.feature.VcfManager;
 import org.bioinfo.opencga.lib.utils.Config;
+import org.bioinfo.opencga.lib.utils.IOUtils;
 import org.bioinfo.opencga.lib.utils.StringUtils;
 import org.dom4j.DocumentException;
 
@@ -249,6 +254,77 @@ public class CloudSessionManager {
 		}
 	}
 
+	public void refreshBucket(final String accountId, final String bucketId, final String sessionId)
+			throws AccountManagementException, IOException {
+
+		final Path bucketPath = ioManager.getBucketPath(accountId, bucketId);
+		accountManager.deleteObjectsFromBucket(accountId, bucketId, sessionId);
+
+		Files.walkFileTree(bucketPath, new SimpleFileVisitor<Path>() {
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				if (!Files.isHidden(file) && !Files.isDirectory(file)) {
+					Path ojectId = bucketPath.relativize(file);
+					String fileFormat = IOUtils.getExtension(ojectId.toString()).substring(1);
+					logger.info(bucketId);
+					logger.info(ojectId);
+					logger.info(file.toString());
+					ObjectItem objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "r");
+					objectItem.setFileFormat(fileFormat);
+					try {
+						accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
+					} catch (AccountManagementException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return FileVisitResult.CONTINUE;
+				} else {
+					return FileVisitResult.CONTINUE;
+				}
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				// try to delete the file anyway, even if its attributes
+				// could not be read, since delete-only access is
+				// theoretically possible
+				return FileVisitResult.SKIP_SUBTREE;
+			}
+
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				if (Files.isHidden(dir) || !Files.isReadable(dir) || dir.getFileName().toString().equals("..")
+						|| dir.getFileName().toString().equals(".")) {
+					return FileVisitResult.SKIP_SUBTREE;
+				}
+				if(!dir.equals(bucketPath)){//dont add bucketId folder itself
+					Path ojectId = bucketPath.relativize(dir);
+					logger.info(bucketId);
+					logger.info(ojectId);
+					logger.info(dir.toString());
+					ObjectItem objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "dir");
+					objectItem.setFileFormat("dir");
+					try {
+						accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
+					} catch (AccountManagementException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				if (Files.isHidden(dir) || !Files.isReadable(dir)) {
+					return FileVisitResult.SKIP_SUBTREE;
+				}
+				// here
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
+
 	public void deleteDataFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
 			throws AccountManagementException, IOManagementException {
 		checkParameter(bucketId, "bucket");
@@ -301,13 +377,13 @@ public class CloudSessionManager {
 
 	public String indexFileObjects(String accountId, Path objectpath) throws Exception {
 		logger.info(objectpath);
-		String sgeJobName = Indexer.createBamIndex(getAccountPath(accountId).resolve("buckets").resolve(
-				objectpath));
+		String sgeJobName = Indexer.createBamIndex(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
 		logger.info(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
 		return sgeJobName;
 	}
 
 	public String indexJobStatus(String accountId, String jobId) throws Exception {
+		checkParameter(jobId, "jobId");
 		return SgeManager.status(jobId);
 	}
 

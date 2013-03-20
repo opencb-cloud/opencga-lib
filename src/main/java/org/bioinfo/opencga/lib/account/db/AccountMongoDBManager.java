@@ -26,6 +26,7 @@ import org.bioinfo.opencga.lib.utils.StringUtils;
 import org.bioinfo.opencga.lib.utils.TimeUtils;
 
 import com.google.gson.Gson;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -359,13 +360,13 @@ public class AccountMongoDBManager implements AccountManager {
 	public void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
-
+		
 		BasicDBObject dataDBObject = (BasicDBObject) JSON.parse(gson.toJson(bucket));
 		BasicDBObject action = new BasicDBObject();
 		action.put("$push", new BasicDBObject("buckets", dataDBObject));
 		action.put("$set", new BasicDBObject("lastActivity", TimeUtils.getTimeMillis()));
 		WriteResult wr = userCollection.update(query, action);
-
+		
 		if (wr.getLastError().getErrorMessage() == null) {
 			if (wr.getN() != 1) {
 				throw new AccountManagementException("could not update database, account not found");
@@ -373,6 +374,27 @@ public class AccountMongoDBManager implements AccountManager {
 			logger.info("bucket created");
 		} else {
 			throw new AccountManagementException("could not push the bucket");
+		}
+	}
+	@Override
+	public void deleteBucket(String accountId, String bucketId, String sessionId) throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		
+		BasicDBObject action = new BasicDBObject();
+		action.put("$pull", new BasicDBObject("buckets", new BasicDBObject("id",bucketId)));
+		action.put("$set", new BasicDBObject("lastActivity", TimeUtils.getTimeMillis()));
+		WriteResult wr = userCollection.update(query, action);
+		logger.info(query);
+		logger.info(action);
+		
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("could not update database, account not found");
+			}
+			logger.info("bucket deleted");
+		} else {
+			throw new AccountManagementException("could not delete the bucket");
 		}
 	}
 
@@ -411,11 +433,11 @@ public class AccountMongoDBManager implements AccountManager {
 		BasicDBObject query = new BasicDBObject("accountId", accountId);
 		query.put("sessions.id", sessionId);
 		query.put("buckets.id", bucketId.toLowerCase());
-
+		
 		BasicDBObject bucketData = new BasicDBObject("buckets.$.objects", new BasicDBObject("id", objectId.toString()));
 		BasicDBObject action = new BasicDBObject("$pull", bucketData);
 		action.put("$set", new BasicDBObject("lastActivity", TimeUtils.getTimeMillis()));
-
+		
 		WriteResult wr = userCollection.update(query, action);
 		if (wr.getLastError().getErrorMessage() == null) {
 			if (wr.getN() != 1) {
@@ -424,6 +446,27 @@ public class AccountMongoDBManager implements AccountManager {
 			logger.info("data object deleted");
 		} else {
 			throw new AccountManagementException("deleteObjectFromBucket(): could not delete data item from database");
+		}
+	}
+	@Override
+	public void deleteObjectsFromBucket(String accountId, String bucketId, String sessionId)
+			throws AccountManagementException {
+		BasicDBObject query = new BasicDBObject("accountId", accountId);
+		query.put("sessions.id", sessionId);
+		query.put("buckets.id", bucketId.toLowerCase());
+		
+		BasicDBObject item = new BasicDBObject("buckets.$.objects", new BasicDBList());
+		item.put("lastActivity", TimeUtils.getTimeMillis());
+		BasicDBObject action = new BasicDBObject("$set", item);
+
+		WriteResult wr = userCollection.update(query, action);
+		if (wr.getLastError().getErrorMessage() == null) {
+			if (wr.getN() != 1) {
+				throw new AccountManagementException("deleteObjectsFromBucket(): deleting data, with this parameters");
+			}
+			logger.info("all data objects deleted");
+		} else {
+			throw new AccountManagementException("deleteObjectsFromBucket(): could not delete data item from database");
 		}
 	}
 

@@ -56,6 +56,9 @@ public class FileIOManager implements IOManager {
 	public Path getAccountPath(String accountId) {
 		return Paths.get(accountHomePath, accountId);
 	}
+	public Path getBucketsPath(String accountId) {
+		return getAccountPath(accountId).resolve(Paths.get(FileIOManager.BUCKETS_FOLDER));
+	}
 
 	public Path getBucketPath(String accountId, String bucketId) {
 		if (bucketId != null) {

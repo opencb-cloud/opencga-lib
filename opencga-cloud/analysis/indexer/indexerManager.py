@@ -77,15 +77,15 @@ def indexVCF(inputVCF, outdir):
 
 
 parser = argparse.ArgumentParser(prog="indexer")
+parser.add_argument("--input", required=True, help="input file to be indexed")
 parser.add_argument("-t","--type", choices=("bam","vcf"))
-parser.add_argument("input", help="input file")
 parser.add_argument("-c","--compressed", action="count", help="input file is gzipped")
-parser.add_argument("-o", dest="outdir", help="destination folder")
+parser.add_argument("--outdir", help="output directory")
 args = parser.parse_args()
 
 
 #outdir is the parent file dir
-if args.outdir == None:
+if args.outdir is None:
     args.outdir = os.path.abspath(os.path.join(args.input, os.path.pardir))
 
 if os.path.isfile(args.input) is False:

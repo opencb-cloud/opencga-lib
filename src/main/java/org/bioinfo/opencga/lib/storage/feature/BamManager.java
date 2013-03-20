@@ -26,6 +26,8 @@ import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.infrared.lib.common.Region;
 
 import com.google.gson.Gson;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 
 public class BamManager {
 
@@ -44,27 +46,34 @@ public class BamManager {
 	// }
 	// }
 
-	public String getByRegion(Path fullFilePath, String regionStr, Map<String, List<String>> params)
-			throws IOException {
+	public String getByRegion(Path fullFilePath, String regionStr, Map<String, List<String>> params) throws IOException {
 		long totalTime = System.currentTimeMillis();
-		
+
 		Region region = Region.parseRegion(regionStr);
 		String chr = region.getChromosome();
 		int start = region.getStart();
-		int end = region.getEnd(); 
-		
+		int end = region.getEnd();
+
 		logger.info("chr: " + chr + " start: " + start + " end: " + end);
-		
+
+		if (params.get("species") != null) {
+			species = params.get("species").get(0);
+		}
 		Boolean viewAsPairs = false;
 		if (params.get("view_as_pairs") != null) {
-			viewAsPairs = true;
+			viewAsPairs = Boolean.parseBoolean(params.get("view_as_pairs").get(0));
 		}
 		Boolean showSoftclipping = false;
 		if (params.get("show_softclipping") != null) {
-			showSoftclipping = true;
+			showSoftclipping = Boolean.parseBoolean(params.get("show_softclipping").get(0));
 		}
-		if (params.get("species") != null) {
-			species = params.get("species").get(0);
+		Boolean histogram = false;
+		if (params.get("histogram") != null) {
+			histogram = Boolean.parseBoolean(params.get("histogram").get(0));
+		}
+		int interval = 200000;
+		if (params.get("interval") != null) {
+			interval = Integer.parseInt(params.get("interval").get(0));
 		}
 
 		File inputBamFile = new File(fullFilePath.toString());
@@ -72,7 +81,7 @@ public class BamManager {
 
 		if (!inputBamIndexFile.exists()) {
 			logger.info("BamManager: " + "creating bam index for: " + fullFilePath);
-//			createBamIndex(inputBamFile, inputBamIndexFile);
+			// createBamIndex(inputBamFile, inputBamIndexFile);
 		}
 
 		long t = System.currentTimeMillis();
@@ -83,6 +92,59 @@ public class BamManager {
 		t = System.currentTimeMillis();
 		SAMRecordIterator recordsFound = inputSam.query(chr, start, end, false);
 		System.out.println("query SamFileReader in " + (System.currentTimeMillis() - t) + "ms");
+
+		/**
+		 * ARRAY LIST
+		 */
+		ArrayList<SAMRecord> records = new ArrayList<SAMRecord>();
+		t = System.currentTimeMillis();
+		while (recordsFound.hasNext()) {
+			SAMRecord record = recordsFound.next();
+			records.add(record);
+		}
+		System.out.println(records.size() + " elements added in: " + (System.currentTimeMillis() - t) + "ms");
+
+		/**
+		 * Check histogram
+		 */
+		if (histogram) {
+			int numIntervals = (region.getEnd() - region.getStart()) / interval +1;
+			System.out.println("numIntervals :"+numIntervals);
+			int[] intervalCount = new int[numIntervals];
+
+			System.out.println(region.getChromosome());
+			System.out.println(region.getStart());
+			System.out.println(region.getEnd());
+			for (SAMRecord record : records) {
+//				System.out.println("---*-*-*-*-" + numIntervals);
+//				System.out.println("---*-*-*-*-" + record.getAlignmentStart());
+//				System.out.println("---*-*-*-*-" + interval);
+				if (record.getAlignmentStart() >= region.getStart() && record.getAlignmentStart() <= region.getEnd()) {
+					int intervalIndex = (record.getAlignmentStart() - region.getStart()) / interval; // truncate
+//					System.out.print(intervalIndex + " ");
+					intervalCount[intervalIndex]++;
+				}
+			}
+
+			int intervalStart = region.getStart();
+			int intervalEnd = intervalStart + interval - 1;
+			BasicDBList intervalList = new BasicDBList();
+			for (int i = 0; i < numIntervals; i++) {
+				BasicDBObject intervalObj = new BasicDBObject();
+				intervalObj.put("start", intervalStart);
+				intervalObj.put("end", intervalEnd);
+				intervalObj.put("interval", i);
+				intervalObj.put("value", intervalCount[i]);
+				intervalList.add(intervalObj);
+				intervalStart = intervalEnd + 1;
+				intervalEnd = intervalStart + interval - 1;
+			}
+
+			System.out.println(region.getChromosome());
+			System.out.println(region.getStart());
+			System.out.println(region.getEnd());
+			return intervalList.toString();
+		}
 
 		/**
 		 * GET GENOME SEQUENCE
@@ -101,15 +163,6 @@ public class BamManager {
 		short[] cBaseArray = new short[end - start + 1];
 		short[] gBaseArray = new short[end - start + 1];
 		short[] tBaseArray = new short[end - start + 1];
-
-		// *ARRAY LIST*//
-		ArrayList<SAMRecord> records = new ArrayList<SAMRecord>();
-		t = System.currentTimeMillis();
-		while (recordsFound.hasNext()) {
-			SAMRecord record = recordsFound.next();
-			records.add(record);
-		}
-		System.out.println(records.size() + " elements added in: " + (System.currentTimeMillis() - t) + "ms");
 
 		if (viewAsPairs) {
 			t = System.currentTimeMillis();
@@ -386,7 +439,7 @@ public class BamManager {
 	}
 
 	private String getSequence(final String chr, final int start, final int end) {
-		String urlString = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/"+species+"/genomic/region/" + chr + ":"
+		String urlString = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/" + species + "/genomic/region/" + chr + ":"
 				+ (start - 500) + "-" + (end + 500) + "/sequence";
 		System.out.println(urlString);
 		StringBuilder sb = new StringBuilder();
