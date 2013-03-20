@@ -22,8 +22,8 @@ import net.sf.samtools.SAMRecord.SAMTagAndValue;
 import net.sf.samtools.SAMRecordIterator;
 
 import org.apache.log4j.Logger;
+import org.bioinfo.cellbase.lib.common.Region;
 import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.infrared.lib.common.Region;
 
 import com.google.gson.Gson;
 

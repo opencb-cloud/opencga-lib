@@ -16,10 +16,10 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.bioinfo.opencga.lib.account.beans.ObjectItem;
+import org.bioinfo.opencga.lib.account.io.result.Result;
 import org.bioinfo.opencga.lib.utils.Config;
 import org.bioinfo.opencga.lib.utils.IOUtils;
 import org.bioinfo.opencga.lib.utils.StringUtils;
-import org.bioinfo.tool.result.Result;
 import org.dom4j.DocumentException;
 
 import com.google.gson.Gson;
