@@ -6,3 +6,5 @@ target*
 opencga-light/libs/*.jar
 *.tar.gz
 *.tgz
+*.iml
+
