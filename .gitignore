@@ -3,6 +3,7 @@ target*
 .settings*
 .classpath
 .project
+.buildpath
 *.class
 opencga-light/libs/*.jar
 *.tar.gz
