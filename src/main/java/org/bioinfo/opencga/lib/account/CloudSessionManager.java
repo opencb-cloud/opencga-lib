@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,13 +31,13 @@ import org.bioinfo.opencga.lib.account.io.FileIOManager;
 import org.bioinfo.opencga.lib.account.io.IOManagementException;
 import org.bioinfo.opencga.lib.analysis.AnalysisExecutionException;
 import org.bioinfo.opencga.lib.analysis.SgeManager;
-import org.bioinfo.opencga.lib.storage.Indexer;
 import org.bioinfo.opencga.lib.storage.feature.BamManager;
 import org.bioinfo.opencga.lib.storage.feature.VcfManager;
 import org.bioinfo.opencga.lib.utils.Config;
 import org.bioinfo.opencga.lib.utils.IOUtils;
 import org.bioinfo.opencga.lib.utils.StringUtils;
 import org.dom4j.DocumentException;
+import sun.nio.cs.StreamEncoder;
 
 public class CloudSessionManager {
 
@@ -75,9 +76,13 @@ public class CloudSessionManager {
 		return ioManager.getBucketPath(accountId, bucketId);
 	}
 
-	public String getObjectPath(String accountId, String bucketId, Path ObjectId) {
-		return ioManager.getObjectPath(accountId, bucketId, ObjectId).toString();
+	public Path getObjectPath(String accountId, String bucketId, Path ObjectId) {
+		return ioManager.getObjectPath(accountId, bucketId, ObjectId);
 	}
+
+    public Path getTmpPath() {
+        return ioManager.getTmpPath();
+    }
 
 	/**
 	 * Account methods
@@ -215,7 +220,7 @@ public class CloudSessionManager {
 		checkParameter(objectId.toString(), "objectId");
 		checkObj(objectItem, "objectItem");
 
-		objectId = ioManager.createObject(accountId, bucketId, objectId, objectItem, fileIs, parents);
+        objectId = ioManager.createObject(accountId, bucketId, objectId, objectItem, fileIs, parents);
 
 		// set id and name to the itemObject
 		objectItem.setId(objectId.toString());
@@ -228,7 +233,6 @@ public class CloudSessionManager {
 			ioManager.deleteObject(accountId, bucketId, objectId);
 			throw e;
 		}
-
 	}
 
 	public String createFolderToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
@@ -258,25 +262,27 @@ public class CloudSessionManager {
 			throws AccountManagementException, IOException {
 
 		final Path bucketPath = ioManager.getBucketPath(accountId, bucketId);
-		accountManager.deleteObjectsFromBucket(accountId, bucketId, sessionId);
+        final List<ObjectItem> newObjects = new ArrayList<ObjectItem>();
 
-		Files.walkFileTree(bucketPath, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(bucketPath, new SimpleFileVisitor<Path>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				if (!Files.isHidden(file) && !Files.isDirectory(file)) {
 					Path ojectId = bucketPath.relativize(file);
-					String fileFormat = IOUtils.getExtension(ojectId.toString()).substring(1);
-					logger.info(bucketId);
 					logger.info(ojectId);
 					logger.info(file.toString());
-					ObjectItem objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "r");
-					objectItem.setFileFormat(fileFormat);
-					try {
-						accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
-					} catch (AccountManagementException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+                    ObjectItem objectItem = null;
+                    try {//find the current object if already exists
+                        objectItem =  accountManager.getObjectFromBucket(accountId,bucketId,ojectId,sessionId);
+                    } catch (AccountManagementException e) {
+                        objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "r");
+                        String fileExt = IOUtils.getExtension(ojectId.toString()).substring(1);
+                        if(fileExt != null){
+                            objectItem.setFileFormat(fileExt);
+                        }
+                        objectItem.setStatus("");
+                    }
+                    newObjects.add(objectItem);
 					return FileVisitResult.CONTINUE;
 				} else {
 					return FileVisitResult.CONTINUE;
@@ -302,14 +308,16 @@ public class CloudSessionManager {
 					logger.info(bucketId);
 					logger.info(ojectId);
 					logger.info(dir.toString());
-					ObjectItem objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "dir");
-					objectItem.setFileFormat("dir");
-					try {
-						accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
-					} catch (AccountManagementException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+
+                    ObjectItem objectItem = null;
+                    try {//find the current object if already exists
+                        objectItem =  accountManager.getObjectFromBucket(accountId,bucketId,ojectId,sessionId);
+                    } catch (AccountManagementException e) {
+					    objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "dir");
+					    objectItem.setFileFormat("dir");
+                        objectItem.setStatus("");
+                    }
+                    newObjects.add(objectItem);
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -323,6 +331,11 @@ public class CloudSessionManager {
 				return FileVisitResult.CONTINUE;
 			}
 		});
+
+        accountManager.deleteObjectsFromBucket(accountId, bucketId, sessionId);
+        for(ObjectItem objectItem : newObjects){
+            accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
+        }
 	}
 
 	public void deleteDataFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
@@ -375,17 +388,26 @@ public class CloudSessionManager {
 		return result;
 	}
 
-	public String indexFileObjects(String accountId, Path objectpath) throws Exception {
-		logger.info(objectpath);
-		String sgeJobName = Indexer.createBamIndex(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
-		logger.info(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
-		return sgeJobName;
+	public String indexFileObject(String accountId, String bucketId, Path objectId, String sessionId) throws Exception {
+        String sgeJobName = BamManager.createBamIndex(getObjectPath(accountId,bucketId,objectId));
+        accountManager.setObjectStatus(accountId, bucketId, objectId, sgeJobName, sessionId);
+        return sgeJobName;
 	}
 
-	public String indexJobStatus(String accountId, String jobId) throws Exception {
-		checkParameter(jobId, "jobId");
-		return SgeManager.status(jobId);
-	}
+    public String indexFileObjectStatus(String accountId, String bucketId, Path objectId, String sessionId, String jobId) throws Exception {
+        checkParameter(jobId, "jobId");
+        logger.info(jobId);
+        String objectStatus = accountManager.getObjectFromBucket(accountId, bucketId, objectId, sessionId).getStatus();
+        logger.info(objectStatus);
+        String jobStatus = SgeManager.status(jobId);
+        logger.info(jobStatus);
+        if(jobStatus.equalsIgnoreCase("finished")){
+            objectStatus = objectStatus.replace("indexer_","index_finished_");
+            logger.info(objectStatus);
+            accountManager.setObjectStatus(accountId, bucketId, objectId, objectStatus, sessionId);
+        }
+        return jobStatus;
+    }
 
 	/**
 	 * Project methods

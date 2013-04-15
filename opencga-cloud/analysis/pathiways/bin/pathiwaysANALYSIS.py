@@ -19,20 +19,20 @@ def main():
 
     homePath = os.path.dirname(sys.argv[0])
 
-    out = ""
-    with open(opts.normalizedmatrix, "r") as f:
-        for line in f:
-            if line.lstrip().startswith('#NAMES'):
-                out += line[1:]
-                continue
-            if not line.lstrip().startswith('#'):
-                out += line
-                continue
-        f.close()
-
-    with open(opts.normalizedmatrix, "w") as f:
-        f.write(out)
-        f.close()
+    # out = ""
+    # with open(opts.normalizedmatrix, "r") as f:
+    #     for line in f:
+    #         if line.lstrip().startswith('#NAMES'):
+    #             out += line[1:]
+    #             continue
+    #         if not line.lstrip().startswith('#'):
+    #             out += line
+    #             continue
+    #     f.close()
+    #
+    # with open(opts.normalizedmatrix, "w") as f:
+    #     f.write(out)
+    #     f.close()
 
     command = "/opt/R/R-2.15.2/bin/Rscript "+homePath+"/pathiwaysMAIN.r "+homePath+" "+opts.pathways+" "+opts.normalizedmatrix+" "+opts.summ+" "+opts.experimentaldesign+" "+opts.control+" "+opts.disease+" "+opts.outdir+" "+opts.platform+" "+opts.expname
     execute(command)
