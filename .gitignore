@@ -3,6 +3,6 @@ target*
 .settings*
 .classpath
 *.class
-opencga-light/libs/*.jar
+*.jar
 *.tar.gz
 *.tgz
