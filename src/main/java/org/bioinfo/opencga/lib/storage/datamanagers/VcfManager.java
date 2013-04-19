@@ -1,4 +1,4 @@
-package org.bioinfo.opencga.lib.storage.feature;
+package org.bioinfo.opencga.lib.storage.datamanagers;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.bioinfo.formats.core.variant.Vcf4;
 import org.bioinfo.formats.core.variant.vcf4.VcfRecord;
 import org.bioinfo.opencga.lib.storage.TabixReader;
+import org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager;
 
 import com.google.gson.Gson;
 

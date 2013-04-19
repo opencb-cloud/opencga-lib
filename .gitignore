@@ -5,7 +5,7 @@ target*
 .project
 .buildpath
 *.class
-opencga-light/libs/*.jar
+*.jar
 *.tar.gz
 *.tgz
 *.iml

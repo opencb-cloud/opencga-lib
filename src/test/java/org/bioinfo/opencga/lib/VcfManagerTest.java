@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bioinfo.opencga.lib.account.io.IOManagementException;
-import org.bioinfo.opencga.lib.storage.feature.VcfManager;
+import org.bioinfo.opencga.lib.storage.datamanagers.VcfManager;
 import org.junit.Test;
 
 public class VcfManagerTest {

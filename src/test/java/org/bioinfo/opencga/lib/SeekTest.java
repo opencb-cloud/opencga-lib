@@ -216,7 +216,7 @@ public class SeekTest {
                 raw = fields.get(i);
                 type = types.get(i);
 
-                switch (type) {
+                switch (type.toUpperCase()) {
                     case "INTEGER":
                     case "INT":
                         ps.setInt(sqliteIndex, Integer.parseInt(raw));

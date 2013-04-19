@@ -11,7 +11,7 @@ import java.util.Map;
 
 import com.google.gson.*;
 import org.bioinfo.opencga.lib.account.io.IOManagementException;
-import org.bioinfo.opencga.lib.storage.feature.BamManager;
+import org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager;
 import org.bioinfo.opencga.lib.utils.Config;
 import org.junit.Test;
 

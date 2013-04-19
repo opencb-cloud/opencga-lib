@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>2.10.1</version>
+			<version>2.11.1</version>
 			<!-- <scope>compile</scope> -->
 			<!-- <optional>true</optional> -->
 		</dependency>
@@ -74,6 +74,11 @@
 			<version>7.0.35</version>
 		</dependency>
 		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.7.2</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
@@ -81,10 +86,10 @@
 	</dependencies>
 
 	<build>
-        <directory>target</directory>
-        <outputDirectory>target/classes</outputDirectory>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <testSourceDirectory>src/test/java</testSourceDirectory>
+		<directory>target</directory>
+		<outputDirectory>target/classes</outputDirectory>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>

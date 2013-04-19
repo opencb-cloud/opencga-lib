@@ -1,4 +1,4 @@
-package org.bioinfo.opencga.lib.storage.feature;
+package org.bioinfo.opencga.lib.storage.datamanagers;
 
 import java.io.File;
 import java.io.IOException;
