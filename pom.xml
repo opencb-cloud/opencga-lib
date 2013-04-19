@@ -81,8 +81,10 @@
 	</dependencies>
 
 	<build>
-		<sourceDirectory>src/main</sourceDirectory>
-		<testSourceDirectory>src/test</testSourceDirectory>
+        <directory>target</directory>
+        <outputDirectory>target/classes</outputDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -166,7 +168,7 @@
 									<fileset dir="installation" includes="**" /> </copy> -->
 								<exec executable="tar">
 									<arg value="-zcvf" />
-									<arg value="opencga-cloud.tar.gz" />
+									<arg value="opencga-cloud-${project.version}.tar.gz" />
 									<arg value="${installation.server}" />
 								</exec>
 							</target>
@@ -188,6 +190,7 @@
 									<arg value="${installation.local}/example" />
 									<arg value="${installation.local}/libs" />
 									<arg value="${installation.local}/opencga.sh" />
+									<arg value="${installation.local}/opencga.py" />
 									<arg value="${installation.server}/COPYING" />
 									<arg value="${dest.installation.local}" />
 								</exec>
@@ -206,7 +209,7 @@
 									<fileset dir="installation" includes="**" /> </copy> -->
 								<exec executable="tar">
 									<arg value="-zcvf" />
-									<arg value="opencga-light.tar.gz" />
+									<arg value="opencga-light-${project.version}.tar.gz" />
 									<arg value="${installation.local}" />
 								</exec>
 							</target>

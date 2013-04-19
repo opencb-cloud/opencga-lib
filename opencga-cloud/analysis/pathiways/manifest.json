@@ -24,6 +24,7 @@
 	            	 outputParam: "outdir",
 	            	 validParams: [
 	            	           {name:"norm-matrix", description:"Normalized matrix file.", required:"true"},
+	            	           {name:"cel-compressed-file", description:"ZIP Cel files", required:"false"},
 	            	           {name:"exp-design", description:"Experimental design file.", required:"true"},
 	            	           {name:"pathways", description:"List of pathways.", required:"true"},
 	            	           {name:"summ", description:"Summ value.", required:"true"},

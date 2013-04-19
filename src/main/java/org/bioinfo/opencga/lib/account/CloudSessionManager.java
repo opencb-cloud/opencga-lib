@@ -3,8 +3,13 @@ package org.bioinfo.opencga.lib.account;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -26,12 +31,13 @@ import org.bioinfo.opencga.lib.account.io.FileIOManager;
 import org.bioinfo.opencga.lib.account.io.IOManagementException;
 import org.bioinfo.opencga.lib.analysis.AnalysisExecutionException;
 import org.bioinfo.opencga.lib.analysis.SgeManager;
-import org.bioinfo.opencga.lib.storage.Indexer;
 import org.bioinfo.opencga.lib.storage.feature.BamManager;
 import org.bioinfo.opencga.lib.storage.feature.VcfManager;
 import org.bioinfo.opencga.lib.utils.Config;
+import org.bioinfo.opencga.lib.utils.IOUtils;
 import org.bioinfo.opencga.lib.utils.StringUtils;
 import org.dom4j.DocumentException;
+import sun.nio.cs.StreamEncoder;
 
 public class CloudSessionManager {
 
@@ -41,11 +47,11 @@ public class CloudSessionManager {
 	private static Logger logger = Logger.getLogger(CloudSessionManager.class);
 	private Properties accountProperties;
 
-	public CloudSessionManager() throws IOException {
+	public CloudSessionManager() throws IOException, IOManagementException {
 		this(System.getenv("OPENCGA_HOME"));
 	}
 
-	public CloudSessionManager(String gcsaHome) throws IOException {
+	public CloudSessionManager(String gcsaHome) throws IOException, IOManagementException {
 		logger.info("!");
 		Config.configureLog4j();
 		accountProperties = Config.getAccountProperties();
@@ -70,9 +76,13 @@ public class CloudSessionManager {
 		return ioManager.getBucketPath(accountId, bucketId);
 	}
 
-	public String getObjectPath(String accountId, String bucketId, Path ObjectId) {
-		return ioManager.getObjectPath(accountId, bucketId, ObjectId).toString();
+	public Path getObjectPath(String accountId, String bucketId, Path ObjectId) {
+		return ioManager.getObjectPath(accountId, bucketId, ObjectId);
 	}
+
+    public Path getTmpPath() {
+        return ioManager.getTmpPath();
+    }
 
 	/**
 	 * Account methods
@@ -210,7 +220,7 @@ public class CloudSessionManager {
 		checkParameter(objectId.toString(), "objectId");
 		checkObj(objectItem, "objectItem");
 
-		objectId = ioManager.createObject(accountId, bucketId, objectId, objectItem, fileIs, parents);
+        objectId = ioManager.createObject(accountId, bucketId, objectId, objectItem, fileIs, parents);
 
 		// set id and name to the itemObject
 		objectItem.setId(objectId.toString());
@@ -223,7 +233,6 @@ public class CloudSessionManager {
 			ioManager.deleteObject(accountId, bucketId, objectId);
 			throw e;
 		}
-
 	}
 
 	public String createFolderToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
@@ -247,6 +256,87 @@ public class CloudSessionManager {
 			ioManager.deleteObject(bucketId, accountId, objectId);
 			throw e;
 		}
+	}
+
+	public void refreshBucket(final String accountId, final String bucketId, final String sessionId)
+			throws AccountManagementException, IOException {
+
+		final Path bucketPath = ioManager.getBucketPath(accountId, bucketId);
+        final List<ObjectItem> newObjects = new ArrayList<ObjectItem>();
+
+        Files.walkFileTree(bucketPath, new SimpleFileVisitor<Path>() {
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                logger.info(Files.isSymbolicLink(file));
+				if (!Files.isHidden(file) && !Files.isDirectory(file)) {
+					Path ojectId = bucketPath.relativize(file);
+					logger.info(ojectId);
+					logger.info(file.toString());
+                    ObjectItem objectItem = null;
+                    try {//find the current object if already exists
+                        objectItem =  accountManager.getObjectFromBucket(accountId,bucketId,ojectId,sessionId);
+                    } catch (AccountManagementException e) {
+                        objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "r");
+                        String fileExt = IOUtils.getExtension(ojectId.toString());
+                        if(fileExt != null){
+                            objectItem.setFileFormat(fileExt.substring(1));
+                        }
+                        objectItem.setStatus("");
+                    }
+                    newObjects.add(objectItem);
+					return FileVisitResult.CONTINUE;
+				} else {
+					return FileVisitResult.CONTINUE;
+				}
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				// try to delete the file anyway, even if its attributes
+				// could not be read, since delete-only access is
+				// theoretically possible
+				return FileVisitResult.SKIP_SUBTREE;
+			}
+
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				if (Files.isHidden(dir) || !Files.isReadable(dir) || dir.getFileName().toString().equals("..")
+						|| dir.getFileName().toString().equals(".")) {
+					return FileVisitResult.SKIP_SUBTREE;
+				}
+				if(!dir.equals(bucketPath)){//dont add bucketId folder itself
+					Path ojectId = bucketPath.relativize(dir);
+					logger.info(bucketId);
+					logger.info(ojectId);
+					logger.info(dir.toString());
+
+                    ObjectItem objectItem = null;
+                    try {//find the current object if already exists
+                        objectItem =  accountManager.getObjectFromBucket(accountId,bucketId,ojectId,sessionId);
+                    } catch (AccountManagementException e) {
+					    objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "dir");
+					    objectItem.setFileFormat("dir");
+                        objectItem.setStatus("");
+                    }
+                    newObjects.add(objectItem);
+				}
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				if (Files.isHidden(dir) || !Files.isReadable(dir)) {
+					return FileVisitResult.SKIP_SUBTREE;
+				}
+				// here
+				return FileVisitResult.CONTINUE;
+			}
+		});
+
+        accountManager.deleteObjectsFromBucket(accountId, bucketId, sessionId);
+        for(ObjectItem objectItem : newObjects){
+            accountManager.createObjectToBucket(accountId, bucketId, objectItem, sessionId);
+        }
 	}
 
 	public void deleteDataFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
@@ -299,17 +389,26 @@ public class CloudSessionManager {
 		return result;
 	}
 
-	public String indexFileObjects(String accountId, Path objectpath) throws Exception {
-		logger.info(objectpath);
-		String sgeJobName = Indexer.createBamIndex(getAccountPath(accountId).resolve("buckets").resolve(
-				objectpath));
-		logger.info(getAccountPath(accountId).resolve("buckets").resolve(objectpath));
-		return sgeJobName;
+	public String indexFileObject(String accountId, String bucketId, Path objectId, String sessionId) throws Exception {
+        String sgeJobName = BamManager.createBamIndex(getObjectPath(accountId,bucketId,objectId));
+        accountManager.setObjectStatus(accountId, bucketId, objectId, sgeJobName, sessionId);
+        return sgeJobName;
 	}
 
-	public String indexJobStatus(String accountId, String jobId) throws Exception {
-		return SgeManager.status(jobId);
-	}
+    public String indexFileObjectStatus(String accountId, String bucketId, Path objectId, String sessionId, String jobId) throws Exception {
+        checkParameter(jobId, "jobId");
+        logger.info(jobId);
+        String objectStatus = accountManager.getObjectFromBucket(accountId, bucketId, objectId, sessionId).getStatus();
+        logger.info(objectStatus);
+        String jobStatus = SgeManager.status(jobId);
+        logger.info(jobStatus);
+        if(jobStatus.equalsIgnoreCase("finished")){
+            objectStatus = objectStatus.replace("indexer_","index_finished_");
+            logger.info(objectStatus);
+            accountManager.setObjectStatus(accountId, bucketId, objectId, objectStatus, sessionId);
+        }
+        return jobStatus;
+    }
 
 	/**
 	 * Project methods

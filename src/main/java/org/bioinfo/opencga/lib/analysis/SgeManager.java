@@ -179,11 +179,9 @@ public class SgeManager {
 		    	logger.info(line);
 		    	if(line.contains("exit_status")){
 		    		exitStatus = line.replace("exit_status", "").trim();
-		    		logger.info(line);
 		    	}
 		    	if(line.contains("failed")){
 		    		failed = line.replace("failed", "").trim();
-		    		logger.info(line);
 		    	}
 		    }
 		    p.waitFor();

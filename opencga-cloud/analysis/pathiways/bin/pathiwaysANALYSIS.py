@@ -8,33 +8,36 @@ import sys, os, commands
 def execute(cmd):
     status, output = commands.getstatusoutput(cmd)
     print(str(status)+" -> "+output+" - "+cmd)
-    if "Execution halted" in output or "Error" in output:
-        sys.exit(-1)
+    
 
 def main():
     """
     main function
     """
     opts = get_options()
-
+    
     homePath = os.path.dirname(sys.argv[0])
+    
+    #WATCH OUT with this parameter, indicates that the nomalizematrix param is not a normalized matrix is a CEL compressed file.
+    #It must be build from the zip file provided in the nomalizematrix param
+    if "true" in opts.celfileFlag:
+      print(opts.celfileFlag)
+      print(opts.celornormalizedmatrix)
+      matrixcelOutdir = opts.outdir+"matrixcelOutdir"
+      celfileName = os.path.splitext(os.path.basename(opts.celornormalizedmatrix))[0]
+      normMatrix = celfileName+"_normmatrix.txt"
+      normMatrixImage = celfileName+"_normmatrix.png"
+      matrixDir = opts.outdir
+           
+      execute("/httpd/bioinfo/babelomics4.3/babelomics.sh --tool affy-expression-normalization -o "+matrixcelOutdir+" --compressed-file "+opts.celornormalizedmatrix+" --compressed-file-tags affymetrix --rma")
+      execute("cp "+matrixcelOutdir+"/rma.summary.txt "+matrixDir+""+normMatrix)
+      execute("cp "+matrixcelOutdir+"/rma.summary.png "+matrixDir+""+normMatrixImage)
+      execute("rm -rf "+matrixcelOutdir)
+      
+      opts.celornormalizedmatrix = matrixDir+""+normMatrix;
+      print(opts.celornormalizedmatrix);
 
-    out = ""
-    with open(opts.normalizedmatrix, "r") as f:
-        for line in f:
-            if line.lstrip().startswith('#NAMES'):
-                out += line[1:]
-                continue
-            if not line.lstrip().startswith('#'):
-                out += line
-                continue
-        f.close()
-
-    with open(opts.normalizedmatrix, "w") as f:
-        f.write(out)
-        f.close()
-
-    command = "/opt/R/R-2.15.2/bin/Rscript "+homePath+"/pathiwaysMAIN.r "+homePath+" "+opts.pathways+" "+opts.normalizedmatrix+" "+opts.summ+" "+opts.experimentaldesign+" "+opts.control+" "+opts.disease+" "+opts.outdir+" "+opts.platform+" "+opts.expname
+    command = "/opt/R/R-2.15.2/bin/Rscript "+homePath+"/pathiwaysMAIN.r "+homePath+" "+opts.pathways+" "+opts.celornormalizedmatrix+" "+opts.summ+" "+opts.experimentaldesign+" "+opts.control+" "+opts.disease+" "+opts.outdir+" "+opts.platform+" "+opts.expname
     execute(command)
 
     # Get date
@@ -56,9 +59,10 @@ def main():
     '04012':'ERBB SIGNALING PATHWAY',
     '04020':'CALCIUM SIGNALING PATHWAY',
     '04060':'CITOKINE-CYTOKINE RECEPTOR INTERACTION',
+    '04062':'CHEMOKINE SIGNALING PATHWAY',
     '04080':'NEUROACTIVE LIGAND-RECEPTOR INTERACTION',
     '04110':'CELL CYCLE',
-    '04115':'P53 SIGNALING PATHWAY',
+    '04115':'p53 SIGNALING PATHWAY',
     '04150':'mTOR SIGNALING PATHWAY',
     '04210':'APOPTOSIS',
     '04310':'WNT SIGNALING PATHWAY',
@@ -69,7 +73,7 @@ def main():
     '04510':'FOCAL ADHESION',
     '04512':'ECM-RECEPTOR INTERACTION',
     '04514':'CELL ADHESION MOLECULES',
-    '04520':'ADHERENS JUNTION',
+    '04520':'ADHERENS JUNCTION',
     '04530':'TIGHT JUNCTION',
     '04540':'GAP JUNCTION',
     '04610':'COMPLEMENT AND COAGULATION CASCADES',
@@ -125,8 +129,10 @@ def get_options():
         usage="%prog [options]")
     parser.add_option('--pathways', dest='pathways', metavar="STRING",
                       help='list of pathways')
-    parser.add_option('--norm-matrix', dest='normalizedmatrix', metavar="FILE",
+    parser.add_option('--norm-matrix', dest='celornormalizedmatrix', metavar="FILE",
                       help='path to normalized matrix')
+    parser.add_option('--cel-compressed-file', dest='celfileFlag', metavar="FILE",
+                      help='cell files must be converted in to normalized file')
     parser.add_option('--summ', dest='summ', metavar="STRING",
                       help='summ value')
     parser.add_option('--exp-design', dest='experimentaldesign', metavar="FILE",
