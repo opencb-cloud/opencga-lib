@@ -267,6 +267,7 @@ public class CloudSessionManager {
         Files.walkFileTree(bucketPath, new SimpleFileVisitor<Path>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                logger.info(Files.isSymbolicLink(file));
 				if (!Files.isHidden(file) && !Files.isDirectory(file)) {
 					Path ojectId = bucketPath.relativize(file);
 					logger.info(ojectId);
@@ -276,9 +277,9 @@ public class CloudSessionManager {
                         objectItem =  accountManager.getObjectFromBucket(accountId,bucketId,ojectId,sessionId);
                     } catch (AccountManagementException e) {
                         objectItem = new ObjectItem(ojectId.toString(), ojectId.getFileName().toString(), "r");
-                        String fileExt = IOUtils.getExtension(ojectId.toString()).substring(1);
+                        String fileExt = IOUtils.getExtension(ojectId.toString());
                         if(fileExt != null){
-                            objectItem.setFileFormat(fileExt);
+                            objectItem.setFileFormat(fileExt.substring(1));
                         }
                         objectItem.setStatus("");
                     }

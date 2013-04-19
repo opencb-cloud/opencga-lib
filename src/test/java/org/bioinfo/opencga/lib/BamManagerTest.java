@@ -1,7 +1,7 @@
 package org.bioinfo.opencga.lib;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.*;
 import org.bioinfo.opencga.lib.account.io.IOManagementException;
 import org.bioinfo.opencga.lib.storage.feature.BamManager;
+import org.bioinfo.opencga.lib.utils.Config;
 import org.junit.Test;
 
 public class BamManagerTest {
@@ -36,5 +38,4 @@ public class BamManagerTest {
 			System.out.println("/home/examples not found, skip.");
 		}
 	}
-
 }

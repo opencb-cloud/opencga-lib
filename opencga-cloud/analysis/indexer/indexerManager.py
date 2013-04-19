@@ -2,7 +2,6 @@
 
 import sys, os, argparse, commands
 
-
 opencgaHome = "";
 samtoolsCmd = "";
 tabixCmd = "";

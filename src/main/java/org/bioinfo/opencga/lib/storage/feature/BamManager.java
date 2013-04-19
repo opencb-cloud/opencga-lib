@@ -5,12 +5,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import com.google.gson.*;
 import net.sf.samtools.BAMIndexer;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.CigarOperator;
@@ -23,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.bioinfo.cellbase.lib.common.Region;
 import org.bioinfo.commons.io.utils.FileUtils;
 
-import com.google.gson.Gson;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import org.bioinfo.commons.utils.StringUtils;
@@ -40,7 +41,7 @@ public class BamManager {
     private static Path indexerManagerScript = Paths.get(Config.getGcsaHome(),
             Config.getAnalysisProperties().getProperty("OPENCGA.ANALYSIS.BINARIES.PATH"), "indexer", "indexerManager.py");
 
-    private Properties analysisProperties;
+    private Properties analysisProperties = Config.getAnalysisProperties();
 
     public BamManager() throws IOException {
         gson = new Gson();
@@ -214,9 +215,9 @@ public class BamManager {
         StringBuilder attrString;
         String readStr;
         int readPos;
-        logger.info("Processing SAM records");
+//        logger.info("Processing SAM records");
         for (SAMRecord record : records) {
-            logger.info(record.getReadName());
+//            logger.info(record.getReadName());
 
             Boolean condition = (!record.getReadUnmappedFlag());
             if (condition) {
@@ -259,12 +260,12 @@ public class BamManager {
                     int indexRef = 0;
                     // System.out.println(gson.toJson(record.getCigar().getCigarElements()));
 
-                    logger.info("checking cigar: " + record.getCigar().toString());
+//                    logger.info("checking cigar: " + record.getCigar().toString());
                     for (int i = 0; i < record.getCigar().getCigarElements().size(); i++) {
                         CigarElement cigarEl = record.getCigar().getCigarElement(i);
                         CigarOperator cigarOp = cigarEl.getOperator();
                         int cigarLen = cigarEl.getLength();
-                        logger.info(cigarOp + " found" + " index:" + index + " indexRef:" + indexRef + " cigarLen:" + cigarLen);
+//                        logger.info(cigarOp + " found" + " index:" + index + " indexRef:" + indexRef + " cigarLen:" + cigarLen);
 
                         if (cigarOp == CigarOperator.M || cigarOp == CigarOperator.EQ || cigarOp == CigarOperator.X) {
                             String subref = refStr.substring(indexRef, indexRef + cigarLen);
@@ -379,7 +380,7 @@ public class BamManager {
                 }// IF TEST BY READ NAME
 
 
-                logger.info("Creating coverage array");
+//                logger.info("Creating coverage array");
                 // TODO cigar check for correct coverage calculation and
                 int refgenomeOffset = 0;
                 int readOffset = 0;
@@ -441,9 +442,9 @@ public class BamManager {
 //                    } else if(){
 //                    }
                 }
-                logger.info("coverage array created");
+//                logger.info("coverage array created");
             }
-            logger.info(" ");
+//            logger.info(" ");
         }
 
         // Remove last comma
@@ -491,33 +492,31 @@ public class BamManager {
         return sb.toString();
     }
 
-    private String getSequence(final String chr, final int start, final int end) {
+    private String getSequence(final String chr, final int start, final int end) throws IOException {
         String version = "latest";
-        String host = "ws.bioinfo.cipf.es";
-        if(species.equals("ccl")){//TESTING
+        String host = analysisProperties.getProperty("CELLBASE.HOST","ws.bioinfo.cipf.es");
+        if (species.equals("ccl")) {//TESTING
             version = "v3";
-            host = "mem12:8080";
         }
-        String urlString = "http://"+host+"/cellbase/rest/"+version+"/" + species + "/genomic/region/" + chr + ":"
-                + (start - 500) + "-" + (end + 500) + "/sequence";
+        String urlString = "http://" + host + "/cellbase/rest/" + version + "/" + species + "/genomic/region/" + chr + ":"
+                + (start - 500) + "-" + (end + 500) + "/sequence?of=json";
         System.out.println(urlString);
-        StringBuilder sb = new StringBuilder();
-        try {
-            URL url = new URL(urlString);
-            InputStream is = url.openConnection().getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String line = reader.readLine(); // remove first line
-            while ((line = reader.readLine()) != null) {
-                sb.append(line.trim());
-            }
-            System.out.println(sb.toString().length());
-            reader.close();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
-        return sb.toString();
+        URL url = new URL(urlString);
+        InputStream is = url.openConnection().getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        String line = null;
+        StringBuilder sb = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            sb.append(line.trim());
+        }
+        reader.close();
+
+        JsonElement json = new JsonParser().parse(sb.toString());
+        JsonArray array = json.getAsJsonArray();
+        JsonObject obj = array.get(0).getAsJsonObject();
+
+        return obj.get("sequence").getAsString();
     }
 
     private String revcomp(String seq) {
