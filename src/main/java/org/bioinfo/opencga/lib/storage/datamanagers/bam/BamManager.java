@@ -1,4 +1,4 @@
-package org.bioinfo.opencga.lib.storage.feature;
+package org.bioinfo.opencga.lib.storage.datamanagers.bam;
 
 import java.io.BufferedReader;
 import java.io.File;

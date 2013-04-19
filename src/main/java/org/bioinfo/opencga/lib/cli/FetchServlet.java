@@ -16,8 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.bioinfo.opencga.lib.storage.feature.BamManager;
-import org.bioinfo.opencga.lib.storage.feature.VcfManager;
+import org.bioinfo.opencga.lib.storage.datamanagers.VcfManager;
+import org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager;
 import org.bioinfo.opencga.lib.utils.StringUtils;
 
 public class FetchServlet extends HttpServlet {
