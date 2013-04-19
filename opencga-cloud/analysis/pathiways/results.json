@@ -19,7 +19,7 @@ var RESULT = {
 		            	colTypes : ["string","float","float","float","string","string"],
 		            	colVisibility : [1,1,1,1,1,1],
 		            	colOrder : [0,1,2,3,4,5]
-		            };
+		         };
 				var pathwayDict = {'Summary':'Summary', 'Normalization':'Normalization',
 				    '03320':'PPAR SIGNALING PATHWAY',
 				    '04010':'MAPK SIGNALING PATHWAY',
@@ -59,19 +59,24 @@ var RESULT = {
 				    '04916':'MELANOGENESIS',
 				    '04920':'ADIPOCYTOKINE SIGNALING PATHWAY'
 				};
-
+                pathwayNames = Object.keys(pathwayDict);
 
 				for(var i=0, leni=this.outputItems.length; i<leni; i++) {
 				    var outItem = this.outputItems[i];
-					var group;
+					var group = ' ';
 					if(outItem.indexOf('_normmatrix.') != -1){
                         group = "Normalization";
-					}else if(outItem.indexOf('_') != -1) {
-						group = outItem.split('.')[0].split('_')[1].substring(3);
-					}else {
+					}else if(outItem.indexOf('ALL.txt') != -1) {
 						group = "Summary";
+					}else {
+					    for(var p = 0; p< pathwayNames.length; p++){
+                            if(outItem.indexOf(pathwayNames[p])!=-1){
+                                group = pathwayNames[p];
+                                break;
+                            }
+					    }
 					}
-					
+
 					if(groups[group] == undefined) groups[group] = {title: pathwayDict[group], children: []};
 
 					var ext = outItem.substring(outItem.lastIndexOf('.'));
