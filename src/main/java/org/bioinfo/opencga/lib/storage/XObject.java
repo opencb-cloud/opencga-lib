@@ -45,7 +45,7 @@ public class XObject extends LinkedHashMap<String, Object> {
 
 	public String getString(String field, String defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return (String)this.get(field);				
+			return (String)this.get(field);
 		}
 		return defaultValue;
 	}
@@ -57,7 +57,12 @@ public class XObject extends LinkedHashMap<String, Object> {
 
 	public int getInt(String field, int defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return Integer.parseInt((String)this.get(field));				
+			Object obj = this.get(field);
+			if(obj instanceof Integer) {
+				return (Integer)obj;
+			}else{
+				return Integer.parseInt(String.valueOf(obj));								
+			}
 		}
 		return defaultValue;
 	}
