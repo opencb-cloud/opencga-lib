@@ -45,7 +45,7 @@ public class XObject extends LinkedHashMap<String, Object> {
 
 	public String getString(String field, String defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return (String)this.get(field);				
+			return String.valueOf(this.get(field));
 		}
 		return defaultValue;
 	}
@@ -63,13 +63,25 @@ public class XObject extends LinkedHashMap<String, Object> {
 	}
 
 
+    public long getLong(String field) {
+        return getLong(field, 0L);
+    }
+
+    public long getLong(String field, long defaultValue) {
+        if(field != null && this.containsKey(field)) {
+            return Long.parseLong((String) this.get(field));
+        }
+        return defaultValue;
+    }
+
+
 	public float getFloat(String field) {
 		return getFloat(field, 0.0f);
 	}
 
 	public float getFloat(String field, float defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return Float.parseFloat((String)this.get(field));				
+			return Float.parseFloat((String) this.get(field));
 		}
 		return defaultValue;
 	}
