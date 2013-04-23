@@ -1,7 +1,5 @@
 package org.bioinfo.opencga.lib.storage.datamanagers;
 
-import org.bioinfo.cellbase.lib.common.GenericFeature;
-import org.bioinfo.cellbase.lib.common.GenericFeatureChunk;
 import org.bioinfo.opencga.lib.storage.XObject;
 import org.bioinfo.opencga.lib.storage.indices.DefaultParser;
 import org.bioinfo.opencga.lib.storage.indices.SqliteManager;
@@ -9,6 +7,7 @@ import org.bioinfo.opencga.lib.storage.indices.SqliteManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,51 +16,73 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 public class GffManager {
-
     private int CHUNKSIZE = 10000;
+
+    String recordTableName;
+    XObject recordColumns;
+
+    String chunkTableName;
+    XObject chunkColumns;
+
+    String statsTableName;
+    XObject statsColumns;
+
+    public GffManager() {
+        //record_query_fields
+        recordTableName = "record_query_fields";
+        recordColumns = new XObject();
+        recordColumns.put("chromosome", "TEXT");
+        recordColumns.put("start", "INT");
+        recordColumns.put("end", "INT");
+        recordColumns.put("offset", "BIGINT");
+
+        //chunk
+        chunkTableName = "chunk";
+        chunkColumns = new XObject();
+        chunkColumns.put("chromosome", "TEXT");
+        chunkColumns.put("chunk_id", "TEXT");
+        chunkColumns.put("start", "INT");
+        chunkColumns.put("end", "INT");
+        chunkColumns.put("features_count", "INT");
+
+        //stats
+        statsTableName = "global_stats";
+        statsColumns = new XObject();
+        statsColumns.put("name", "TEXT");
+        statsColumns.put("title", "TEXT");
+        statsColumns.put("value", "TEXT");
+
+    }
 
     public void createIndex(Path filePath) throws SQLException, IOException, ClassNotFoundException {
 
         SqliteManager sqliteManager = new SqliteManager();
         sqliteManager.connect(filePath);
 
-        //offset
-        String offsetTableName = "offset_region";
-        LinkedHashMap<String,String> offsetColumns = new LinkedHashMap<String, String>();
-        offsetColumns.put("chr", "TEXT");
-        offsetColumns.put("start", "INT");
-        offsetColumns.put("end", "INT");
-        offsetColumns.put("pos", "BIGINT");
-        sqliteManager.createTable(offsetTableName, offsetColumns);
-
-        String offsetIndexName = "chr_start_end";
-        LinkedHashMap<String,Integer> offsetIndices = new LinkedHashMap<String, Integer>();
-        offsetIndices.put("chr", 0);
-        offsetIndices.put("start", 3);
-        offsetIndices.put("end", 4);
-        DefaultParser offsetDefaultParser = new DefaultParser(offsetIndices);
-
+        //record_query_fields
+        sqliteManager.createTable(recordTableName, recordColumns);
+        String recordIndexName = "chromosome_start_end";
+        XObject recordIndices = new XObject();
+        recordIndices.put("chromosome", 0);
+        recordIndices.put("start", 3);
+        recordIndices.put("end", 4);
+        DefaultParser offsetDefaultParser = new DefaultParser(recordIndices);
 
         //chunk
-        String chunkTableName = "chunk_region";
-        LinkedHashMap<String,String> chunkColumns = new LinkedHashMap<String, String>();
-        chunkColumns.put("chunk", "TEXT");
-        chunkColumns.put("chr", "TEXT");
-        chunkColumns.put("start", "INT");
-        chunkColumns.put("end", "INT");
-        chunkColumns.put("count", "BIGINT");
         sqliteManager.createTable(chunkTableName, chunkColumns);
+        String chunkIndexName = "chromosome_chunk_id";
+        XObject chunkIndices = new XObject();
+        chunkIndices.put("chromosome", 0);
+        chunkIndices.put("chunk_id", -1);
 
-        String chunkIndexName = "chr_start_end";
-        LinkedHashMap<String,Integer> chunkIndices = new LinkedHashMap<String, Integer>();
-        chunkIndices.put("chr", 0);
-        chunkIndices.put("start", 3);
-        chunkIndices.put("end", 4);
-        DefaultParser chunkDefaultParser = new DefaultParser(chunkIndices);
+        //stats
+        sqliteManager.createTable(statsTableName, statsColumns);
+
 
 
         //chunk visited hash
-        Set<Integer> visitedChunks = new HashSet<>();
+        HashMap<Integer,XObject> visitedChunks = new HashMap<>();
+        HashMap<String ,XObject> visitedChromosomes = new HashMap<>();
 
         //Read file
         BufferedReader br;
@@ -71,58 +92,137 @@ public class GffManager {
         } else {
             br = Files.newBufferedReader(filePath, Charset.defaultCharset());
         }
-
-
-        //Read file
         String line = null;
         long offsetPos = 0;
+        int numberLines = 0;
         while ((line = br.readLine()) != null) {
-            XObject xObject = offsetDefaultParser.parse(line);
-            xObject.put("pos",offsetPos);
-
-            //table 1
-            sqliteManager.insert(xObject, offsetTableName);
+            numberLines++;
+            XObject offsetXO = offsetDefaultParser.parse(line);
+            offsetXO.put("offset", offsetPos);
+            //offset table
+            sqliteManager.insert(offsetXO, recordTableName);
             offsetPos += line.length()+1;
 
-            //table2
-            int firstChunkId =  getChunkId(xObject.getInt("start"));
-            int lastChunkId  = getChunkId(xObject.getInt("end"));
+            //calculate chromosome stats
+            XObject chrXo = visitedChromosomes.get(offsetXO.get("chromosome"));
+            if(chrXo == null){
+                chrXo = new XObject();
+                chrXo.put("start",offsetXO.getInt("start"));
+                chrXo.put("end",offsetXO.getInt("end"));
+                visitedChromosomes.put(offsetXO.getString("chromosome"),chrXo);
+            }
+            chrXo.put("start",Math.min(chrXo.getInt("start"),offsetXO.getInt("start")));
+            chrXo.put("end",Math.max(chrXo.getInt("end"),offsetXO.getInt("end")));
 
+
+            //chunk table
+            int firstChunkId =  getChunkId(offsetXO.getInt("start"));
+            int lastChunkId  = getChunkId(offsetXO.getInt("end"));
             for(int i=firstChunkId; i<=lastChunkId; i++){
-                if(!visitedChunks.contains(i)){
+                if(visitedChunks.get(i) == null){
+                    XObject xoChunk = new XObject();
                     int chunkStart = getChunkStart(i);
                     int chunkEnd = getChunkEnd(i);
-                    visitedChunks.add(i);
-                    XObject xoChunk = new XObject();
-                    xoChunk.put("chunk", i);
-                    xoChunk.put("chr", xObject.getString("chr"));
-                    xoChunk.put("start", xObject.getInt("start"));
-                    xoChunk.put("end", xObject.getInt("end"));
-                    xoChunk.put("count", 0);
-                    sqliteManager.insert(xoChunk, chunkTableName);
+                    xoChunk.put("chunk_id", i);
+                    xoChunk.put("chromosome", offsetXO.getString("chr"));
+                    xoChunk.put("start", chunkStart);
+                    xoChunk.put("end", chunkEnd);
+                    xoChunk.put("features_count", 0);
+                    visitedChunks.put(i, xoChunk);
                 }
-                XObject xoUpdate = new XObject();
-                xoUpdate.put("count", "count + 1");
-                sqliteManager.update(xObject, xoUpdate, chunkTableName);
-
-//                genericFeatureChunks.get(i).getFeatures().add(genericFeature);
+                XObject xoUpdate = visitedChunks.get(i);
+                xoUpdate.put("features_count",xoUpdate.getInt("features_count")+1);
             }
-
-            //...
 
         }
         br.close();
-        sqliteManager.commit(offsetTableName);
 
-        sqliteManager.createIndex(offsetTableName, offsetIndexName, offsetIndices);
+        //table record_query_fields
+        sqliteManager.commit(recordTableName);
+        sqliteManager.createIndex(recordTableName, recordIndexName, recordIndices);
+
+        //table chunk
+        for (Integer key : visitedChunks.keySet()) {
+            sqliteManager.insert(visitedChunks.get(key), chunkTableName);
+        }
+        sqliteManager.commit(chunkTableName);
         sqliteManager.createIndex(chunkTableName, chunkIndexName, chunkIndices);
 
+        //table stats
+        XObject values = new XObject();
+        values.put("title","File number lines");
+        values.put("name","NUM_LINES");
+        values.put("value",numberLines);
+        sqliteManager.insert(values, statsTableName);
+
+        values = new XObject();
+        values.put("title","Number of chromosomes (or sequences)");
+        values.put("name","NUM_CHR");
+        values.put("value",visitedChromosomes.keySet().size());
+        sqliteManager.insert(values, statsTableName);
+
+        values = new XObject();
+        String chrStr = visitedChromosomes.keySet().toString();
+        values.put("title","Chromosomes (or sequences)");
+        values.put("name", "CHR_LIST");
+        values.put("value", chrStr.substring(1, chrStr.length() - 1));
+        sqliteManager.insert(values, statsTableName);
+
+        String chromosomePrefix = "";
+        for (String key : visitedChromosomes.keySet()) {
+            XObject chrXo = visitedChromosomes.get(key);
+
+            String chrkey = key;
+            if(key.contains("chr")){
+                chromosomePrefix = "chr";
+                chrkey = key.replace("chr","");
+            }
+
+            values = new XObject();
+            values.put("title","Chromosome");
+            values.put("name","CHR_"+chrkey+"_NAME");
+            values.put("value", key);
+            sqliteManager.insert(values, statsTableName);
+
+            values = new XObject();
+            values.put("title","Length");
+            values.put("name", "CHR_" + chrkey + "_LENGTH");
+            values.put("value",chrXo.getInt("end")-chrXo.getInt("start")+1);
+            sqliteManager.insert(values, statsTableName);
+        }
+
+        //check chromosome prefix
+        values = new XObject();
+        values.put("title","Chromsome prefix");
+        values.put("name","CHR_PREFIX");
+        values.put("value",chromosomePrefix);
+        sqliteManager.insert(values, statsTableName);
+        sqliteManager.commit(statsTableName);
+
+        //disconnect
         sqliteManager.disconnect(true);
     }
 
-    public void queryIndex(Path file) throws SQLException, IOException, ClassNotFoundException {
-        //TODO ...
+    public List<XObject> queryRegion(Path filePath, String chromosome, int start, int end) throws SQLException, IOException, ClassNotFoundException {
 
+        SqliteManager sqliteManager = new SqliteManager();
+        sqliteManager.connect(filePath);
+
+        String tableName = "record_query_fields";
+        String queryString = "SELECT offset FROM " + tableName + " WHERE chromosome='"+chromosome+"' AND start<=" + end + " AND end>=" + start;
+        List<XObject> results =  sqliteManager.query(queryString);
+        //disconnect
+        sqliteManager.disconnect(true);
+
+        //access file
+        RandomAccessFile raf = new RandomAccessFile(filePath.toString(), "r");
+//        for(long result : results){
+////            System.out.println(item);
+////            raf.seek(item);
+////            System.out.println(raf.readLine());
+////        }
+
+        return results;
     }
 
 
@@ -130,13 +230,15 @@ public class GffManager {
         return position/CHUNKSIZE;
     }
     private int getChunkStart(int id){
-        if(id==0){
-            return 1;
-        }else{
-            return id*CHUNKSIZE;
-        }
+        return id*CHUNKSIZE | 1;
     }
     private int getChunkEnd(int id){
         return (id*CHUNKSIZE)+CHUNKSIZE-1;
     }
 }
+
+//stats notes
+//        ("NUM_CHROM", "Number of chromomes (or sequences)", "7")
+//        ("CHROM_LIST", "Chromomes (or sequences)", "1,2,3,4,5,6,7")
+//        ("CHR_X_NAME", "Chromosome", "I")
+//        ("CHR_X_LENGTH", "Length", "15072421")

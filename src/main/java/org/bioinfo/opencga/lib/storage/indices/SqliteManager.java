@@ -2,6 +2,7 @@ package org.bioinfo.opencga.lib.storage.indices;
 
 import org.bioinfo.opencga.lib.storage.XObject;
 
+import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -16,12 +17,13 @@ public class SqliteManager {
     private Map<String, PreparedStatement> tableInsertPreparedStatement;
     private Map<String, PreparedStatement> tableUpdatePreparedStatement;
 
-    private Map<String, LinkedHashMap<String, String>> tableColumns;
+    private Map<String, XObject> tableColumns;
 
     public SqliteManager() {
 
         tableInsertCounters = new HashMap<>();
         tableInsertPreparedStatement = new HashMap<>();
+        tableUpdatePreparedStatement = new HashMap<>();
         tableColumns = new HashMap<>();
     }
 
@@ -42,7 +44,7 @@ public class SqliteManager {
         }
     }
 
-    public void createTable(String tableName, LinkedHashMap<String, String> columns) throws SQLException {
+    public void createTable(String tableName, XObject columns) throws SQLException {
         Statement createTables = connection.createStatement();
 
         StringBuilder sbQuery = new StringBuilder();
@@ -50,7 +52,7 @@ public class SqliteManager {
 
         Set<String> names = columns.keySet();
         for (String colName : names) {
-            sbQuery.append("'" + colName + "' " + columns.get(colName) + ",");
+            sbQuery.append("'" + colName + "' " + columns.getString(colName) + ",");
         }
         sbQuery.deleteCharAt(sbQuery.length() - 1);
         sbQuery.append(")");
@@ -61,7 +63,7 @@ public class SqliteManager {
         tableColumns.put(tableName, columns);
     }
 
-    public void createIndex(String tableName, String indexName, LinkedHashMap<String,Integer> indices) throws SQLException {
+    public void createIndex(String tableName, String indexName, XObject indices) throws SQLException {
         Statement createIndex = connection.createStatement();
         StringBuilder sbQuery = new StringBuilder();
         Set<String> names = indices.keySet();
@@ -158,12 +160,89 @@ public class SqliteManager {
         tableInsertCounters.put(tableName, tableInsertCounters.get(tableName) + 1);
     }
 
-    private void insertByType(PreparedStatement ps, XObject xObject, LinkedHashMap<String, String> columns) throws SQLException {
+    public List<XObject> query(String tableName, XObject queryObject) throws SQLException {
+//        Statement query = connection.createStatement();
+//
+//        StringBuilder whereString = new StringBuilder();
+//        Set<String> columnNames = queryObject.keySet();
+//        for (String colName : columnNames) {
+//            switch (queryObject.getString("type").toUpperCase()) {
+//                case "INTEGER":
+//                case "INT":
+//                case "BIGINT":
+//                    whereString.append("'" + colName + "'="+queryObject.getString(colName)+" ");
+//                break;
+//                default:
+//                    whereString.append("'" + colName + "'='"+queryObject.getString(colName)+"' ");
+//            }
+//        }
+//        whereString.deleteCharAt(whereString.length() - 1);
+//
+//        String queryString = "SELECT * FROM " + tableName + " WHERE "+whereString;
+//        System.out.println(queryString);
+//
+//        List<XObject> results = new ArrayList<>();
+//        ResultSet rs = query.executeQuery(queryString);
+//        ResultSetMetaData rsmd = rs.getMetaData();
+//        int columnCount = rsmd.getColumnCount();
+//
+//
+//        while (rs.next()) {
+//            XObject row = new XObject();
+//            for(int i=1; i<=columnCount; i++){
+//                rsmd.getColumnName(i);
+//                row.put(rsmd.getColumnName(i),rs.getString(i));
+//            }
+//
+////            results.add(rs.getLong(4));
+//        }
+//
+        return null;
+    }
+
+    public List<XObject> query(String queryString) throws SQLException {
+        System.out.println(queryString);
+        Statement query = connection.createStatement();
+
+        List<XObject> results = new ArrayList<>();
+        ResultSet rs = query.executeQuery(queryString);
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+
+        while (rs.next()) {
+            XObject row = new XObject();
+            for(int i=1; i<=columnCount; i++){
+                rsmd.getColumnName(i);
+                row.put(rsmd.getColumnName(i),rs.getString(i));
+            }
+            results.add(row);
+        }
+        return results;
+    }
+
+    private void insertByType(PreparedStatement ps, XObject xObject, XObject columns) throws SQLException {
         String type;
         int i=1;
         Set<String> names = xObject.keySet();
         for (String name : names) {
-            type = columns.get(name);
+            type = columns.getString(name);
+            setByType(ps, i, type, xObject, name);
+            i++;
+        }
+    }
+
+    private void updateByType(PreparedStatement ps, XObject xObject, XObject newXObject, XObject columns) throws SQLException {
+        String type;
+        int i=1;
+        Set<String> names = newXObject.keySet();
+        for (String name : names) {
+            type = columns.getString(name);
+            setByType(ps, i, type, newXObject, name);
+            i++;
+        }
+        names = xObject.keySet();
+        for (String name : names) {
+            type = columns.getString(name);
             setByType(ps, i, type, xObject, name);
             i++;
         }
@@ -191,22 +270,6 @@ public class SqliteManager {
         }
     }
 
-    private void updateByType(PreparedStatement ps, XObject xObject, XObject newXObject, LinkedHashMap<String, String> columns) throws SQLException {
-        String type;
-        int i=1;
-        Set<String> names = newXObject.keySet();
-        for (String name : names) {
-            type = columns.get(name);
-            setByType(ps, i, type, newXObject, name);
-            i++;
-        }
-        names = xObject.keySet();
-        for (String name : names) {
-            type = columns.get(name);
-            setByType(ps, i, type, xObject, name);
-            i++;
-        }
-    }
 
 
     private String repeat(String s, int n) {

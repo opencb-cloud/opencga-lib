@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +19,7 @@ public class GffManagerTest {
 
 
     @Test
-    public void testQueryByOffset() throws IOException, SQLException, ClassNotFoundException {
+    public void testCreateDBIndex() throws IOException, SQLException, ClassNotFoundException {
         Path regulatoryRegionPath = Paths.get(USER_HOME, "cellbase_v3", "hsapiens", "genomic_regulatory_region");
         Path filePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff");
 
@@ -28,6 +30,34 @@ public class GffManagerTest {
 
         GffManager gffManager = new GffManager();
         gffManager.createIndex(filePath);
+    }
+
+    @Test
+    public void testQueryDBIndex() throws IOException, SQLException, ClassNotFoundException {
+        Path regulatoryRegionPath = Paths.get(USER_HOME, "cellbase_v3", "hsapiens", "genomic_regulatory_region");
+        Path filePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff");
+
+        Path dbPath = Paths.get(filePath.toString() + ".sqlite3");
+        if(!Files.exists(dbPath)){
+            testCreateDBIndex();
+        }
+
+        GffManager gffManager = new GffManager();
+
+        List<XObject> a = gffManager.queryRegion(filePath, "10", 5400800, 5411600);
+        List<XObject> b = gffManager.queryRegion(filePath, "17", 59028904, 59029348);
+
+
+//        for(long item : a){
+//            System.out.println(item);
+//            raf.seek(item);
+//            System.out.println(raf.readLine());
+//        }
+//        for(long item : b){
+//            System.out.println(item);
+//            raf.seek(item);
+//            System.out.println(raf.readLine());
+//        }
     }
 
     @Test
@@ -49,7 +79,11 @@ public class GffManagerTest {
             int value  = xo.getInt(key);
             System.out.println(value);
         }
+        String chrStr = xo.keySet().toString();
+        System.out.println(chrStr.substring(1, chrStr.length() - 1));
 
+        int a = 0;
+        System.out.println(a*10000|1);
 
     }
     @Test

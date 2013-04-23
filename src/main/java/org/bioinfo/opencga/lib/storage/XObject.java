@@ -57,7 +57,12 @@ public class XObject extends LinkedHashMap<String, Object> {
 
 	public int getInt(String field, int defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return Integer.parseInt((String)this.get(field));				
+			Object obj = this.get(field);
+			if(obj instanceof Integer) {
+				return (Integer)obj;
+			}else{
+				return Integer.parseInt(String.valueOf(obj));								
+			}
 		}
 		return defaultValue;
 	}
@@ -69,7 +74,12 @@ public class XObject extends LinkedHashMap<String, Object> {
 
     public long getLong(String field, long defaultValue) {
         if(field != null && this.containsKey(field)) {
-            return Long.parseLong((String) this.get(field));
+            Object obj = this.get(field);
+            if(obj instanceof Long) {
+                return (Long)obj;
+            }else{
+                return Long.parseLong(String.valueOf(obj));
+            }
         }
         return defaultValue;
     }
@@ -81,7 +91,12 @@ public class XObject extends LinkedHashMap<String, Object> {
 
 	public float getFloat(String field, float defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return Float.parseFloat((String) this.get(field));
+            Object obj = this.get(field);
+            if(obj instanceof Float) {
+                return (Float)obj;
+            }else{
+                return Float.parseFloat(String.valueOf(obj));
+            }
 		}
 		return defaultValue;
 	}
@@ -93,7 +108,12 @@ public class XObject extends LinkedHashMap<String, Object> {
 
 	public double getDouble(String field, double defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return Double.parseDouble((String)this.get(field));
+            Object obj = this.get(field);
+            if(obj instanceof Double) {
+                return (Double)obj;
+            }else{
+                return Double.parseDouble(String.valueOf(obj));
+            }
 		}
 		return defaultValue;
 	}
@@ -105,7 +125,12 @@ public class XObject extends LinkedHashMap<String, Object> {
 
 	public boolean getBoolean(String field, boolean defaultValue) {
 		if(field != null && this.containsKey(field)) {
-			return Boolean.parseBoolean((String)this.get(field));				
+            Object obj = this.get(field);
+            if(obj instanceof Boolean) {
+                return (Boolean)obj;
+            }else{
+                return Boolean.parseBoolean(String.valueOf(obj));
+            }
 		}
 		return defaultValue;
 	}
