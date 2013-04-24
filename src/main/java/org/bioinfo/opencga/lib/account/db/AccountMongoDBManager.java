@@ -380,6 +380,30 @@ public class AccountMongoDBManager implements AccountManager {
     }
 
     @Override
+    public void renameBucket(String accountId, String bucketId, String newBucketId, String sessionId) throws AccountManagementException {
+        //{accountId:"orange","buckets.id":"a"},{$set:{"buckets.$.name":"b"}}
+        BasicDBObject query = new BasicDBObject("accountId", accountId);
+        query.put("sessions.id", sessionId);
+        query.put("buckets.id", bucketId.toLowerCase());
+
+        BasicDBObject item = new BasicDBObject("buckets.$.name", newBucketId);
+        item.put("buckets.$.id", newBucketId.toLowerCase());
+        item.put("lastActivity", TimeUtils.getTimeMillis());
+        BasicDBObject action = new BasicDBObject("$set", item);
+
+        WriteResult result = userCollection.update(query, action);
+        if (result.getLastError().getErrorMessage() == null) {
+            if (result.getN() != 1) {
+                throw new AccountManagementException("could not update database, with this parameters");
+            }
+            logger.info("bucket name updated");
+        } else {
+            throw new AccountManagementException("could not update database");
+        }
+
+    }
+
+    @Override
     public void deleteBucket(String accountId, String bucketId, String sessionId) throws AccountManagementException {
         BasicDBObject query = new BasicDBObject("accountId", accountId);
         query.put("sessions.id", sessionId);

@@ -7,15 +7,15 @@ import org.bioinfo.opencga.lib.storage.XObject;
 public class DefaultParser {
 
 	private String fieldSeparator;
-    XObject indices;
+    XObject columns;
 
 
     public DefaultParser(XObject indices) {
         this(indices, "\t");
     }
 
-    public DefaultParser(XObject indices, String fieldSeparator) {
-        this.indices = indices;
+    public DefaultParser(XObject columns, String fieldSeparator) {
+        this.columns = columns;
         this.fieldSeparator = fieldSeparator;
     }
 
@@ -23,11 +23,11 @@ public class DefaultParser {
         XObject obj = new XObject();
 		if(record != null) {
 			String[] fields = record.split(fieldSeparator, -1);
-            Set<String> names = indices.keySet();
+            Set<String> names = columns.keySet();
             for (String colName : names) {
-                int colIndex = indices.getInt(colName);
+                int colIndex = columns.getInt(colName);
                 if(colIndex>=0){
-                    obj.put(colName,fields[indices.getInt(colName)]);
+                    obj.put(colName, fields[columns.getInt(colName)]);
                 }
             }
 		}

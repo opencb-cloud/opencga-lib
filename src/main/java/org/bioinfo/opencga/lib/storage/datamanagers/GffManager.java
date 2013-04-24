@@ -1,5 +1,6 @@
 package org.bioinfo.opencga.lib.storage.datamanagers;
 
+import com.google.gson.Gson;
 import org.bioinfo.opencga.lib.storage.XObject;
 import org.bioinfo.opencga.lib.storage.indices.DefaultParser;
 import org.bioinfo.opencga.lib.storage.indices.SqliteManager;
@@ -20,12 +21,19 @@ public class GffManager {
 
     String recordTableName;
     XObject recordColumns;
+    String recordIndexName;
+    XObject recordIndices;
+    DefaultParser recordDefaultParser;
 
     String chunkTableName;
     XObject chunkColumns;
+    String chunkIndexName;
+    XObject chunkIndices;
 
     String statsTableName;
     XObject statsColumns;
+
+    XObject gffColumns;
 
     public GffManager() {
         //record_query_fields
@@ -36,6 +44,13 @@ public class GffManager {
         recordColumns.put("end", "INT");
         recordColumns.put("offset", "BIGINT");
 
+        recordIndexName = "chromosome_start_end";
+        recordIndices = new XObject();
+        recordIndices.put("chromosome", 0);
+        recordIndices.put("start", 3);
+        recordIndices.put("end", 4);
+        recordDefaultParser = new DefaultParser(recordIndices);
+
         //chunk
         chunkTableName = "chunk";
         chunkColumns = new XObject();
@@ -45,6 +60,11 @@ public class GffManager {
         chunkColumns.put("end", "INT");
         chunkColumns.put("features_count", "INT");
 
+        chunkIndexName = "chromosome_chunk_id";
+        chunkIndices = new XObject();
+        chunkIndices.put("chromosome", 0);
+        chunkIndices.put("chunk_id", -1);
+
         //stats
         statsTableName = "global_stats";
         statsColumns = new XObject();
@@ -52,6 +72,17 @@ public class GffManager {
         statsColumns.put("title", "TEXT");
         statsColumns.put("value", "TEXT");
 
+
+        gffColumns = new XObject();
+        gffColumns.put("seqname", 0);
+        gffColumns.put("source", 1);
+        gffColumns.put("feature", 2);
+        gffColumns.put("start", 3);
+        gffColumns.put("end", 4);
+        gffColumns.put("score", 5);
+        gffColumns.put("strand", 6);
+        gffColumns.put("frame", 7);
+        gffColumns.put("group", 8);
     }
 
     public void createIndex(Path filePath) throws SQLException, IOException, ClassNotFoundException {
@@ -61,23 +92,12 @@ public class GffManager {
 
         //record_query_fields
         sqliteManager.createTable(recordTableName, recordColumns);
-        String recordIndexName = "chromosome_start_end";
-        XObject recordIndices = new XObject();
-        recordIndices.put("chromosome", 0);
-        recordIndices.put("start", 3);
-        recordIndices.put("end", 4);
-        DefaultParser offsetDefaultParser = new DefaultParser(recordIndices);
 
         //chunk
         sqliteManager.createTable(chunkTableName, chunkColumns);
-        String chunkIndexName = "chromosome_chunk_id";
-        XObject chunkIndices = new XObject();
-        chunkIndices.put("chromosome", 0);
-        chunkIndices.put("chunk_id", -1);
 
         //stats
         sqliteManager.createTable(statsTableName, statsColumns);
-
 
 
         //chunk visited hash
@@ -97,7 +117,7 @@ public class GffManager {
         int numberLines = 0;
         while ((line = br.readLine()) != null) {
             numberLines++;
-            XObject offsetXO = offsetDefaultParser.parse(line);
+            XObject offsetXO = recordDefaultParser.parse(line);
             offsetXO.put("offset", offsetPos);
             //offset table
             sqliteManager.insert(offsetXO, recordTableName);
@@ -168,15 +188,22 @@ public class GffManager {
         values.put("value", chrStr.substring(1, chrStr.length() - 1));
         sqliteManager.insert(values, statsTableName);
 
-        String chromosomePrefix = "";
         for (String key : visitedChromosomes.keySet()) {
             XObject chrXo = visitedChromosomes.get(key);
+            String chromosomePrefix = "";
 
             String chrkey = key;
             if(key.contains("chr")){
                 chromosomePrefix = "chr";
                 chrkey = key.replace("chr","");
             }
+
+            //check chromosome prefix
+            values = new XObject();
+            values.put("title","Chromsome "+chrkey+" prefix");
+            values.put("name","CHR_"+chrkey+"_PREFIX");
+            values.put("value",chromosomePrefix);
+            sqliteManager.insert(values, statsTableName);
 
             values = new XObject();
             values.put("title","Chromosome");
@@ -191,12 +218,6 @@ public class GffManager {
             sqliteManager.insert(values, statsTableName);
         }
 
-        //check chromosome prefix
-        values = new XObject();
-        values.put("title","Chromsome prefix");
-        values.put("name","CHR_PREFIX");
-        values.put("value",chromosomePrefix);
-        sqliteManager.insert(values, statsTableName);
         sqliteManager.commit(statsTableName);
 
         //disconnect
@@ -208,20 +229,24 @@ public class GffManager {
         SqliteManager sqliteManager = new SqliteManager();
         sqliteManager.connect(filePath);
 
-        String tableName = "record_query_fields";
-        String queryString = "SELECT offset FROM " + tableName + " WHERE chromosome='"+chromosome+"' AND start<=" + end + " AND end>=" + start;
-        List<XObject> results =  sqliteManager.query(queryString);
+        String tableName = "global_stats";
+        String queryString = "SELECT value FROM " + tableName + " WHERE name='CHR_"+chromosome+"_PREFIX'";
+        String chrPrefix = sqliteManager.query(queryString).get(0).getString("value");
+
+        tableName = "record_query_fields";
+        queryString = "SELECT offset FROM " + tableName + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
+        List<XObject> queryResults =  sqliteManager.query(queryString);
         //disconnect
         sqliteManager.disconnect(true);
 
         //access file
+        List<XObject> results = new ArrayList<>();
+        DefaultParser GFFParser = new DefaultParser(gffColumns);
         RandomAccessFile raf = new RandomAccessFile(filePath.toString(), "r");
-//        for(long result : results){
-////            System.out.println(item);
-////            raf.seek(item);
-////            System.out.println(raf.readLine());
-////        }
-
+        for(XObject queryResult : queryResults){
+            raf.seek(queryResult.getInt("offset"));
+            results.add(GFFParser.parse(raf.readLine()));
+        }
         return results;
     }
 
@@ -236,9 +261,3 @@ public class GffManager {
         return (id*CHUNKSIZE)+CHUNKSIZE-1;
     }
 }
-
-//stats notes
-//        ("NUM_CHROM", "Number of chromomes (or sequences)", "7")
-//        ("CHROM_LIST", "Chromomes (or sequences)", "1,2,3,4,5,6,7")
-//        ("CHR_X_NAME", "Chromosome", "I")
-//        ("CHR_X_LENGTH", "Length", "15072421")

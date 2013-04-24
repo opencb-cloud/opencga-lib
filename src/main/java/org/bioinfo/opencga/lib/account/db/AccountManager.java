@@ -54,6 +54,8 @@ public interface AccountManager {
 
     void createBucket(String accountId, Bucket bucket, String sessionId) throws AccountManagementException;
 
+    void renameBucket(String accountId, String bucketId, String newBucketId, String sessionId) throws AccountManagementException;
+
     void deleteBucket(String accountId, String bucketId, String sessionId) throws AccountManagementException;
 
     // add file to project

@@ -74,7 +74,7 @@ public class SqliteManager {
         String sQuery = "CREATE INDEX " + tableName + "_" + indexName + "_idx on " + tableName + "(" + sbQuery.toString() + ")";
         System.out.println(sQuery);
         createIndex.executeUpdate(sQuery);
-        System.out.println("indices created.");
+        System.out.println("columns created.");
 
         connection.commit();
     }

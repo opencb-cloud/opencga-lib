@@ -1,5 +1,6 @@
 package org.bioinfo.opencga.lib;
 
+import com.google.gson.Gson;
 import org.bioinfo.opencga.lib.storage.XObject;
 import org.bioinfo.opencga.lib.storage.datamanagers.GffManager;
 import org.junit.Test;
@@ -20,6 +21,7 @@ public class GffManagerTest {
 
     @Test
     public void testCreateDBIndex() throws IOException, SQLException, ClassNotFoundException {
+        long t1 = System.currentTimeMillis();
         Path regulatoryRegionPath = Paths.get(USER_HOME, "cellbase_v3", "hsapiens", "genomic_regulatory_region");
         Path filePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff");
 
@@ -30,6 +32,7 @@ public class GffManagerTest {
 
         GffManager gffManager = new GffManager();
         gffManager.createIndex(filePath);
+        System.out.println("t1 " + (System.currentTimeMillis() - t1) + "ms");
     }
 
     @Test
@@ -45,19 +48,9 @@ public class GffManagerTest {
         GffManager gffManager = new GffManager();
 
         List<XObject> a = gffManager.queryRegion(filePath, "10", 5400800, 5411600);
-        List<XObject> b = gffManager.queryRegion(filePath, "17", 59028904, 59029348);
-
-
-//        for(long item : a){
-//            System.out.println(item);
-//            raf.seek(item);
-//            System.out.println(raf.readLine());
-//        }
-//        for(long item : b){
-//            System.out.println(item);
-//            raf.seek(item);
-//            System.out.println(raf.readLine());
-//        }
+        for(XObject r :a){
+            System.out.println(r);
+        }
     }
 
     @Test
@@ -65,9 +58,20 @@ public class GffManagerTest {
         StringBuilder sbQuery = new StringBuilder();
 
         XObject xo = new XObject();
+        XObject xo2 = new XObject("a",4);
+        xo2.put("a", "1");
+
         xo.put("a", "1");
         xo.put("f","23");
         xo.put("b", "2");
+        xo.put("other", xo2);
+
+
+
+        System.out.println(xo);
+        System.out.println("-------------");
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(xo));
 
         Set<String> set = xo.keySet();
         for (String s : set) {
@@ -76,14 +80,17 @@ public class GffManagerTest {
 
         for (Map.Entry<String, Object> entry : xo.entrySet()) {
             String key = entry.getKey();
-            int value  = xo.getInt(key);
-            System.out.println(value);
+            xo.get(key);
+            System.out.println(xo.get(key));
         }
         String chrStr = xo.keySet().toString();
         System.out.println(chrStr.substring(1, chrStr.length() - 1));
 
         int a = 0;
         System.out.println(a*10000|1);
+
+
+
 
     }
     @Test
