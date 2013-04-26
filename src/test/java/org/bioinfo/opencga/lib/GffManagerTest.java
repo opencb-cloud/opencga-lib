@@ -47,10 +47,10 @@ public class GffManagerTest {
 
         GffManager gffManager = new GffManager();
 
-        List<XObject> a = gffManager.queryRegion(filePath, "10", 5400800, 5411600);
-        for(XObject r :a){
-            System.out.println(r);
-        }
+        List<XObject> a = gffManager.queryRegion(filePath, "10", 1400800, 9411600);
+//        for(XObject r :a){
+//            System.out.println(r);
+//        }
     }
 
     @Test

@@ -10,13 +10,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.google.gson.*;
-import net.sf.samtools.BAMIndexer;
-import net.sf.samtools.CigarElement;
-import net.sf.samtools.CigarOperator;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
+import net.sf.samtools.*;
 import net.sf.samtools.SAMRecord.SAMTagAndValue;
-import net.sf.samtools.SAMRecordIterator;
 
 import org.apache.log4j.Logger;
 import org.bioinfo.cellbase.lib.common.Region;
@@ -94,23 +89,38 @@ public class BamManager {
         return null;
     }
 
-    public List<XObject> queryRegion(Path filePath, String chromosome, int start, int end) throws SQLException, IOException, ClassNotFoundException {
+    public String queryRegion(Path filePath, String regionStr, Map<String, List<String>> params) throws SQLException, IOException, ClassNotFoundException {
 
+        Region region = Region.parseRegion(regionStr);
+        String chromosome = region.getChromosome();
+        int start = region.getStart();
+        int end = region.getEnd();
+
+        //Query .db
         SqliteManager sqliteManager = new SqliteManager();
         sqliteManager.connect(filePath);
 
-        String tableName = "global_stats";
-        String queryString = "SELECT value FROM " + tableName + " WHERE name='CHR_PREFIX'";
-        String chrPrefix = sqliteManager.query(queryString).get(0).getString("value");
+//        String tableName = "global_stats";
+//        String queryString = "SELECT value FROM " + tableName + " WHERE name='CHR_PREFIX'";
+//        String chrPrefix = sqliteManager.query(queryString).get(0).getString("value");
+        String chrPrefix = "";
 
-        tableName = "record_query_fields";
-        queryString = "SELECT * FROM " + tableName + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
+        long tq = System.currentTimeMillis();
+        String tableName = "record_query_fields";
+        String queryString = "SELECT id, start FROM " + tableName + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
         List<XObject> queryResults =  sqliteManager.query(queryString);
-        //disconnect
         sqliteManager.disconnect(true);
+        System.out.println("Query time " + (System.currentTimeMillis() - tq) + "ms");
 
-//        queryResults
+        HashMap<String, XObject> queryResultsMap = new HashMap<>();
+        for(XObject r : queryResults){
+            queryResultsMap.put(r.getString("id")+r.getString("start"),r);
+        }
+        int queryResultsLength = queryResults.size();
 
+        System.out.println("queryResultsLength " + queryResultsLength);
+
+        //Query Picard
         File inputBamFile = new File(filePath.toString());
         File inputBamIndexFile = checkBamIndex(filePath);
         if (inputBamIndexFile == null) {
@@ -119,29 +129,321 @@ public class BamManager {
         }
         SAMFileReader inputSam = new SAMFileReader(inputBamFile, inputBamIndexFile);
         System.out.println("hasIndex " + inputSam.hasIndex());
-        SAMRecordIterator recordsFound = inputSam.query(chromosome, start, end, false);
+        SAMRecordIterator recordsRegion = inputSam.query(chromosome, start, end, false);
 
+
+        //Filter .db and picard lists
         long t1 = System.currentTimeMillis();
-//        List<XObject> records = new ArrayList<>();
+        System.out.println(queryResults.size() +" ");
 
-        for (XObject queryResult: queryResults){
-            String name = queryResult.getString("id");
-
+        List<SAMRecord> records = new ArrayList<>();
+        while (recordsRegion.hasNext()) {
+            SAMRecord record = recordsRegion.next();
+            if(queryResultsMap.get(record.getReadName()+record.getAlignmentStart())!=null){
+                records.add(record);
+                queryResultsLength--;
+            }
+            if(queryResultsLength<0){
+                break;
+            }
         }
+        System.out.println(records.size() +" ");
+        System.out.println("Filter time " + (System.currentTimeMillis() - t1) + "ms");
 
-        while (recordsFound.hasNext()) {
-            SAMRecord record = recordsFound.next();
-//            queryResults.
-//            if(){
-//
-//            }
-//            System.out.println(record.getReferenceIndex());
-//            records.add(record);
-        }
-        System.out.println("t1 " + (System.currentTimeMillis() - t1) + "ms");
-        return queryResults;
+        return processRecords(records, params, chromosome, start, end);
     }
 
+    public String processRecords(List<SAMRecord> records, Map<String, List<String>> params, String chr, int start, int end) throws IOException {
+        XObject res = new XObject();
+        List<XObject> reads = new ArrayList<XObject>();
+        XObject coverage = new XObject();
+        res.put("reads", reads);
+        res.put("coverage", coverage);
+
+        if (params.get("species") != null) {
+            species = params.get("species").get(0);
+        }
+        Boolean viewAsPairs = false;
+        if (params.get("view_as_pairs") != null) {
+            viewAsPairs = Boolean.parseBoolean(params.get("view_as_pairs").get(0));
+        }
+        Boolean showSoftclipping = false;
+        if (params.get("show_softclipping") != null) {
+            showSoftclipping = Boolean.parseBoolean(params.get("show_softclipping").get(0));
+        }
+        Boolean histogram = false;
+        if (params.get("histogram") != null) {
+            histogram = Boolean.parseBoolean(params.get("histogram").get(0));
+        }
+        int interval = 200000;
+        if (params.get("interval") != null) {
+            interval = Integer.parseInt(params.get("interval").get(0));
+        }
+
+
+        /**
+         * GET GENOME SEQUENCE
+         */
+        String forwardSequence = getSequence(chr, start, end);
+        String reverseSequence = revcomp(forwardSequence);
+        // System.out.println(forwardSequence);
+        // System.out.println(reverseSequence);
+        /**
+         * COVERAGE
+         */
+        short[] coverageArray = new short[end - start + 1];
+        short[] aBaseArray = new short[end - start + 1];
+        short[] cBaseArray = new short[end - start + 1];
+        short[] gBaseArray = new short[end - start + 1];
+        short[] tBaseArray = new short[end - start + 1];
+
+        if (viewAsPairs) {
+            Collections.sort(records, new Comparator<SAMRecord>() {
+                @Override
+                public int compare(SAMRecord o1, SAMRecord o2) {
+                    if (o1 != null && o1.getReadName() != null && o2 != null) {
+                        return o1.getReadName().compareTo(o2.getReadName());
+                    }
+                    return -1;
+                }
+            });
+        }
+
+/////////////////////////
+        /////////////////////////////
+        ////////////////////////////
+        StringBuilder attrString;
+        String readStr;
+        for (SAMRecord record : records) {
+//            logger.info(record.getReadName());
+
+            Boolean condition = (!record.getReadUnmappedFlag());
+            if (condition) {
+                attrString = new StringBuilder();
+                attrString.append("{");
+                for (SAMTagAndValue attr : record.getAttributes()) {
+                    attrString.append("\"" + attr.tag + "\":\""
+                            + attr.value.toString().replace("\\", "\\\\").replace("\"", "\\\"") + "\",");
+                }
+                // Remove last comma
+                if (attrString.length() > 1) {
+                    attrString.replace(attrString.length() - 1, attrString.length(), "");
+                }
+                attrString.append("}");
+
+                readStr = record.getReadString();
+
+                /***************************************************************************/
+                if (true) {// TEST
+                    // if(record.getReadNegativeStrandFlag()
+                    // ){
+                    // if(record.getReadName().equals("SRR081241.8998181") ||
+                    // record.getReadName().equals("SRR081241.645807")
+                    // ){
+
+                    // System.out.println("#############################################################################################################################################");
+                    // System.out.println("#############################################################################################################################################");
+                    // System.out.println("Unclipped Start:"+(record.getUnclippedStart()-start));
+                    // System.out.println("Unclipped End:"+(record.getUnclippedEnd()-start+1));
+                    // System.out.println(record.getCigarString()+"   Alig Length:"+(record.getAlignmentEnd()-record.getAlignmentStart()+1)+"   Unclipped length:"+(record.getUnclippedEnd()-record.getUnclippedStart()+1));
+
+                    String refStr = forwardSequence.substring((500 + record.getUnclippedStart() - start),
+                            (500 + record.getUnclippedEnd() - start + 1));
+
+                    // System.out.println("refe:"+refStr+"  refe.length:"+refStr.length());
+                    // System.out.println("read:"+readStr+"  readStr.length:"+readStr.length()+"   getReadLength:"+record.getReadLength());
+                    StringBuilder diffStr = new StringBuilder();
+
+                    int index = 0;
+                    int indexRef = 0;
+                    // System.out.println(gson.toJson(record.getCigar().getCigarElements()));
+
+//                    logger.info("checking cigar: " + record.getCigar().toString());
+                    for (int i = 0; i < record.getCigar().getCigarElements().size(); i++) {
+                        CigarElement cigarEl = record.getCigar().getCigarElement(i);
+                        CigarOperator cigarOp = cigarEl.getOperator();
+                        int cigarLen = cigarEl.getLength();
+//                        logger.info(cigarOp + " found" + " index:" + index + " indexRef:" + indexRef + " cigarLen:" + cigarLen);
+
+                        if (cigarOp == CigarOperator.M || cigarOp == CigarOperator.EQ || cigarOp == CigarOperator.X) {
+                            String subref = refStr.substring(indexRef, indexRef + cigarLen);
+                            String subread = readStr.substring(index, index + cigarLen);
+                            diffStr.append(getDiff(subref, subread));
+                            index = index + cigarLen;
+                            indexRef = indexRef + cigarLen;
+                        }
+                        if (cigarOp == CigarOperator.I) {
+                            diffStr.append(readStr.substring(index, index + cigarLen).toLowerCase());
+                            index = index + cigarLen;
+                            // TODO save insertions
+                        }
+                        if (cigarOp == CigarOperator.D) {
+                            for (int bi = 0; bi < cigarLen; bi++) {
+                                diffStr.append("d");
+                            }
+                            indexRef = indexRef + cigarLen;
+                        }
+                        if (cigarOp == CigarOperator.N) {
+                            for (int bi = 0; bi < cigarLen; bi++) {
+                                diffStr.append("n");
+                            }
+                            indexRef = indexRef + cigarLen;
+                        }
+                        if (cigarOp == CigarOperator.S) {
+                            if (showSoftclipping) {
+                                String subread = readStr.substring(index, index + cigarLen);
+                                diffStr.append(subread);
+                                index = index + cigarLen;
+                                indexRef = indexRef + cigarLen;
+                            } else {
+                                for (int bi = 0; bi < cigarLen; bi++) {
+                                    diffStr.append(" ");
+                                }
+                                index = index + cigarLen;
+                                indexRef = indexRef + cigarLen;
+                            }
+                        }
+                        if (cigarOp == CigarOperator.H) {
+                            for (int bi = 0; bi < cigarLen; bi++) {
+                                diffStr.append("h");
+                            }
+                            indexRef = indexRef + cigarLen;
+                        }
+                        if (cigarOp == CigarOperator.P) {
+                            for (int bi = 0; bi < cigarLen; bi++) {
+                                diffStr.append("p");
+                            }
+                            indexRef = indexRef + cigarLen;
+                        }
+                        // if(cigarOp == CigarOperator.EQ) {
+                        //
+                        // }
+                        // if(cigarOp == CigarOperator.X) {
+                        //
+                        // }
+                    }
+                    // System.out.println("diff:"+diffStr);
+                    String empty = diffStr.toString().replace(" ", "");
+                    // System.out.println("diff:"+diffStr);
+                    /*************************************************************************/
+
+                    XObject read = new XObject();
+                    read.put("start",record.getAlignmentStart());
+                    read.put("end",record.getAlignmentEnd());
+                    read.put("unclippedStart",record.getUnclippedStart());
+                    read.put("unclippedEnd",record.getUnclippedEnd());
+                    read.put("chromosome",chr);
+                    read.put("flags",record.getFlags());
+
+                    read.put("cigar",record.getCigarString());
+                    read.put("name",record.getReadName());
+                    read.put("blocks",record.getAlignmentBlocks().get(0).getLength());
+                    read.put("attributes",attrString.toString());
+
+                    read.put("referenceName",record.getReferenceName());
+                    read.put("referenceName", "");
+                    // the " char must be scaped for
+                    read.put("baseQualityString",record.getBaseQualityString().replace("\\", "\\\\").replace("\"", "\\\""));
+
+//                    reads.put("readGroupId",record.getReadGroup().getId());
+//                    reads.put("readGroupPlatform",record.getReadGroup().getPlatform());
+//                    reads.put("readGroupLibrary",record.getReadGroup().getLibrary());
+
+                    read.put("header",record.getHeader().toString());
+                    read.put("readLength",record.getReadLength());
+                    read.put("mappingQuality",record.getMappingQuality());
+
+                    read.put("mateReferenceName",record.getMateReferenceName());
+                    read.put("mateAlignmentStart",record.getMateAlignmentStart());
+                    read.put("inferredInsertSize",record.getInferredInsertSize());
+
+                    if (!empty.isEmpty()) {
+                        read.put("diff", diffStr);
+                    }
+
+                    read.put("read",readStr);
+                    reads.add(read);
+
+//                    reads.put("",);
+
+                }// IF TEST BY READ NAME
+
+
+//                logger.info("Creating coverage array");
+                // TODO cigar check for correct coverage calculation and
+                int refgenomeOffset = 0;
+                int readOffset = 0;
+                int offset = record.getAlignmentStart() - start;
+                for (int i = 0; i < record.getCigar().getCigarElements().size(); i++) {
+                    if (record.getCigar().getCigarElement(i).getOperator() == CigarOperator.M) {
+//                        logger.info("start: "+start);
+//                        logger.info("r a start: "+record.getAlignmentStart());
+//                        logger.info("refgenomeOffset: "+refgenomeOffset);
+//                        logger.info("r c lenght: "+record.getCigar().getCigarElement(i).getLength());
+//                        logger.info(record.getAlignmentStart() - start + refgenomeOffset);
+//                        logger.info("readStr: "+readStr.length());
+//                        logger.info("readStr: "+readStr.length());
+
+                        for (int j = record.getAlignmentStart() - start + refgenomeOffset, cont = 0; cont < record.getCigar().getCigarElement(i).getLength(); j++, cont++) {
+                            if (j >= 0 && j < coverageArray.length) {
+                                coverageArray[j]++;
+//   /*check unused*/             readPos = j - offset;
+                                // if(record.getAlignmentStart() == 32877696){
+                                // System.out.println(i-(record.getAlignmentStart()-start));
+                                // System.out.println(record.getAlignmentStart()-start);
+                                // }
+                                // System.out.print(" - "+(cont+readOffset));
+                                // System.out.print("|"+readStr.length());
+                                int total = cont + readOffset;
+                                // if(total < readStr.length()){
+//                                logger.info(readStr.length());
+                                switch (readStr.charAt(total)) {
+                                    case 'A':
+                                        aBaseArray[j]++;
+                                        break;
+                                    case 'C':
+                                        cBaseArray[j]++;
+                                        break;
+                                    case 'G':
+                                        gBaseArray[j]++;
+                                        break;
+                                    case 'T':
+                                        tBaseArray[j]++;
+                                        break;
+                                }
+                                // }
+                            }
+                        }
+                    }
+                    if (record.getCigar().getCigarElement(i).getOperator() == CigarOperator.I) {
+                        refgenomeOffset++;
+                        readOffset += record.getCigar().getCigarElement(i).getLength() - 1;
+                    } else if (record.getCigar().getCigarElement(i).getOperator() == CigarOperator.D) {
+                        refgenomeOffset += record.getCigar().getCigarElement(i).getLength() - 1;
+                        readOffset++;
+                    } else if (record.getCigar().getCigarElement(i).getOperator() == CigarOperator.H) {
+                        //Ignored Hardclipping and do not update offset pointers
+                    } else {
+                        refgenomeOffset += record.getCigar().getCigarElement(i).getLength() - 1;
+                        readOffset += record.getCigar().getCigarElement(i).getLength() - 1;
+                    }
+//                    if (record.getCigar().getCigarElement(i).getOperator() != CigarOperator.I) {
+//                    } else if(){
+//                    }
+                }
+//                logger.info("coverage array created");
+            }
+//            logger.info(" ");
+        }
+
+        coverage.put("all", coverageArray);
+        coverage.put("a", aBaseArray);
+        coverage.put("c", cBaseArray);
+        coverage.put("g", gBaseArray);
+        coverage.put("t", tBaseArray);
+
+        return res.toString();
+    }
 
 
     public String getByRegion(Path fullFilePath, String regionStr, Map<String, List<String>> params) throws IOException {

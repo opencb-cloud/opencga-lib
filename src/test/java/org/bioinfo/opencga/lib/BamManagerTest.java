@@ -58,7 +58,7 @@ public class BamManagerTest {
     @Test
     public void testQueryDBIndex() throws IOException, SQLException, ClassNotFoundException {
 
-        Path indexerPath = Paths.get(USER_HOME, "appl", "opencga-lib", "opencga-cloud","analysis","indexer");
+        Path indexerPath = Paths.get(USER_HOME,"indexer");
         Path filePath = indexerPath.resolve("HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
 
         Path dbPath = Paths.get(filePath.toString() + ".db");
@@ -66,10 +66,14 @@ public class BamManagerTest {
 
         if(Files.exists(dbPath)){
             BamManager bamManager = new BamManager();
-            List<XObject> a = bamManager.queryRegion(filePath, "20", 32870000, 32870001);
-            for(XObject r :a){
-                System.out.println(r.getString("id"));
-            }
+            Map<String, List<String>> params = new HashMap<String, List<String>>();
+            params.put("species", Arrays.asList("hsa"));
+            System.out.println(bamManager.queryRegion(filePath, "20:2975000-3279999", params));
+
+//            List<XObject> a = bamManager.queryRegion(filePath, "20", 32870000, 32880001);
+//            for(XObject r :a){
+//                System.out.println(r.getString("id"));
+//            }
 
         }else{
             System.out.println("no db file found");

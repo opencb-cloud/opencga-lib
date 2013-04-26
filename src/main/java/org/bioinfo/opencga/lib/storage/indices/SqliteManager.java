@@ -211,18 +211,26 @@ public class SqliteManager {
         Statement query = connection.createStatement();
 
         List<XObject> results = new ArrayList<>();
+        long tq = System.currentTimeMillis();
         ResultSet rs = query.executeQuery(queryString);
+        System.out.println("SQLITE MANAGER Query time " + (System.currentTimeMillis() - tq) + "ms");
+
+        long tx0 = System.currentTimeMillis();
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
+        System.out.println("SQLITE MANAGER Getting Metadata " + (System.currentTimeMillis() - tx0) + "ms");
 
+        long tx = System.currentTimeMillis();
+        XObject row;
         while (rs.next()) {
-            XObject row = new XObject();
-            for(int i=1; i<=columnCount; i++){
-                rsmd.getColumnName(i);
-                row.put(rsmd.getColumnName(i),rs.getString(i));
+            row = new XObject();
+            for(int i=1; i<=columnCount; i++) {
+                row.put(rsmd.getColumnName(i), rs.getString(i));
             }
             results.add(row);
         }
+        System.out.println("SQLITE MANAGER Parse to XObject " + (System.currentTimeMillis() - tx) + "ms");
+        System.out.println("results size: "+results.size());
         return results;
     }
 
