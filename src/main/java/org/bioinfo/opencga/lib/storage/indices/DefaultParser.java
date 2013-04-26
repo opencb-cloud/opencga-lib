@@ -26,7 +26,7 @@ public class DefaultParser {
             Set<String> names = columns.keySet();
             for (String colName : names) {
                 int colIndex = columns.getInt(colName);
-                if(colIndex>=0){
+                if(colIndex >= 0 && columns.getInt(colName) < fields.length){
                     obj.put(colName, fields[columns.getInt(colName)]);
                 }
             }
