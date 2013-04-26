@@ -1,15 +1,12 @@
 package org.bioinfo.opencga.lib.storage.datamanagers.bam;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.*;
 
 import com.google.gson.*;
@@ -30,6 +27,9 @@ import com.mongodb.BasicDBObject;
 import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.opencga.lib.analysis.AnalysisExecutionException;
 import org.bioinfo.opencga.lib.analysis.SgeManager;
+import org.bioinfo.opencga.lib.storage.XObject;
+import org.bioinfo.opencga.lib.storage.indices.DefaultParser;
+import org.bioinfo.opencga.lib.storage.indices.SqliteManager;
 import org.bioinfo.opencga.lib.utils.Config;
 import org.bioinfo.opencga.lib.utils.IOUtils;
 
@@ -43,8 +43,23 @@ public class BamManager {
 
     private Properties analysisProperties = Config.getAnalysisProperties();
 
+    XObject bamDbColumns;
+
     public BamManager() throws IOException {
         gson = new Gson();
+
+        bamDbColumns = new XObject();
+        bamDbColumns.put("chromosome", 0);
+        bamDbColumns.put("strand", 1);
+        bamDbColumns.put("start", 2);
+        bamDbColumns.put("end", 3);
+        bamDbColumns.put("flag", 4);
+        bamDbColumns.put("mapping_quality", 5);
+        bamDbColumns.put("num_errors", 6);
+        bamDbColumns.put("num_indels", 7);
+        bamDbColumns.put("indels_length", 8);
+        bamDbColumns.put("template_length", 9);
+        bamDbColumns.put("id", 10);
     }
 
     public static String createBamIndex(Path inputBamPath) throws IOException, InterruptedException,
@@ -61,11 +76,15 @@ public class BamManager {
     }
 
     public File checkBamIndex(Path inputBamPath) {
+        //name.bam
+        //name.bam.bai
         Path inputBamIndexFile = Paths.get(inputBamPath + ".bai");
         logger.info(inputBamIndexFile.toString());
         if (Files.exists(inputBamIndexFile)) {
             return inputBamIndexFile.toFile();
         }
+        //name.bam
+        //name.bai
         String fileName = IOUtils.removeExtension(inputBamPath.toString());
         inputBamIndexFile = Paths.get(fileName + ".bai");
         logger.info(inputBamIndexFile.toString());
@@ -74,6 +93,56 @@ public class BamManager {
         }
         return null;
     }
+
+    public List<XObject> queryRegion(Path filePath, String chromosome, int start, int end) throws SQLException, IOException, ClassNotFoundException {
+
+        SqliteManager sqliteManager = new SqliteManager();
+        sqliteManager.connect(filePath);
+
+        String tableName = "global_stats";
+        String queryString = "SELECT value FROM " + tableName + " WHERE name='CHR_PREFIX'";
+        String chrPrefix = sqliteManager.query(queryString).get(0).getString("value");
+
+        tableName = "record_query_fields";
+        queryString = "SELECT * FROM " + tableName + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
+        List<XObject> queryResults =  sqliteManager.query(queryString);
+        //disconnect
+        sqliteManager.disconnect(true);
+
+//        queryResults
+
+        File inputBamFile = new File(filePath.toString());
+        File inputBamIndexFile = checkBamIndex(filePath);
+        if (inputBamIndexFile == null) {
+            logger.info("BamManager: " + "creating bam index for: " + filePath);
+            return null;
+        }
+        SAMFileReader inputSam = new SAMFileReader(inputBamFile, inputBamIndexFile);
+        System.out.println("hasIndex " + inputSam.hasIndex());
+        SAMRecordIterator recordsFound = inputSam.query(chromosome, start, end, false);
+
+        long t1 = System.currentTimeMillis();
+//        List<XObject> records = new ArrayList<>();
+
+        for (XObject queryResult: queryResults){
+            String name = queryResult.getString("id");
+
+        }
+
+        while (recordsFound.hasNext()) {
+            SAMRecord record = recordsFound.next();
+//            queryResults.
+//            if(){
+//
+//            }
+//            System.out.println(record.getReferenceIndex());
+//            records.add(record);
+        }
+        System.out.println("t1 " + (System.currentTimeMillis() - t1) + "ms");
+        return queryResults;
+    }
+
+
 
     public String getByRegion(Path fullFilePath, String regionStr, Map<String, List<String>> params) throws IOException {
         long totalTime = System.currentTimeMillis();

@@ -25,7 +25,7 @@ public class GffManagerTest {
         Path regulatoryRegionPath = Paths.get(USER_HOME, "cellbase_v3", "hsapiens", "genomic_regulatory_region");
         Path filePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff");
 
-        Path dbPath = Paths.get(filePath.toString() + ".sqlite3");
+        Path dbPath = Paths.get(filePath.toString() + ".db");
         if(Files.exists(dbPath)){
             Files.delete(dbPath);
         }
@@ -40,7 +40,7 @@ public class GffManagerTest {
         Path regulatoryRegionPath = Paths.get(USER_HOME, "cellbase_v3", "hsapiens", "genomic_regulatory_region");
         Path filePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff");
 
-        Path dbPath = Paths.get(filePath.toString() + ".sqlite3");
+        Path dbPath = Paths.get(filePath.toString() + ".db");
         if(!Files.exists(dbPath)){
             testCreateDBIndex();
         }
@@ -86,8 +86,8 @@ public class GffManagerTest {
         String chrStr = xo.keySet().toString();
         System.out.println(chrStr.substring(1, chrStr.length() - 1));
 
-        int a = 0;
-        System.out.println(a*10000|1);
+        int id = 0;
+        System.out.println((id==0) ? 1 : id*2000);
 
 
 

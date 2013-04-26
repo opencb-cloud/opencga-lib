@@ -250,12 +250,11 @@ public class GffManager {
         return results;
     }
 
-
     private int getChunkId(int position){
         return position/CHUNKSIZE;
     }
     private int getChunkStart(int id){
-        return id*CHUNKSIZE | 1;
+        return  (id==0) ? 1 : id*CHUNKSIZE;
     }
     private int getChunkEnd(int id){
         return (id*CHUNKSIZE)+CHUNKSIZE-1;

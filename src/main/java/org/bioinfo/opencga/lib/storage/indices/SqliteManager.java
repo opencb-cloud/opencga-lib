@@ -28,7 +28,7 @@ public class SqliteManager {
     }
 
     public void connect(Path filePath) throws ClassNotFoundException, SQLException {
-        Path dbPath = Paths.get(filePath.toString() + ".sqlite3");
+        Path dbPath = Paths.get(filePath.toString() + ".db");
 
         Class.forName("org.sqlite.JDBC");
         connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
@@ -38,6 +38,12 @@ public class SqliteManager {
     public void disconnect(boolean commit) throws SQLException {
         if (connection != null) {
             if (commit) {
+                for(String tableName :tableInsertPreparedStatement.keySet()){
+                    tableInsertPreparedStatement.get(tableName).executeBatch();
+                }
+                for(String tableName :tableUpdatePreparedStatement.keySet()){
+                    tableUpdatePreparedStatement.get(tableName).executeBatch();
+                }
                 connection.commit();
             }
             connection.close();

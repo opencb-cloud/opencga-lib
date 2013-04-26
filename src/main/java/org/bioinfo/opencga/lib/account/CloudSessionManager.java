@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -611,4 +612,12 @@ public class CloudSessionManager {
             throw new AccountManagementException("parameter '" + name + "' is null.");
         }
     }
+
+    private void checkRegion(String regionStr, String name) throws AccountManagementException {
+        if (Pattern.matches("^([a-zA-Z0-9])+:([0-9])+-([0-9])+$", regionStr)) {//chr:start-end
+            throw new AccountManagementException("region '" + name + "' is not valid");
+        }
+    }
+
+
 }
