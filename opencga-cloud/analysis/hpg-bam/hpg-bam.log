@@ -1,0 +1,2 @@
+Thu Apr 25 11:08:16 2013	INFO	lib/bioinfo-libs/bioformats/bam/bam_stats.c [349] in bam_stats_consumer(): 500000 reads processed !
+Thu Apr 25 11:08:21 2013	INFO	lib/bioinfo-libs/bioformats/bam/bam_stats.c [349] in bam_stats_consumer(): 1000000 reads processed !

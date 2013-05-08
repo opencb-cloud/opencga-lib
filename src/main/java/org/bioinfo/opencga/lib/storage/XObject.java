@@ -141,9 +141,9 @@ public class XObject extends LinkedHashMap<String, Object> {
         return new Gson().toJson(this);
     }
 
-    @Override
-    public String toString() {
-        return this.toJsonByGson();
-    }
+//    @Override
+//    public String toString() {
+//        return this.toJsonByGson();
+//    }
 
 }

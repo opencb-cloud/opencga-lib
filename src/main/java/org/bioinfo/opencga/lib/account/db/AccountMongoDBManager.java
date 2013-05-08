@@ -518,7 +518,7 @@ public class AccountMongoDBManager implements AccountManager {
                 }
             }
             if (objectItem != null) {
-                logger.info(objectItem.getId());
+//                logger.info(objectItem.getId());
                 return objectItem;
             } else {
                 throw new AccountManagementException("data not found");

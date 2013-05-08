@@ -88,7 +88,7 @@ public class GffManager {
     public void createIndex(Path filePath) throws SQLException, IOException, ClassNotFoundException {
 
         SqliteManager sqliteManager = new SqliteManager();
-        sqliteManager.connect(filePath);
+        sqliteManager.connect(filePath, false);
 
         //record_query_fields
         sqliteManager.createTable(recordTableName, recordColumns);
@@ -227,7 +227,7 @@ public class GffManager {
     public List<XObject> queryRegion(Path filePath, String chromosome, int start, int end) throws SQLException, IOException, ClassNotFoundException {
 
         SqliteManager sqliteManager = new SqliteManager();
-        sqliteManager.connect(filePath);
+        sqliteManager.connect(filePath, true);
 
         String tableName = "global_stats";
         String queryString = "SELECT value FROM " + tableName + " WHERE name='CHR_"+chromosome+"_PREFIX'";

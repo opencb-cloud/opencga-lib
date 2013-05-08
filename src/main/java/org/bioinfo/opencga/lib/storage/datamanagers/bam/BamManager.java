@@ -57,10 +57,15 @@ public class BamManager {
         bamDbColumns.put("id", 10);
     }
 
-    public static String createBamIndex(Path inputBamPath) throws IOException, InterruptedException,
+    public static String createIndex(Path inputBamPath) throws IOException, InterruptedException,
             AnalysisExecutionException {
+
+        if(Files.exists(Paths.get(inputBamPath + ".db"))){
+            Files.delete(Paths.get(inputBamPath + ".db"));
+        }
+
         String jobId = StringUtils.randomString(8);
-        String commandLine = indexerManagerScript + " -t bam " + inputBamPath;
+        String commandLine = indexerManagerScript + " -t bam -i " + inputBamPath;
         try {
             SgeManager.queueJob("indexer", jobId, 0, inputBamPath.getParent().toString(), commandLine);
         } catch (Exception e) {
@@ -70,7 +75,7 @@ public class BamManager {
         return "indexer_" + jobId;
     }
 
-    public File checkBamIndex(Path inputBamPath) {
+    private static File checkBamIndex(Path inputBamPath) {
         //name.bam
         //name.bam.bai
         Path inputBamIndexFile = Paths.get(inputBamPath + ".bai");
@@ -89,6 +94,11 @@ public class BamManager {
         return null;
     }
 
+
+    public static boolean checkIndex(Path filePath){
+        return checkBamIndex(filePath)!=null && Files.exists(Paths.get(filePath + ".db"));
+    }
+
     public String queryRegion(Path filePath, String regionStr, Map<String, List<String>> params) throws SQLException, IOException, ClassNotFoundException {
 
         Region region = Region.parseRegion(regionStr);
@@ -98,15 +108,66 @@ public class BamManager {
 
         //Query .db
         SqliteManager sqliteManager = new SqliteManager();
-        sqliteManager.connect(filePath);
+        sqliteManager.connect(filePath, true);
+
+        Boolean histogram = false;
+        if (params.get("histogram") != null) {
+            histogram = Boolean.parseBoolean(params.get("histogram").get(0));
+        }
+
+        if(histogram){
+            long tq = System.currentTimeMillis();
+            String tableName = "chunk";
+            String chrPrefix = "";
+            String queryString = "SELECT * FROM " + tableName + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
+            List<XObject> queryResults =  sqliteManager.query(queryString);
+            sqliteManager.disconnect(true);
+            int queryResultSize = queryResults.size();
+
+            if(queryResultSize > 500){
+                List<XObject> sumList = new ArrayList<>();
+                int sumChunkSize = queryResultSize / 500;
+                int i = 0, j = 0;
+                XObject item = null;
+                int features_count = 0;
+                for (XObject result : queryResults){
+                    features_count += result.getInt("features_count");
+                    if(i == 0){
+                        item = new XObject("chromosome",result.getString("chromosome"));
+                        item.put("start",result.getString("start"));
+                    }else if (i == sumChunkSize-1 || j == queryResultSize-1){
+                        if(params.get("log").get(0) != null) {
+                            item.put("features_count", (features_count > 0) ? Math.log(features_count) : 0);
+                        }else {
+                            item.put("features_count", features_count);
+                        }
+                        item.put("end", result.getString("end"));
+                        sumList.add(item);
+                        i=-1;
+                        features_count = 0;
+                    }
+                    j++;
+                    i++;
+                }
+
+                return gson.toJson(sumList);
+//                for (int i=0; i<sumChunkSize;i++){
+//                    sumList.add(new XObject())
+//                }
+
+            }
+
+            System.out.println("Query time " + (System.currentTimeMillis() - tq) + "ms");
+            return gson.toJson(queryResults);
+        }
 
 //        String tableName = "global_stats";
 //        String queryString = "SELECT value FROM " + tableName + " WHERE name='CHR_PREFIX'";
 //        String chrPrefix = sqliteManager.query(queryString).get(0).getString("value");
-        String chrPrefix = "";
 
         long tq = System.currentTimeMillis();
         String tableName = "record_query_fields";
+        String chrPrefix = "";
         String queryString = "SELECT id, start FROM " + tableName + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
         List<XObject> queryResults =  sqliteManager.query(queryString);
         sqliteManager.disconnect(true);
@@ -128,6 +189,7 @@ public class BamManager {
             return null;
         }
         SAMFileReader inputSam = new SAMFileReader(inputBamFile, inputBamIndexFile);
+        inputSam.setValidationStringency(SAMFileReader.ValidationStringency.valueOf("LENIENT"));
         System.out.println("hasIndex " + inputSam.hasIndex());
         SAMRecordIterator recordsRegion = inputSam.query(chromosome, start, end, false);
 
@@ -171,10 +233,6 @@ public class BamManager {
         if (params.get("show_softclipping") != null) {
             showSoftclipping = Boolean.parseBoolean(params.get("show_softclipping").get(0));
         }
-        Boolean histogram = false;
-        if (params.get("histogram") != null) {
-            histogram = Boolean.parseBoolean(params.get("histogram").get(0));
-        }
         int interval = 200000;
         if (params.get("interval") != null) {
             interval = Integer.parseInt(params.get("interval").get(0));
@@ -212,24 +270,17 @@ public class BamManager {
 /////////////////////////
         /////////////////////////////
         ////////////////////////////
-        StringBuilder attrString;
+        XObject attributes;
         String readStr;
         for (SAMRecord record : records) {
 //            logger.info(record.getReadName());
 
             Boolean condition = (!record.getReadUnmappedFlag());
             if (condition) {
-                attrString = new StringBuilder();
-                attrString.append("{");
+                attributes = new XObject();
                 for (SAMTagAndValue attr : record.getAttributes()) {
-                    attrString.append("\"" + attr.tag + "\":\""
-                            + attr.value.toString().replace("\\", "\\\\").replace("\"", "\\\"") + "\",");
+                    attributes.put(attr.tag, attr.value.toString().replace("\\", "\\\\").replace("\"", "\\\""));
                 }
-                // Remove last comma
-                if (attrString.length() > 1) {
-                    attrString.replace(attrString.length() - 1, attrString.length(), "");
-                }
-                attrString.append("}");
 
                 readStr = record.getReadString();
 
@@ -338,7 +389,7 @@ public class BamManager {
                     read.put("cigar",record.getCigarString());
                     read.put("name",record.getReadName());
                     read.put("blocks",record.getAlignmentBlocks().get(0).getLength());
-                    read.put("attributes",attrString.toString());
+                    read.put("attributes",attributes);
 
                     read.put("referenceName",record.getReferenceName());
                     read.put("referenceName", "");
@@ -383,6 +434,8 @@ public class BamManager {
 //                        logger.info(record.getAlignmentStart() - start + refgenomeOffset);
 //                        logger.info("readStr: "+readStr.length());
 //                        logger.info("readStr: "+readStr.length());
+
+
 
                         for (int j = record.getAlignmentStart() - start + refgenomeOffset, cont = 0; cont < record.getCigar().getCigarElement(i).getLength(); j++, cont++) {
                             if (j >= 0 && j < coverageArray.length) {
@@ -442,10 +495,10 @@ public class BamManager {
         coverage.put("g", gBaseArray);
         coverage.put("t", tBaseArray);
 
-        return res.toString();
+        return gson.toJson(res);
     }
 
-
+    @Deprecated
     public String getByRegion(Path fullFilePath, String regionStr, Map<String, List<String>> params) throws IOException {
         long totalTime = System.currentTimeMillis();
 
@@ -481,7 +534,7 @@ public class BamManager {
 
         if (inputBamIndexFile == null) {
             logger.info("BamManager: " + "creating bam index for: " + fullFilePath);
-            // createBamIndex(inputBamFile, inputBamIndexFile);
+            // createIndex(inputBamFile, inputBamIndexFile);
             return "{error:'no index found'}";
         }
 

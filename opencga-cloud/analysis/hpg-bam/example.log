@@ -1,0 +1,314 @@
+INFO http-bio-8080-exec-11 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - mongodb connect
+INFO http-bio-8080-exec-44 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - mongodb connect
+INFO http-bio-8080-exec-44 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-44 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-37 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-37 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-27 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-27 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 3275000 end: 3279999
+INFO http-bio-8080-exec-27 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-43 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-43 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 3275000 end: 3279999
+INFO http-bio-8080-exec-43 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-29 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-29 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-6 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-6 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-27 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-27 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 3275000 end: 3279999
+INFO http-bio-8080-exec-27 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-31 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-31 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-20 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-20 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 2275000 end: 2279999
+INFO http-bio-8080-exec-20 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-20 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-20 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-35 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-35 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-43 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-43 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 2275000 end: 2279999
+INFO http-bio-8080-exec-43 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-18 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-18 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-68 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-68 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 2275000 end: 2279999
+INFO http-bio-8080-exec-68 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - mongodb connect
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@c214a3c
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 43
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@198f16d2
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-83 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - createJob(), job created in database
+INFO http-bio-8080-exec-83 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 44
+INFO http-bio-8080-exec-83 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - job commandLine updated
+INFO http-bio-8080-exec-83 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: selected queue for tool 'pathiways': normal.q
+INFO http-bio-8080-exec-83 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: Enqueuing job: qsub -N pathiways_5LtBp9NWj3B5FN9 -o /httpd/bioinfo/opencga/accounts/patricia2/buckets/sge_out.log -e /httpd/bioinfo/opencga/accounts/patricia2/buckets/sge_err.log -q normal.q -b y /httpd/bioinfo/opencga/analysis/pathiways/bin/pathiwaysANALYSIS.py --platform HGU133Plus2 --exp-design /httpd/bioinfo/opencga/analysis/pathiways/examples/ED_GSE4107.txt --control CONTROL --exp-name Example1a --norm-matrix /httpd/bioinfo/opencga/analysis/pathiways/examples/GSE4107.txt --cel-compressed-file false --pathways hsa03320 --disease CRC --outdir /httpd/bioinfo/opencga/accounts/patricia2/buckets --summ per90
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@65cde15b
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 44
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@44e8d6a0
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 44
+INFO http-bio-8080-exec-66 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@1b3620f8
+INFO http-bio-8080-exec-66 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 44
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@599aa525
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 44
+INFO http-bio-8080-exec-75 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@49fc6e95
+INFO http-bio-8080-exec-75 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 44
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - createJob(), job created in database
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 45
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - job commandLine updated
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: selected queue for tool 'pathiways': normal.q
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: Enqueuing job: qsub -N pathiways_HJlneH7S2ORZF4x -o /httpd/bioinfo/opencga/accounts/patricia2/buckets/sge_out.log -e /httpd/bioinfo/opencga/accounts/patricia2/buckets/sge_err.log -q normal.q -b y /httpd/bioinfo/opencga/analysis/pathiways/bin/pathiwaysANALYSIS.py --platform HGU133Plus2 --exp-design /httpd/bioinfo/opencga/analysis/pathiways/examples/ED_GSE4107.txt --control CONTROL --exp-name Example1b --norm-matrix /httpd/bioinfo/opencga/analysis/pathiways/examples/GSE4107.txt --cel-compressed-file false --pathways hsa04012 --disease CRC --outdir /httpd/bioinfo/opencga/accounts/patricia2/buckets --summ per90
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@64b204f4
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 45
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - createJob(), job created in database
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 46
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - job commandLine updated
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: selected queue for tool 'pathiways': normal.q
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: Enqueuing job: qsub -N pathiways_WWtbJybBGaJ3KZR -o /httpd/bioinfo/opencga/accounts/patricia2/buckets/sge_out.log -e /httpd/bioinfo/opencga/accounts/patricia2/buckets/sge_err.log -q normal.q -b y /httpd/bioinfo/opencga/analysis/pathiways/bin/pathiwaysANALYSIS.py --platform HGU133Plus2 --exp-design /httpd/bioinfo/opencga/analysis/pathiways/examples/ED_GSE4107.txt --control CONTROL --exp-name Example1g --norm-matrix /httpd/bioinfo/opencga/analysis/pathiways/examples/GSE4107.txt --cel-compressed-file false --pathways hsa03320,hsa04012,hsa04020,hsa04060,hsa04062,hsa04080,hsa04115,hsa04150,hsa04210,hsa04310,hsa04330,hsa04340,hsa04370,hsa04512,hsa04514,hsa04530,hsa04540,hsa04612,hsa04620,hsa04630,hsa04660,hsa04662,hsa04664,hsa04910,hsa04912,hsa04916,hsa04920 --disease CRC --outdir /httpd/bioinfo/opencga/accounts/patricia2/buckets --summ per90
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - createJob(), job created in database
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 47
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - job commandLine updated
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: selected queue for tool 'pathiways': normal.q
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: Enqueuing job: qsub -N pathiways_L2ULNamXhGhwbhq -o /httpd/bioinfo/opencga/accounts/patricia2/projects/default/L2ULNamXhGhwbhq/sge_out.log -e /httpd/bioinfo/opencga/accounts/patricia2/projects/default/L2ULNamXhGhwbhq/sge_err.log -q normal.q -b y /httpd/bioinfo/opencga/analysis/pathiways/bin/pathiwaysANALYSIS.py --platform HGU133Plus2 --exp-design /httpd/bioinfo/opencga/analysis/pathiways/examples/ED_GSE4107.txt --control CONTROL --exp-name Example1aaa --norm-matrix /httpd/bioinfo/opencga/analysis/pathiways/examples/GSE4107.txt --cel-compressed-file false --pathways hsa03320 --disease CRC --outdir /httpd/bioinfo/opencga/accounts/patricia2/projects/default/L2ULNamXhGhwbhq --summ per90
+INFO http-bio-8080-exec-86 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@60ef8e0
+INFO http-bio-8080-exec-86 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 47
+INFO http-bio-8080-exec-71 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@6b46af44
+INFO http-bio-8080-exec-71 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-58 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@69459364
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@61554c5c
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@164f4b95
+ERROR http-bio-8080-exec-92 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: could not get account info with this parameters
+ERROR http-bio-8080-exec-79 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: could not get account info with this parameters
+ERROR http-bio-8080-exec-76 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: could not get account info with this parameters
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE7664_RAW.tar
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE7664_RAW.tar
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE7664_RAW.tar
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE16334_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE16334_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE16334_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE1334_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE1334_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE1334_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE4142_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE4142_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE4142_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE1692_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE1692_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE1692_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE7664_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE7664_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE7664_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE4142_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE4142_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE4142_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - ED_GSE36669.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/ED_GSE36669.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - ED_GSE36669.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE36669_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE36669_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE36669_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE7664_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE7664_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE7664_NORM.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - false
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - GSE1692_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.CloudSessionManager - /httpd/bioinfo/opencga/accounts/patricia2/buckets/testing/GSE1692_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - GSE1692_ED.txt
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - all data objects deleted
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-59 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - data object created
+INFO http-bio-8080-exec-51 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@17754be3
+INFO http-bio-8080-exec-51 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 47
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - createJob(), job created in database
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 0
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - job commandLine updated
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: selected queue for tool 'pathiways': normal.q
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: Enqueuing job: qsub -N pathiways_0axGY9U8YmhmPYQ -o /httpd/bioinfo/opencga/accounts/anonymous_AIMAcEMhAd/projects/default/0axGY9U8YmhmPYQ/sge_out.log -e /httpd/bioinfo/opencga/accounts/anonymous_AIMAcEMhAd/projects/default/0axGY9U8YmhmPYQ/sge_err.log -q normal.q -b y /httpd/bioinfo/opencga/analysis/pathiways/bin/pathiwaysANALYSIS.py --exp-design /httpd/bioinfo/opencga/analysis/pathiways/examples/ED_GSE4107.txt --platform HGU133Plus2 --control CONTROL --exp-name Example1 --norm-matrix /httpd/bioinfo/opencga/analysis/pathiways/examples/GSE4107.txt --cel-compressed-file false --pathways hsa03320,hsa04012,hsa04020,hsa04060,hsa04062,hsa04080,hsa04115,hsa04150,hsa04210,hsa04310,hsa04330,hsa04340,hsa04370,hsa04512,hsa04514,hsa04530,hsa04540,hsa04612,hsa04620,hsa04630,hsa04660,hsa04662,hsa04664,hsa04910,hsa04912,hsa04916,hsa04920 --disease CRC --outdir /httpd/bioinfo/opencga/accounts/anonymous_AIMAcEMhAd/projects/default/0axGY9U8YmhmPYQ --summ per90
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@51d402be
+INFO http-bio-8080-exec-61 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 47
+INFO http-bio-8080-exec-57 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@1f90abfa
+INFO http-bio-8080-exec-57 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 47
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@3069fed8
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - createJob(), job created in database
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 48
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - job commandLine updated
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: selected queue for tool 'pathiways': normal.q
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: Enqueuing job: qsub -N pathiways_0g2cyGVUbST4fcs -o /httpd/bioinfo/opencga/accounts/patricia2/projects/default/0g2cyGVUbST4fcs/sge_out.log -e /httpd/bioinfo/opencga/accounts/patricia2/projects/default/0g2cyGVUbST4fcs/sge_err.log -q normal.q -b y /httpd/bioinfo/opencga/analysis/pathiways/bin/pathiwaysANALYSIS.py --platform HGU133Plus2 --exp-design /httpd/bioinfo/opencga/analysis/pathiways/examples/ED_GSE4107.txt --control CONTROL --exp-name Example1 --norm-matrix /httpd/bioinfo/opencga/analysis/pathiways/examples/GSE4107.txt --cel-compressed-file true --pathways hsa03320 --disease CRC --outdir /httpd/bioinfo/opencga/accounts/patricia2/projects/default/0g2cyGVUbST4fcs --summ per90
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - createJob(), job created in database
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 49
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - job commandLine updated
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: selected queue for tool 'pathiways': normal.q
+INFO http-bio-8080-exec-88 org.bioinfo.opencga.lib.analysis.SgeManager - SgeManager: Enqueuing job: qsub -N pathiways_iyUmlxsmq40RmUA -o /httpd/bioinfo/opencga/accounts/patricia2/projects/default/iyUmlxsmq40RmUA/sge_out.log -e /httpd/bioinfo/opencga/accounts/patricia2/projects/default/iyUmlxsmq40RmUA/sge_err.log -q normal.q -b y /httpd/bioinfo/opencga/analysis/pathiways/bin/pathiwaysANALYSIS.py --platform HGU133Plus2 --exp-design /httpd/bioinfo/opencga/analysis/pathiways/examples/ED_GSE4107.txt --control CONTROL --exp-name testing --norm-matrix /httpd/bioinfo/opencga/analysis/pathiways/examples/GSE4107.txt --cel-compressed-file false --pathways hsa03320,hsa04012,hsa04020,hsa04060,hsa04062,hsa04080,hsa04115,hsa04150,hsa04210,hsa04310,hsa04330,hsa04340,hsa04370,hsa04512,hsa04514,hsa04530,hsa04540,hsa04612,hsa04620,hsa04630,hsa04660,hsa04662,hsa04664,hsa04910,hsa04912,hsa04916,hsa04920 --disease CRC --outdir /httpd/bioinfo/opencga/accounts/patricia2/projects/default/iyUmlxsmq40RmUA --summ per90
+INFO http-bio-8080-exec-74 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@141b1a1a
+INFO http-bio-8080-exec-74 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 48
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@4bdd5a63
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 46
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@6cb6872a
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 43
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@5ddd86a8
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-74 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@49d716d4
+INFO http-bio-8080-exec-74 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 0
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@2400100c
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-83 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@675972d8
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@1d6234d6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-55 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-78 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@782dadc8
+INFO http-bio-8080-exec-56 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@51bb29aa
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@56ac81d1
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-64 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@4dec304d
+INFO http-bio-8080-exec-58 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@44b84fe4
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@208524fb
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-72 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@65d1c07d
+INFO http-bio-8080-exec-86 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@22838002
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@67491501
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-82 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-91 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@76fb004f
+INFO http-bio-8080-exec-81 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@23312ff2
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@7242caea
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-76 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@17d9ff0
+INFO http-bio-8080-exec-75 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@105223a5
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@177a85a1
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-63 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 6
+INFO http-bio-8080-exec-66 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@244ae2ec
+ERROR http-bio-8080-exec-82 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: could not get account info with this parameters
+ERROR http-bio-8080-exec-63 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: could not get account info with this parameters
+ERROR http-bio-8080-exec-60 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: could not get account info with this parameters
+ERROR http-bio-8080-exec-92 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: logout
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@78f8b461
+INFO http-bio-8080-exec-77 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - getJobIndexFromProject: 49
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - org.bioinfo.opencga.lib.account.beans.Job@679d4e20
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+INFO http-bio-8080-exec-50 org.bioinfo.opencga.lib.account.io.JobFileIOUtils - PAKO::length: 9
+ERROR http-bio-8080-exec-48 org.bioinfo.opencga.ws.AccountWSServer - org.bioinfo.opencga.lib.account.db.AccountManagementException: account not found
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 13 start: 32885000 end: 32894999
+INFO http-bio-8080-exec-48 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 32875000 end: 32879999
+INFO http-bio-8080-exec-84 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-85 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-85 org.bioinfo.opencga.lib.storage.feature.BamManager - chr: 20 start: 32875000 end: 32879999
+INFO http-bio-8080-exec-85 org.bioinfo.opencga.lib.storage.feature.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai
+INFO http-bio-8080-exec-51 org.bioinfo.opencga.lib.account.db.AccountMongoDBManager - HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam
+INFO http-bio-8080-exec-51 org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager - /httpd/bioinfo/opencga/accounts/fsalavert/buckets/default/HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam.bai

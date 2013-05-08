@@ -1,18 +1,15 @@
 package org.bioinfo.opencga.lib;
 
-import org.bioinfo.cellbase.lib.common.GenericFeature;
 import org.junit.Test;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 public class SeekTest {
     String USER_HOME = System.getProperty("user.home");

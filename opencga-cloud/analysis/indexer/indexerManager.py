@@ -4,6 +4,9 @@ import sys, os, argparse, commands
 
 opencgaHome = "";
 samtoolsCmd = "";
+hpgbamCmd = "";
+hpgvarvcfCmd = "";
+hpgvarvcfConfig = "";
 tabixCmd = "";
 tabixbgzipCmd = "";
 
@@ -12,11 +15,17 @@ def checkGcsaHome():
     try:
         global opencgaHome
         global samtoolsCmd
+        global hpgbamCmd
+        global hpgvarvcfCmd
+        global hpgvarvcfConfig
         global tabixCmd
         global tabixbgzipCmd
         #opencgaHome = os.environ["GCSA_HOME"]
         opencgaHome = "/httpd/bioinfo/opencga"
         samtoolsCmd = opencgaHome +"/analysis/samtools/samtools"
+        hpgbamCmd = opencgaHome +"/analysis/hpg-bam/hpg-bam"
+        hpgvarvcfCmd = opencgaHome +"/analysis/hpg-variant/bin/hpg-var-vcf"
+        hpgvarvcfConfig = opencgaHome +"/analysis/hpg-variant/bin"
         tabixCmd = opencgaHome +"/analysis/tabix/tabix"
         tabixbgzipCmd = opencgaHome +"/analysis/tabix/bgzip"
         #print(tabixCmd)
@@ -51,6 +60,9 @@ def indexBAM(inputBAM, outdir):
     print("indexing bam file...")
     sortBam(inputBAM, outdir)
     execute(samtoolsCmd + " index " + inputBAM)
+
+    #/hpg-bam stats -b HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam -o ./ --db
+    execute(hpgbamCmd + " stats " + " -b "+ inputBAM + " -o " + outdir + " --db" )
     print("index complete!")
 
 def sortBam(inputBAM, outdir):
@@ -69,15 +81,14 @@ def indexVCF(inputVCF, outdir):
     execute(tabixbgzipCmd + " -c " + inputVCF + ".sort.vcf" + " > " + inputVCF + ".gz")
     execute(tabixCmd + " -p vcf " + inputVCF + ".gz")
     execute("rm -rf "+ inputVCF + ".sort.vcf")
+    execute(hpgvarvcfCmd + " stats " + " -v "+ inputVCF + " --outdir " + outdir + " --db --config "+hpgvarvcfConfig )
     print("index complete!")
-    print("todo")
-
 
 
 
 parser = argparse.ArgumentParser(prog="indexer")
-parser.add_argument("--input", required=True, help="input file to be indexed")
-parser.add_argument("-t","--type", choices=("bam","vcf"))
+parser.add_argument("-i","--input", required=True, help="input file to be indexed")
+parser.add_argument("-t","--type", required=True, choices=("bam","vcf"))
 parser.add_argument("-c","--compressed", action="count", help="input file is gzipped")
 parser.add_argument("--outdir", help="output directory")
 args = parser.parse_args()

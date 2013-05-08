@@ -1,6 +1,7 @@
 package org.bioinfo.opencga.lib.storage.indices;
 
 import org.bioinfo.opencga.lib.storage.XObject;
+import org.sqlite.SQLiteConfig;
 
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
@@ -27,11 +28,22 @@ public class SqliteManager {
         tableColumns = new HashMap<>();
     }
 
-    public void connect(Path filePath) throws ClassNotFoundException, SQLException {
+    public void connect(Path filePath, boolean readOnly) throws ClassNotFoundException, SQLException {
         Path dbPath = Paths.get(filePath.toString() + ".db");
 
-        Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
+        SQLiteConfig config = new SQLiteConfig();
+//        config.setLockingMode(SQLiteConfig.LockingMode.NORMAL);
+        if(readOnly){
+            config.setReadOnly(true);
+        }
+
+        try {
+            Class.forName("org.sqlite.JDBC").newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            System.out.println("Could not find sqlite JDBC");
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString(),config.toProperties());
         connection.setAutoCommit(false);//Set false to perform commits manually and increase performance on insertion
     }
 

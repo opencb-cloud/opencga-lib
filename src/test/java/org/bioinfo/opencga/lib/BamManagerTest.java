@@ -35,26 +35,26 @@ public class BamManagerTest {
 
     String USER_HOME = System.getProperty("user.home");
 //	@Test
-	public void test() throws IOManagementException {
-		if(new File("/home/examples").exists()){
-			try {
-				BamManager bu = new BamManager();
-				Path file = Paths.get("home","examples","bam","HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
-				Map<String, List<String>> params = new HashMap<String, List<String>> ();
-//				view_as_pairs
-//				show_softclipping
-				params.put("show_softclipping", Arrays.asList("true"));
-				String result = bu.getByRegion(file,"20:32875000-32879999", params );
-//			String result = bu.getByRegion("/home/examples","out_sorted", "1", 90604245, 93604245);
-//			System.out.println(result);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}else{
-			System.out.println("/home/examples not found, skip.");
-		}
-	}
+//	public void test() throws IOManagementException {
+//		if(new File("/home/examples").exists()){
+//			try {
+//				BamManager bu = new BamManager();
+//				Path file = Paths.get("home","examples","bam","HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam");
+//				Map<String, List<String>> params = new HashMap<String, List<String>> ();
+////				view_as_pairs
+////				show_softclipping
+//				params.put("show_softclipping", Arrays.asList("true"));
+//				String result = bu.getByRegion(file,"20:32875000-32879999", params );
+////			String result = bu.getByRegion("/home/examples","out_sorted", "1", 90604245, 93604245);
+////			System.out.println(result);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}else{
+//			System.out.println("/home/examples not found, skip.");
+//		}
+//	}
     @Test
     public void testQueryDBIndex() throws IOException, SQLException, ClassNotFoundException {
 
@@ -68,7 +68,8 @@ public class BamManagerTest {
             BamManager bamManager = new BamManager();
             Map<String, List<String>> params = new HashMap<String, List<String>>();
             params.put("species", Arrays.asList("hsa"));
-            System.out.println(bamManager.queryRegion(filePath, "20:2975000-3279999", params));
+            params.put("histogram", Arrays.asList("true"));
+            System.out.println(bamManager.queryRegion(filePath, "20:28725000-37009999", params));
 
 //            List<XObject> a = bamManager.queryRegion(filePath, "20", 32870000, 32880001);
 //            for(XObject r :a){
@@ -81,16 +82,4 @@ public class BamManagerTest {
 
     }
 
-    @Test
-    public void test2() throws IOException, SQLException, ClassNotFoundException {
-        SqliteManager sqliteManager = new SqliteManager();
-        Path indexerPath = Paths.get(USER_HOME, "appl", "opencga-lib", "opencga-cloud","analysis","indexer");
-        Path filePath = indexerPath.resolve("aaaaaa");
-        Files.delete(Paths.get(filePath.toString()+".db"));
-        sqliteManager.connect(filePath);
-        sqliteManager.createTable("a", new XObject("a", "TEXT"));
-        sqliteManager.insert(new XObject("a", "1"), "a");
-        sqliteManager.insert(new XObject("a", "1"), "a");
-        sqliteManager.disconnect(true);
-    }
 }

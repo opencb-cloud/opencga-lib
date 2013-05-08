@@ -3,17 +3,9 @@ package org.bioinfo.opencga.lib.account;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -38,7 +30,6 @@ import org.bioinfo.opencga.lib.utils.Config;
 import org.bioinfo.opencga.lib.utils.IOUtils;
 import org.bioinfo.opencga.lib.utils.StringUtils;
 import org.dom4j.DocumentException;
-import sun.nio.cs.StreamEncoder;
 
 public class CloudSessionManager {
 
@@ -232,14 +223,31 @@ public class CloudSessionManager {
 
     public String createObjectToBucket(String accountId, String bucketId, Path objectId, ObjectItem objectItem,
                                        InputStream fileIs, boolean parents, String sessionId) throws AccountManagementException,
-            IOManagementException, IOException, AnalysisExecutionException {
+            IOManagementException, IOException, AnalysisExecutionException, InterruptedException {
         checkParameter(bucketId, "bucket");
         checkParameter(accountId, "accountId");
         checkParameter(sessionId, "sessionId");
         checkParameter(objectId.toString(), "objectId");
         checkObj(objectItem, "objectItem");
 
+        objectItem.setStatus("ready");
         objectId = ioManager.createObject(accountId, bucketId, objectId, objectItem, fileIs, parents);
+
+        //Check files to create index if needed
+        String sgeJobName;
+        switch (objectItem.getFileFormat()) {
+            case "bam":
+                sgeJobName = BamManager.createIndex(getObjectPath(accountId, bucketId, objectId));
+                objectItem.setStatus(sgeJobName);
+                break;
+            case "vcf":
+                sgeJobName = VcfManager.createIndex(getObjectPath(accountId, bucketId, objectId));
+                objectItem.setStatus(sgeJobName);
+                break;
+            default:
+                break;
+        }
+
 
         // set id and name to the itemObject
         objectItem.setId(objectId.toString());
@@ -283,14 +291,13 @@ public class CloudSessionManager {
         final Path bucketPath = ioManager.getBucketPath(accountId, bucketId);
         final List<ObjectItem> newObjects = new ArrayList<ObjectItem>();
 
-        Files.walkFileTree(bucketPath, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(bucketPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS) ,Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                logger.info(Files.isSymbolicLink(file));
-                if (!Files.isHidden(file) && !Files.isDirectory(file)) {
+                String fileName = file.getFileName().toString();
+                if (!Files.isHidden(file) && !fileName.equals("sge_err.log") && !fileName.equals("sge_out.log") && !Files.isDirectory(file)) {
                     Path ojectId = bucketPath.relativize(file);
-                    logger.info(ojectId);
-                    logger.info(file.toString());
+//                    logger.info(ojectId);
                     ObjectItem objectItem = null;
                     try {//find the current object if already exists
                         objectItem = accountManager.getObjectFromBucket(accountId, bucketId, ojectId, sessionId);
@@ -325,9 +332,9 @@ public class CloudSessionManager {
                 }
                 if (!dir.equals(bucketPath)) {//dont add bucketId folder itself
                     Path ojectId = bucketPath.relativize(dir);
-                    logger.info(bucketId);
-                    logger.info(ojectId);
-                    logger.info(dir.toString());
+//                    logger.info(bucketId);
+//                    logger.info(ojectId);
+//                    logger.info(dir.toString());
 
                     ObjectItem objectItem = null;
                     try {//find the current object if already exists
@@ -402,15 +409,36 @@ public class CloudSessionManager {
                 break;
             case "vcf":
                 VcfManager vcfManager = new VcfManager();
-                result = vcfManager.getByRegion(fullFilePath, regionStr, params);
+                result = vcfManager.queryRegion(fullFilePath, regionStr, params);
                 break;
         }
         return result;
     }
 
-    public String indexFileObject(String accountId, String bucketId, Path objectId, String sessionId) throws Exception {
-        String sgeJobName = BamManager.createBamIndex(getObjectPath(accountId, bucketId, objectId));
-        accountManager.setObjectStatus(accountId, bucketId, objectId, sgeJobName, sessionId);
+    public String indexFileObject(String accountId, String bucketId, Path objectId, boolean force, String sessionId) throws Exception {
+        ObjectItem objectItem =  accountManager.getObjectFromBucket(accountId, bucketId, objectId, sessionId);
+        if(objectItem.getStatus().contains("indexer")){
+            return "indexing...";
+        }
+        String sgeJobName = "ready";
+        boolean indexReady;
+        switch (objectItem.getFileFormat()) {
+            case "bam":
+                indexReady = BamManager.checkIndex(ioManager.getObjectPath(accountId, bucketId, objectId));
+                if(force || !indexReady){
+                    sgeJobName = BamManager.createIndex(getObjectPath(accountId, bucketId, objectId));
+                    accountManager.setObjectStatus(accountId, bucketId, objectId, sgeJobName, sessionId);
+                }
+                break;
+            case "vcf":
+                indexReady = VcfManager.checkIndex(ioManager.getObjectPath(accountId, bucketId, objectId));
+                if(force || !indexReady){
+                    sgeJobName = VcfManager.createIndex(getObjectPath(accountId, bucketId, objectId));
+                    accountManager.setObjectStatus(accountId, bucketId, objectId, sgeJobName, sessionId);
+                }
+                break;
+        }
+
         return sgeJobName;
     }
 
