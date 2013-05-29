@@ -24,15 +24,16 @@ public class ObjectItem {
 
 	public static String UPLOADING = "uploading";
 	public static String UPLOADED = "uploaded";
-	
+	public static String READY = "ready";
+
 
 	public ObjectItem(String id, String fileName, String fileType) {
-		this(id, fileName, fileType, "", "", 0, ObjectItem.UPLOADING, "", TimeUtils.getTime(), "", "", "", new ArrayList<Acl>());
+		this(id, fileName, fileType, "", "", 0, ObjectItem.READY, "", TimeUtils.getTime(), "", "", "", new ArrayList<Acl>());
 	}
 	
 	public ObjectItem(String id, String fileName, String fileType, String fileFormat, String fileBioType,
 			long diskUsage, String date, String responsible, String organization, String description, List<Acl> acl) {
-		this(id, fileName, fileType, fileFormat, fileBioType, diskUsage, ObjectItem.UPLOADING, date, TimeUtils.getTime(), responsible, organization, description, acl);
+		this(id, fileName, fileType, fileFormat, fileBioType, diskUsage, ObjectItem.READY, date, TimeUtils.getTime(), responsible, organization, description, acl);
 	}
 
 

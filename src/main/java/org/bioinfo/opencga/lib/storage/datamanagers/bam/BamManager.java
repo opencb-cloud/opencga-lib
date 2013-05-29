@@ -30,7 +30,8 @@ import org.bioinfo.opencga.lib.utils.IOUtils;
 
 public class BamManager {
 
-    private String species = "hsa";
+    private String species = "";
+    private String cellbasehost = "";
     private Gson gson;
     private static Logger logger = Logger.getLogger(BamManager.class);
     private static Path indexerManagerScript = Paths.get(Config.getGcsaHome(),
@@ -57,15 +58,22 @@ public class BamManager {
         bamDbColumns.put("id", 10);
     }
 
+    private static Path getMetaDir(Path file){
+        String inputName = file.getFileName().toString();
+        return file.getParent().resolve(".meta_"+inputName);
+    }
+
     public static String createIndex(Path inputBamPath) throws IOException, InterruptedException,
             AnalysisExecutionException {
 
-        if(Files.exists(Paths.get(inputBamPath + ".db"))){
-            Files.delete(Paths.get(inputBamPath + ".db"));
+        Path metaDir = getMetaDir(inputBamPath);
+
+        if(Files.exists(metaDir)){
+            IOUtils.deleteDirectory(metaDir);
         }
 
         String jobId = StringUtils.randomString(8);
-        String commandLine = indexerManagerScript + " -t bam -i " + inputBamPath;
+        String commandLine = indexerManagerScript + " -t bam -i " + inputBamPath + " --outdir "+metaDir;
         try {
             SgeManager.queueJob("indexer", jobId, 0, inputBamPath.getParent().toString(), commandLine);
         } catch (Exception e) {
@@ -76,17 +84,19 @@ public class BamManager {
     }
 
     private static File checkBamIndex(Path inputBamPath) {
+        Path metaDir = getMetaDir(inputBamPath);
+        String fileName = inputBamPath.getFileName().toString();
         //name.bam
         //name.bam.bai
-        Path inputBamIndexFile = Paths.get(inputBamPath + ".bai");
+        Path inputBamIndexFile = metaDir.resolve(Paths.get(fileName + ".bai"));
         logger.info(inputBamIndexFile.toString());
         if (Files.exists(inputBamIndexFile)) {
             return inputBamIndexFile.toFile();
         }
         //name.bam
         //name.bai
-        String fileName = IOUtils.removeExtension(inputBamPath.toString());
-        inputBamIndexFile = Paths.get(fileName + ".bai");
+        fileName = IOUtils.removeExtension(fileName);
+        inputBamIndexFile = metaDir.resolve(Paths.get(fileName + ".bai"));
         logger.info(inputBamIndexFile.toString());
         if (Files.exists(inputBamIndexFile)) {
             return inputBamIndexFile.toFile();
@@ -96,10 +106,28 @@ public class BamManager {
 
 
     public static boolean checkIndex(Path filePath){
-        return checkBamIndex(filePath)!=null && Files.exists(Paths.get(filePath + ".db"));
+        Path metaDir = getMetaDir(filePath);
+        String fileName = filePath.getFileName().toString();
+        return checkBamIndex(filePath)!=null && Files.exists(metaDir.resolve(Paths.get(fileName + ".db")));
     }
 
     public String queryRegion(Path filePath, String regionStr, Map<String, List<String>> params) throws SQLException, IOException, ClassNotFoundException {
+
+        if (params.get("cellbasehost") != null) {
+            cellbasehost = params.get("cellbasehost").get(0);
+            if(cellbasehost.equals("")){
+                return "{'error':'cellbase host not valid'}";
+            }
+        }
+        if (params.get("species") != null) {
+            species = params.get("species").get(0);
+            if(species.equals("")){
+                return "{'error':'species not valid'}";
+            }
+        }
+
+        Path metaDir = getMetaDir(filePath);
+        String fileName = filePath.getFileName().toString();
 
         Region region = Region.parseRegion(regionStr);
         String chromosome = region.getChromosome();
@@ -108,11 +136,19 @@ public class BamManager {
 
         //Query .db
         SqliteManager sqliteManager = new SqliteManager();
-        sqliteManager.connect(filePath, true);
+        sqliteManager.connect(metaDir.resolve(Paths.get(fileName)), true);
 
         Boolean histogram = false;
         if (params.get("histogram") != null) {
             histogram = Boolean.parseBoolean(params.get("histogram").get(0));
+        }
+        Boolean histogramLogarithm = false;
+        if (params.get("histogramLogarithm") != null) {
+            histogramLogarithm = Boolean.parseBoolean(params.get("histogramLogarithm").get(0));
+        }
+        int histogramMax = 500;
+        if (params.get("histogramMax") != null) {
+            histogramMax  = Integer.getInteger(params.get("histogramMax").get(0),500);
         }
 
         if(histogram){
@@ -124,9 +160,9 @@ public class BamManager {
             sqliteManager.disconnect(true);
             int queryResultSize = queryResults.size();
 
-            if(queryResultSize > 500){
+            if(queryResultSize > histogramMax){
                 List<XObject> sumList = new ArrayList<>();
-                int sumChunkSize = queryResultSize / 500;
+                int sumChunkSize = queryResultSize / histogramMax;
                 int i = 0, j = 0;
                 XObject item = null;
                 int features_count = 0;
@@ -136,7 +172,7 @@ public class BamManager {
                         item = new XObject("chromosome",result.getString("chromosome"));
                         item.put("start",result.getString("start"));
                     }else if (i == sumChunkSize-1 || j == queryResultSize-1){
-                        if(params.get("log").get(0) != null) {
+                        if(histogramLogarithm) {
                             item.put("features_count", (features_count > 0) ? Math.log(features_count) : 0);
                         }else {
                             item.put("features_count", features_count);
@@ -151,10 +187,13 @@ public class BamManager {
                 }
 
                 return gson.toJson(sumList);
-//                for (int i=0; i<sumChunkSize;i++){
-//                    sumList.add(new XObject())
-//                }
+            }
 
+            if(histogramLogarithm) {
+                for (XObject result : queryResults){
+                    int features_count = result.getInt("features_count");
+                    result.put("features_count",(features_count > 0) ? Math.log(features_count) : 0);
+                }
             }
 
             System.out.println("Query time " + (System.currentTimeMillis() - tq) + "ms");
@@ -222,9 +261,6 @@ public class BamManager {
         res.put("reads", reads);
         res.put("coverage", coverage);
 
-        if (params.get("species") != null) {
-            species = params.get("species").get(0);
-        }
         Boolean viewAsPairs = false;
         if (params.get("view_as_pairs") != null) {
             viewAsPairs = Boolean.parseBoolean(params.get("view_as_pairs").get(0));
@@ -509,9 +545,19 @@ public class BamManager {
 
         logger.info("chr: " + chr + " start: " + start + " end: " + end);
 
+        if (params.get("cellbasehost") != null) {
+            cellbasehost = params.get("cellbasehost").get(0);
+            if(cellbasehost.equals("")){
+                return "{'error':'cellbase host not valid'}";
+            }
+        }
         if (params.get("species") != null) {
             species = params.get("species").get(0);
+            if(species.equals("")){
+                return "{'error':'species not valid'}";
+            }
         }
+
         Boolean viewAsPairs = false;
         if (params.get("view_as_pairs") != null) {
             viewAsPairs = Boolean.parseBoolean(params.get("view_as_pairs").get(0));
@@ -530,7 +576,7 @@ public class BamManager {
         }
 
         File inputBamFile = new File(fullFilePath.toString());
-        File inputBamIndexFile = checkBamIndex(fullFilePath);
+        File inputBamIndexFile = new File(fullFilePath+".bai");
 
         if (inputBamIndexFile == null) {
             logger.info("BamManager: " + "creating bam index for: " + fullFilePath);
@@ -917,12 +963,7 @@ public class BamManager {
     }
 
     private String getSequence(final String chr, final int start, final int end) throws IOException {
-        String version = "latest";
-        String host = analysisProperties.getProperty("CELLBASE.HOST","ws.bioinfo.cipf.es");
-        if (species.equals("ccl")) {//TESTING
-            version = "v3";
-        }
-        String urlString = "http://" + host + "/cellbase/rest/" + version + "/" + species + "/genomic/region/" + chr + ":"
+        String urlString = cellbasehost+"/" + species + "/genomic/region/" + chr + ":"
                 + (start - 500) + "-" + (end + 500) + "/sequence?of=json";
         System.out.println(urlString);
 

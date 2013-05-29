@@ -60,6 +60,7 @@ def indexBAM(inputBAM, outdir):
     print("indexing bam file...")
     sortBam(inputBAM, outdir)
     execute(samtoolsCmd + " index " + inputBAM)
+    execute("mv "+inputBAM+".bai "+outdir)
 
     #/hpg-bam stats -b HG00096.chrom20.ILLUMINA.bwa.GBR.exome.20111114.bam -o ./ --db
     execute(hpgbamCmd + " stats " + " -b "+ inputBAM + " -o " + outdir + " --db" )
@@ -68,18 +69,21 @@ def indexBAM(inputBAM, outdir):
 def sortBam(inputBAM, outdir):
     print("sorting bam file...")
     sortedBam = inputBAM + ".sort.bam"
-    sortCmd = samtoolsCmd + " sort " + inputBAM + " " + inputBAM + ".sort"
+    sortCmd = samtoolsCmd + " sort " + inputBAM + " " + inputBAM + ".sort" +  " -o "+ outdir
     execute(sortCmd)
     execute("mv "+ sortedBam + " " + inputBAM)
     print("sort complete!")
 
 def indexVCF(inputVCF, outdir):
     #file inputFVCF "gzip compressed"  zcat file |
+    inputVCFname = os.path.basename(inputVCF)
+    destName = outdir +"/"+ inputVCFname
     print("indexing vcf file...")
     execute("tar -zcvf "+ inputVCF + ".tar.gz" + " " + inputVCF)
+    execute("mv "+inputVCF + ".tar.gz "+outdir)
     execute("sort -k1,1 -k2,2n "+ inputVCF + " > " + inputVCF + ".sort.vcf");
-    execute(tabixbgzipCmd + " -c " + inputVCF + ".sort.vcf" + " > " + inputVCF + ".gz")
-    execute(tabixCmd + " -p vcf " + inputVCF + ".gz")
+    execute(tabixbgzipCmd + " -c " + inputVCF + ".sort.vcf" + " > " + destName + ".gz")
+    execute(tabixCmd + " -p vcf " + destName + ".gz")
     execute("rm -rf "+ inputVCF + ".sort.vcf")
     execute(hpgvarvcfCmd + " stats " + " -v "+ inputVCF + " --outdir " + outdir + " --db --config "+hpgvarvcfConfig )
     print("index complete!")
@@ -102,7 +106,7 @@ if os.path.isfile(args.input) is False:
     sys.exit(-1)
 
 if os.path.isdir(args.outdir) is False:
-    sys.exit(-1)
+    execute("mkdir "+args.outdir)
 
 checkGcsaHome()
 

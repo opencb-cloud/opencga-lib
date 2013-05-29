@@ -12,6 +12,7 @@ import org.bioinfo.opencga.lib.storage.XObject;
 import org.bioinfo.opencga.lib.storage.datamanagers.bam.BamManager;
 import org.bioinfo.opencga.lib.storage.indices.SqliteManager;
 import org.bioinfo.opencga.lib.utils.Config;
+import org.bioinfo.opencga.lib.utils.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,15 +48,22 @@ public class VcfManager {
         vcfColumns.put("info", 7);
 	}
 
+    private static Path getMetaDir(Path file){
+        String inputName = file.getFileName().toString();
+        return file.getParent().resolve(".meta_"+inputName);
+    }
+
     public static String createIndex(Path inputPath) throws IOException, InterruptedException,
             AnalysisExecutionException {
 
-        if(Files.exists(Paths.get(inputPath + ".db"))){
-            Files.delete(Paths.get(inputPath + ".db"));
+        Path metaDir = getMetaDir(inputPath);
+
+        if(Files.exists(metaDir)){
+            IOUtils.deleteDirectory(metaDir);
         }
 
         String jobId = StringUtils.randomString(8);
-        String commandLine = indexerManagerScript + " -t vcf -i " + inputPath;
+        String commandLine = indexerManagerScript + " -t vcf -i " + inputPath + " --outdir "+metaDir;
         try {
             SgeManager.queueJob("indexer", jobId, 0, inputPath.getParent().toString(), commandLine);
         } catch (Exception e) {
@@ -66,10 +74,12 @@ public class VcfManager {
     }
 
     private static File checkVcfIndex(Path inputPath) {
+        Path metaDir = getMetaDir(inputPath);
+        String fileName = inputPath.getFileName().toString();
         //name.vcf.gz
         //name.vcf.tbi
-        Path inputCompressedFile = Paths.get(inputPath + ".gz");
-        Path inputIndexFile = Paths.get(inputPath + ".gz.tbi");
+        Path inputCompressedFile = metaDir.resolve(Paths.get(fileName + ".gz"));
+        Path inputIndexFile = metaDir.resolve(Paths.get(fileName + ".gz.tbi"));
         if (Files.exists(inputIndexFile) && Files.exists(inputCompressedFile)) {
             return inputIndexFile.toFile();
         }
@@ -77,13 +87,18 @@ public class VcfManager {
     }
 
     public static boolean checkIndex(Path filePath){
-        return Files.exists(Paths.get(filePath + ".db"));
+        Path metaDir = getMetaDir(filePath);
+        String fileName = filePath.getFileName().toString();
+        return Files.exists(metaDir.resolve(Paths.get(fileName + ".db")));
     }
 
 
     public String queryRegion(Path filePath, String regionStr, Map<String, List<String>> params) throws SQLException, IOException, ClassNotFoundException {
 
-        Path gzFilePath = Paths.get(filePath.toString()+".gz");
+        Path metaDir = getMetaDir(filePath);
+        String fileName = filePath.getFileName().toString();
+
+        Path gzFilePath = metaDir.resolve(Paths.get(fileName + ".gz"));
 
         Region region = Region.parseRegion(regionStr);
         String chromosome = region.getChromosome();
@@ -91,21 +106,65 @@ public class VcfManager {
         int end = region.getEnd();
 
         SqliteManager sqliteManager = new SqliteManager();
-        sqliteManager.connect(filePath, true);
+        sqliteManager.connect(metaDir.resolve(Paths.get(fileName)), true);
 
         Boolean histogram = false;
         if (params.get("histogram") != null) {
             histogram = Boolean.parseBoolean(params.get("histogram").get(0));
+        }
+        Boolean histogramLogarithm = false;
+        if (params.get("histogramLogarithm") != null) {
+            histogramLogarithm = Boolean.parseBoolean(params.get("histogramLogarithm").get(0));
+        }
+        int histogramMax = 500;
+        if (params.get("histogramMax") != null) {
+            histogramMax  = Integer.getInteger(params.get("histogramMax").get(0),500);
         }
 
         if(histogram){
             long tq = System.currentTimeMillis();
             String tableName = "chunk";
             String chrPrefix = "";
-            String queryString = "SELECT * FROM " + "chunk" + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
+            String queryString = "SELECT * FROM " + tableName + " WHERE chromosome='"+chrPrefix+chromosome+"' AND start<=" + end + " AND end>=" + start;
             List<XObject> queryResults =  sqliteManager.query(queryString);
-
             sqliteManager.disconnect(true);
+            int queryResultSize = queryResults.size();
+
+            if(queryResultSize > histogramMax){
+                List<XObject> sumList = new ArrayList<>();
+                int sumChunkSize = queryResultSize / histogramMax;
+                int i = 0, j = 0;
+                XObject item = null;
+                int features_count = 0;
+                for (XObject result : queryResults){
+                    features_count += result.getInt("features_count");
+                    if(i == 0){
+                        item = new XObject("chromosome",result.getString("chromosome"));
+                        item.put("start",result.getString("start"));
+                    }else if (i == sumChunkSize-1 || j == queryResultSize-1){
+                        if(histogramLogarithm) {
+                            item.put("features_count", (features_count > 0) ? Math.log(features_count) : 0);
+                        }else {
+                            item.put("features_count", features_count);
+                        }
+                        item.put("end", result.getString("end"));
+                        sumList.add(item);
+                        i=-1;
+                        features_count = 0;
+                    }
+                    j++;
+                    i++;
+                }
+                return gson.toJson(sumList);
+            }
+
+            if(histogramLogarithm) {
+                for (XObject result : queryResults){
+                    int features_count = result.getInt("features_count");
+                    result.put("features_count",(features_count > 0) ? Math.log(features_count) : 0);
+                }
+            }
+
             System.out.println("Query time " + (System.currentTimeMillis() - tq) + "ms");
             return gson.toJson(queryResults);
         }
