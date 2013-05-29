@@ -405,11 +405,13 @@ public class CloudSessionManager {
         switch (objectItem.getFileFormat()) {
             case "bam":
                 BamManager bamManager = new BamManager();
-                result = bamManager.queryRegion(fullFilePath, regionStr, params);
+                result = bamManager.getByRegion(fullFilePath, regionStr, params);
+//                result = bamManager.queryRegion(fullFilePath, regionStr, params);
                 break;
             case "vcf":
                 VcfManager vcfManager = new VcfManager();
-                result = vcfManager.queryRegion(fullFilePath, regionStr, params);
+                result = vcfManager.getByRegion(fullFilePath, regionStr, params);
+//                result = vcfManager.queryRegion(fullFilePath, regionStr, params);
                 break;
         }
         return result;

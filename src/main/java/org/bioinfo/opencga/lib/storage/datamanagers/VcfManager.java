@@ -221,7 +221,7 @@ public class VcfManager {
         return gson.toJson(records);
     }
 
-
+    @Deprecated
 	public String getByRegion(Path fullFilePath, String regionStr, Map<String, List<String>> params) throws IOException {
 		TabixReader tabixReader = new TabixReader(fullFilePath.toString());
 		StringBuilder sb = new StringBuilder();
