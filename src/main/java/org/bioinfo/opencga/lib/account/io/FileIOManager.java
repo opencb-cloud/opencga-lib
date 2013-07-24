@@ -114,7 +114,7 @@ public class FileIOManager implements IOManager {
             }
         }
 
-        logger.debug("createAccount(): Creating account folder: " + accountHomePath);
+        logger.info("createAccount(): Creating account folder: " + accountHomePath);
         if (Files.exists(accountPath) && Files.isDirectory(accountPath) && Files.isWritable(accountPath)) {
 
             try {

@@ -20,6 +20,20 @@ var RESULT = {
 		            	colVisibility : [1,1,1,1,1,1],
 		            	colOrder : [0,1,2,3,4,5]
 		         };
+				var wilcoxonTable = {
+                    name : "PATHIWAY_WILCOXON_TABLE",
+                    colNames : ["Subpathway Name","p-value","FDR p-value","UP/DOWN"],
+                    colTypes : ["string","string","string","string"],
+                    colVisibility : [1,1,1,1],
+                    colOrder : [0,1,2,3]
+			    };
+				var wilcoxonSumaryTable = {
+                    name : "PATHIWAY_WILCOXON_SUMMARY",
+                    colNames : ["Pathway Name","Significant","SubpathsUP(sign)","SubpathsDOWN(sign)"],
+                    colTypes : ["string","string","string","string"],
+                    colVisibility : [1,1,1,1],
+                    colOrder : [0,1,2,3]
+		         };
 				var pathwayDict = {'Summary':'Summary', 'Normalization':'Normalization',
 				    '03320':'PPAR SIGNALING PATHWAY',
 				    '04010':'MAPK SIGNALING PATHWAY',
@@ -102,10 +116,16 @@ var RESULT = {
 					break;
 					case '.txt':
 						var tLayout = individualTable;
-						var title = 'Numerical resutls';
+						var title = 'Numerical results';
 						if(outItem.indexOf('ALL.txt') != -1) {
 							tLayout = summaryTable;
 						}
+                        if(outItem.indexOf('wilcoxonALL.txt') != -1) {
+                            tLayout = wilcoxonSumaryTable;
+                        }
+                        if(outItem.indexOf('wilcoxon.txt') != -1) {
+                            tLayout = wilcoxonTable;
+                        }
 						var renderers = [{type: 'file'},
 						    {type: 'grid', tableLayout: tLayout}
 						];
@@ -140,19 +160,23 @@ var RESULT = {
 				return children;
 			},
 			sortOutputItems : function(a,b){
-				if(a.indexOf('ALL.txt')!=-1){
-					return -1;
-				}
-				if(b.indexOf('ALL.txt')!=-1){
-					return 1;
-				}
-				if(a.indexOf('Result.jpeg')!=-1){
-					return 1;
-				}
-				if(b.indexOf('Result.jpeg')!=-1){
-					return -1;
-				}
-				//Compare "a" and "b" in some fashion, and return -1, 0, or 1
+                var getWeight = function(name){
+                    var filename = name.toLowerCase();
+                    if(filename.indexOf('all.txt')!=-1){
+                        return 10;
+                    }
+                    if(filename.indexOf('txt')!=-1){
+                        return 9;
+                    }
+                    if(filename.indexOf('xgmml')!=-1){
+                        return 8;
+                    }
+                    if(filename.indexOf('png')!=-1 || filename.indexOf('jpg')!=-1){
+                        return 7;
+                    }
+                    return 0;
+                }
+                return (getWeight(b)-getWeight(a));
 			}
 		}
 	}

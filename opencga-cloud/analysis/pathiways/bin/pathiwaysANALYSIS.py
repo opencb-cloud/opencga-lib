@@ -37,7 +37,7 @@ def main():
       opts.celornormalizedmatrix = matrixDir+""+normMatrix;
       print(opts.celornormalizedmatrix);
 
-    command = "/opt/R/R-2.15.2/bin/Rscript "+homePath+"/pathiwaysMAIN.r "+homePath+" "+opts.pathways+" "+opts.celornormalizedmatrix+" "+opts.summ+" "+opts.experimentaldesign+" "+opts.control+" "+opts.disease+" "+opts.outdir+" "+opts.platform+" "+opts.expname
+    command = "/opt/R/R-2.15.2/bin/Rscript "+homePath+"/pathiwaysMAIN.r "+homePath+" "+opts.pathways+" "+opts.celornormalizedmatrix+" "+opts.summ+" "+opts.experimentaldesign+" "+opts.control+" "+opts.disease+" "+opts.outdir+" "+opts.platform+" "+opts.expname+" "+opts.test+" "+opts.paired
     execute(command)
 
     # Get date
@@ -147,6 +147,10 @@ def get_options():
                       help='platform value')
     parser.add_option('--exp-name', dest='expname', metavar="STRING",
                       help='experiment name')
+    parser.add_option('--test', dest='test', metavar="STRING",
+                      help='Comparison tests')
+    parser.add_option('--paired', dest='paired', metavar="STRING",
+                      help='Wilcoxon comparison test can be paired or not')
 
     opts = parser.parse_args()[0]
 

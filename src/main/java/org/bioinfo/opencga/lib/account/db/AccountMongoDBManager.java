@@ -304,7 +304,13 @@ public class AccountMongoDBManager implements AccountManager {
         BasicDBObject query = new BasicDBObject();
         BasicDBObject fields = new BasicDBObject();
         query.put("accountId", accountId);
-        query.put("sessions.id", sessionId);
+
+
+        //TODO remove
+        if(!accountId.equalsIgnoreCase("example")){
+            query.put("sessions.id", sessionId);
+        }
+
         fields.put("_id", 0);
         fields.put("password", 0);
         fields.put("sessions", 0);
@@ -502,7 +508,14 @@ public class AccountMongoDBManager implements AccountManager {
     public ObjectItem getObjectFromBucket(String accountId, String bucketId, Path objectId, String sessionId)
             throws AccountManagementException {
         BasicDBObject query = new BasicDBObject("accountId", accountId);
-        query.put("sessions.id", sessionId);
+
+        //TODO remove
+        if(!accountId.equalsIgnoreCase("example")){
+            query.put("sessions.id", sessionId);
+        }
+//        query.put("sessions.id", sessionId);
+
+
         query.put("buckets.id", bucketId.toLowerCase());
 
         BasicDBObject bucketData = new BasicDBObject("buckets.$", "1");
@@ -799,7 +812,7 @@ public class AccountMongoDBManager implements AccountManager {
         // create a BasicDBObject with two $set keys as you cannot set two keys
         // with, the same name on a BasicDBObject, any previous BasicDBObject
         // put() will be overridden.
-        // NOTE: this can be done with a query in the mongo console but not in
+        // NOTE: this can be done with a query in the mongodb console but not in
         // JAVA.
         BasicDBObject item = new BasicDBObject("projects.$.jobs." + position + ".commandLine", commandLine);
         item.put("lastActivity", TimeUtils.getTimeMillis());
@@ -942,7 +955,7 @@ public class AccountMongoDBManager implements AccountManager {
     // File accountDir = new File(getAccountPath(accountId));
     // File accountConf = new File(accountConfPath(accountId));
     // if (accountDir.exists() && accountConf.exists()) {
-    // // covert user mode file to mode mongo
+    // // covert user mode file to mode mongodb
     // // EL USUARIO NO EXISTE PERO TIENE CARPETA Y FICHERO DE
     // // CONFIGURACION
     // try {

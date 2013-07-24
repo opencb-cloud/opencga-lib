@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 public class GffManager {
-    private int CHUNKSIZE = 10000;
+    private int CHUNKSIZE = 2000;
 
     String recordTableName;
     XObject recordColumns;

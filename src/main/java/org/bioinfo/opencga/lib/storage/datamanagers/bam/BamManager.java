@@ -963,6 +963,11 @@ public class BamManager {
     }
 
     private String getSequence(final String chr, final int start, final int end) throws IOException {
+
+        if(species.equals("cclementina")){
+            cellbasehost = "http://citrusgenn.bioinfo.cipf.es/cellbasecitrus/rest/v3";
+        }
+
         String urlString = cellbasehost+"/" + species + "/genomic/region/" + chr + ":"
                 + (start - 500) + "-" + (end + 500) + "/sequence?of=json";
         System.out.println(urlString);
