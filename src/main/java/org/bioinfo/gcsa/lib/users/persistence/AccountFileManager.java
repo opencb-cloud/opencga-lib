@@ -29,7 +29,7 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public void createUser(String accountId, String password, String accountName, String email, Session session)
+	public void createAccount(String accountId, String password, String accountName, String email, Session session)
 			throws AccountManagementException {
 
 	}
@@ -75,7 +75,7 @@ public class AccountFileManager implements AccountManager {
 	}
 
 	@Override
-	public Session getSessionId(String accountId, String sessionId) {
+	public Session getSession(String accountId, String sessionId) {
 		return null;
 	}
 

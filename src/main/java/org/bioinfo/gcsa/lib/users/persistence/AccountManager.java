@@ -13,11 +13,11 @@ public interface AccountManager {
 	/*
 	 * User methods
 	 */
-	public void createUser(String accountId, String password,String accountName, String email,Session session) throws AccountManagementException;
+	public void createAccount(String accountId, String password,String accountName, String email,Session session) throws AccountManagementException;
 	
 	public void createAnonymousUser(String accountId, String password, String email);
 	
-	public String login(String accountId, String password, Session session);
+	public String login(String accountId, String password, Session session) throws AccountManagementException;
 	
 	public void logout(String accountId, String sessionId) throws AccountManagementException;
 	
@@ -40,7 +40,7 @@ public interface AccountManager {
 	
 	public boolean checkSessionId(String accountId, String sessionId);
 	
-	public Session getSessionId(String accountId, String sessionId);
+	public Session getSession(String accountId, String sessionId);
 	
 	public String getAllProjectsBySessionId(String accountId, String sessionId) throws AccountManagementException;
 	

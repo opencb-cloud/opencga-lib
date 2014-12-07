@@ -1,18 +1,20 @@
 package org.bioinfo.gcs.lib;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.users.CloudSessionManager;
-import org.bioinfo.gcsa.lib.users.beans.Data;
+import org.bioinfo.gcsa.lib.users.beans.Session;
+import org.bioinfo.gcsa.lib.users.beans.Account;
 import org.bioinfo.gcsa.lib.users.persistence.AccountManagementException;
-import org.bioinfo.gcsa.lib.users.persistence.AccountManager;
 import org.junit.Test;
+
+import com.google.gson.Gson;
+import com.mongodb.BasicDBObject;
+import com.mongodb.util.JSON;
 
 public class UserMongoDBManagerTest {
 	
@@ -33,6 +35,22 @@ public class UserMongoDBManagerTest {
 //					sessionId);
 //	}
 
+	@Test
+	public void test() throws AccountManagementException, FileNotFoundException, IOException {
+//		CloudSessionManager cloudSessionManager = new CloudSessionManager();
+//		String accountId = "pako";
+//		String accountName = "paco";
+//		String password = "pepe";
+//		String email = "pakosala@gmail.com";
+//		String sessionIp ="0.0.0.0";
+//		cloudSessionManager.createAccount(accountId, password, accountName, email, sessionIp);
+		List<Session> sList = new ArrayList<Session>();
+		sList.add(new Session());
+		sList.add(new Session());
+		sList.add(new Session());
+		System.out.println(new Gson().toJson(sList));
+	}
+	
 //	@Test
 //	public void getUserBySessionIdTest() {
 //		try {
@@ -48,21 +66,21 @@ public class UserMongoDBManagerTest {
 	
 	@Test
 	public void changePasswordTest() throws FileNotFoundException, IOException, AccountManagementException, NoSuchAlgorithmException {
-		CloudSessionManager cloudSessionManager = new CloudSessionManager();
-		String accountId = "fsalavert";
-		String sessionId = "zACSnUM25lVxdgbcUTTb";
-		String password = StringUtils.sha1("pepe");
-		String nPassword1 = StringUtils.sha1("pepe"); 
-		String nPassword2 = StringUtils.sha1("pepe");
-		cloudSessionManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
+//		CloudSessionManager cloudSessionManager = new CloudSessionManager();
+//		String accountId = "fsalavert";
+//		String sessionId = "zACSnUM25lVxdgbcUTTb";
+//		String password = StringUtils.sha1("pepe");
+//		String nPassword1 = StringUtils.sha1("pepe"); 
+//		String nPassword2 = StringUtils.sha1("pepe");
+//		cloudSessionManager.changePassword(accountId, sessionId, password, nPassword1, nPassword2);
 	}
 	@Test
 	public void changeEmailTest() throws FileNotFoundException, IOException, AccountManagementException, NoSuchAlgorithmException {
-		CloudSessionManager cloudSessionManager = new CloudSessionManager();
-		String accountId = "fsalavert";
-		String sessionId = "zACSnUM25lVxdgbcUTTb";
-		String email = "pakosala@gmail.com";
-		cloudSessionManager.changeEmail(accountId, sessionId, email);
+//		CloudSessionManager cloudSessionManager = new CloudSessionManager();
+//		String accountId = "fsalavert";
+//		String sessionId = "zACSnUM25lVxdgbcUTTb";
+//		String email = "pakosala@gmail.com";
+//		cloudSessionManager.changeEmail(accountId, sessionId, email);
 	}
 //	@Test
 //	public void createFileToProjectTest() {

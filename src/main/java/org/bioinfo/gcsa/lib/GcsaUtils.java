@@ -4,13 +4,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Properties;
-import java.util.Random;
 
 import javax.mail.Message;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
+import org.bioinfo.commons.utils.StringUtils;
 
 public class GcsaUtils {
 	public static String getTime() {
@@ -20,6 +22,14 @@ public class GcsaUtils {
 		Date now = calendar.getTime();
 		timeStamp = sdf.format(now);
 		return timeStamp;
+	}
+
+	public static Date add24HtoDate(Date date) {
+		Calendar cal = new GregorianCalendar();
+		cal.setTime(date);
+		cal.setTimeInMillis(date.getTime());// sumamos 24h a la fecha del login
+		cal.add(Calendar.DATE, 1);
+		return new Date(cal.getTimeInMillis());
 	}
 
 	public static Date toDate(String dateStr) {
@@ -33,28 +43,29 @@ public class GcsaUtils {
 		return now;
 	}
 
-	public static String getSessionId() {
-		int longitud = 20;
-		String cadenaAleatoria = "";
-		long milis = new java.util.GregorianCalendar().getTimeInMillis();
-		Random r = new Random(milis);
-		int i = 0;
-		while (i < longitud) {
-			char c = (char) r.nextInt(255);
-			if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
-					|| (c >= 'a' && c <= 'z')) {
-				cadenaAleatoria += c;
-				i++;
-			}
-		}
-		return cadenaAleatoria;
-	}
-	
-	
+//	public static String getSessionId() {
+//		return StringUtils.randomString(20);
+//		// int longitud = 20;
+//		// String cadenaAleatoria = "";
+//		// long milis = new java.util.GregorianCalendar().getTimeInMillis();
+//		// Random r = new Random(milis);
+//		// int i = 0;
+//		// while (i < longitud) {
+//		// char c = (char) r.nextInt(255);
+//		// if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
+//		// || (c >= 'a' && c <= 'z')) {
+//		// cadenaAleatoria += c;
+//		// i++;
+//		// }
+//		// }
+//		// return cadenaAleatoria;
+//	}
+
 	public static void sendResetPasswordMail(String to, String message) {
-		sendMail("correo.cipf.es", to, "babelomics@cipf.es", "Genomic cloud storage analysis password reset", message.toString());
+		sendMail("correo.cipf.es", to, "babelomics@cipf.es", "Genomic cloud storage analysis password reset",
+				message.toString());
 	}
-	
+
 	public static void sendMail(String smtpServer, String to, String from, String subject, String body) {
 		try {
 			Properties props = System.getProperties();
@@ -62,7 +73,7 @@ public class GcsaUtils {
 			props.put("mail.smtp.host", smtpServer);
 			javax.mail.Session session = javax.mail.Session.getDefaultInstance(props, null);
 			// -- Create a new message --
-//			Message msg = new javax.mail.Message(session);
+			// Message msg = new javax.mail.Message(session);
 			Message msg = new MimeMessage(session);
 			// -- Set the FROM and TO fields --
 			msg.setFrom(new InternetAddress(from));
@@ -80,8 +91,7 @@ public class GcsaUtils {
 			// -- Send the message --
 			Transport.send(msg);
 			System.out.println("Message sent OK.");
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
