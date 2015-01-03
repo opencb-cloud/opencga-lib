@@ -126,23 +126,26 @@ public class UserMongoDBManager implements UserManager {
 		DBCursor iterator = userCollection.find(query);
 
 		if (iterator.count() == 1) {
-			User user = new Gson().fromJson(iterator.next().toString(),
-					User.class);
+			User user = new Gson().fromJson(iterator.next().toString(),	User.class);
 			user.addSession(session);
 			id = session.getId();
 			List<Session> sess = user.getSessions();
 
 			BasicDBObject filter = new BasicDBObject("accountId", accountId);
 			updateMongo("set", filter, "sessions", sess);
-			updateMongo("set", new BasicDBObject("accountId", accountId),
-					"lastActivity", GcsaUtils.getTime());
+			updateMongo("set", new BasicDBObject("accountId", accountId),"lastActivity", GcsaUtils.getTime());
 			// mover a oldSessions todas las sesiones con mas de 24 horas.
 			Calendar cal;
 			List<Session> s = user.getSessions();
 			Date fechaActual = GcsaUtils.toDate(GcsaUtils.getTime());
 			List<Session> oldSes = user.getOldSessions();
+			List<Session> removeSes = new ArrayList<Session>();
 			boolean changed = false;
+			
+			System.out.println("Numero oldSes: " + oldSes.size());
+			System.out.println("Numero ses: " + s.size());
 
+			
 			for (int i = 0; i < s.size(); i++) {
 
 				Date loginDate = GcsaUtils.toDate(s.get(i).getLogin());
@@ -153,16 +156,22 @@ public class UserMongoDBManager implements UserManager {
 				cal.add(Calendar.DATE, 1);
 
 				Date fechaCaducidad = new Date(cal.getTimeInMillis());
-
+				System.out.println(i);
+				System.out.println(fechaCaducidad.toString() +" ---- COMPARANDO CON ------> " + fechaActual.toString() + "   " + (fechaCaducidad.compareTo(fechaActual) < 0));
 				if (fechaCaducidad.compareTo(fechaActual) < 0) {
 					// caducada -> movemos a oldSessions
 					s.get(i).setLogout(GcsaUtils.getTime());
 					oldSes.add(s.get(i));
-					s.remove(i);
+					removeSes.add(s.get(i));
+//					s.remove(i);
 					changed = true;
 				}
 			}
 
+			for (Session ses : removeSes) {
+				s.remove(ses);
+			}
+			
 			if (changed) {
 				updateMongo("set",
 						new BasicDBObject("accountId", user.getAccountId()),
