@@ -52,11 +52,10 @@
 	            	 id: "vcf-filter",
 	            	 name: "Variant VCF",
 	            	 executable: "bin/hpg-var-vcf filter",
-	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}, {name:"ped-file", dataType:"ped"}],
+	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
-            	               {name:"ped-file", description:"PED file used as input."},
             	               {name:"url", description:"URL of the host where remote web services run."},
             	               {name:"version", description:"Version of the web service to query."},
             	               {name:"species", description:"Species whose genome is taken as reference."},
@@ -99,7 +98,6 @@
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
-            	               {name:"ped-file", description:"PED file used as input."},
             	               {name:"criterion", description:"Criterion for splitting the file."}
     	             ],
     	             configAttr: [],
@@ -109,11 +107,10 @@
 	            	 id: "vcf-stats",
 	            	 name: "Variant VCF",
 	            	 executable: "bin/hpg-var-vcf stats",
-	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}, {name:"ped-file", dataType:"ped"}],
+	            	 inputParams: [{name:"vcf-file", dataType:"vcf"}],
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
-            	               {name:"ped-file", description:"PED file used as input."},
             	               {name:"variants", description:"Get statistics about variants, both per variant and per file (default)."},
             	               {name:"samples", description:"Get statistics about samples."}
     	             ],
@@ -128,7 +125,7 @@
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
-            	               {name:"ped-file", description:"PED file used as input."},
+            	               {name:"ped-file", description:"PED file used as input.", required:"true"},
             	               {name:"url", description:"URL of the host where remote web services run."},
             	               {name:"version", description:"Version of the web service to query."},
             	               {name:"species", description:"Species whose genome is taken as reference."},
@@ -153,7 +150,7 @@
 	            	 outputParam: "outdir",
 	            	 validParams: [
             	               {name:"vcf-file", description:"VCF file used as input.", required:"true"},
-            	               {name:"ped-file", description:"PED file used as input."},
+            	               {name:"ped-file", description:"PED file used as input.", required:"true"},
             	               {name:"url", description:"URL of the host where remote web services run."},
             	               {name:"version", description:"Version of the web service to query."},
             	               {name:"species", description:"Species whose genome is taken as reference."},

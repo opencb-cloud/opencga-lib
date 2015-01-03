@@ -4,6 +4,7 @@ import java.util.Map;
 
 import javax.persistence.Version;
 
+import org.bioinfo.commons.utils.StringUtils;
 import org.bioinfo.gcsa.lib.GcsaUtils;
 
 
@@ -15,15 +16,15 @@ public class Session {
 //	private Map<String, String> attributes;
 
 	public Session() {
-		this.id = GcsaUtils.getSessionId();
-		this.ip = "jhgjhjhj";
+		this.id = StringUtils.randomString(20);
+		this.ip = "";
 		this.login = GcsaUtils.getTime();
 		this.logout = "";
 	}
 	
 	public Session(String ip){
 
-		this.id = GcsaUtils.getSessionId();
+		this.id = StringUtils.randomString(20);
 		this.ip = ip;
 		this.login = GcsaUtils.getTime();
 		this.logout = "";
